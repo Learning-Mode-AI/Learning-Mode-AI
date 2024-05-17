@@ -1,0 +1,22 @@
+{
+    "manifest_version": 3,
+    "name": "Learning Mode",
+    "version": "1.0",
+    "description": "Transform YouTube videos into interactive learning experiences.",
+    "permissions": ["activeTab", "storage", "scripting", "tabs"],
+    "action": {
+      "default_popup": "popup.html",
+      "default_icon": "hello_extensions.png"
+    },
+    "content_scripts": [
+      {
+        "matches": ["*://www.youtube.com/*"],
+        "js": ["content.js"],
+        "run_at": "document_idle"
+      }
+    ],
+    "background": {
+      "service_worker": "background.js"
+    }
+  }
+  
