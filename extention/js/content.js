@@ -33,6 +33,10 @@ function activateLearningMode() {
 
     if (sidebar && secondaryInner) {
         sidebar.style.display = 'none'; // Hide the sidebar
+
+        const videoUrl = window.location.href; // Grab the video URL
+        sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
+
         createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
     }
 }
@@ -47,4 +51,39 @@ function deactivateLearningMode() {
     if (chatContainer) {
         chatContainer.remove(); // Remove the chat container
     }
+}
+
+
+function sendVideoInfoToBackend(videoUrl) {
+    fetch('http://localhost:8080/processVideo', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ videoUrl: videoUrl })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+}
+
+function askAIQuestion(videoUrl, question) {
+    fetch('http://localhost:8080/api/question', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ videoId: extractVideoID(videoUrl), userQuestion: question })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('AI Response:', data.response);
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
 }

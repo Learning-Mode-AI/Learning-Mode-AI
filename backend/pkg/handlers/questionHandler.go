@@ -1,38 +1,40 @@
 package handlers
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/services"
 	"encoding/json"
 	"net/http"
 )
 
 type QuestionRequest struct {
-	VideoID  string `json:"video_id"`
-	Question string `json:"question"`
-}
-
-type QuestionResponse struct {
-	Answer string `json:"answer"`
+	VideoID      string `json:"videoId"`
+	UserQuestion string `json:"userQuestion"`
 }
 
 func HandleQuestion(w http.ResponseWriter, r *http.Request) {
-	var req QuestionRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	var questionRequest QuestionRequest
+
+	err := json.NewDecoder(r.Body).Decode(&questionRequest)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
 	}
 
-	// Process the question here (e.g., interact with an AI service)
-
-	response := QuestionResponse{
-		Answer: "This is a placeholder answer.",
+	// Fetch video info using the video ID
+	videoInfo, err := services.FetchVideoInfo(questionRequest.VideoID)
+	if err != nil {
+		http.Error(w, "Failed to fetch video info", http.StatusInternalServerError)
+		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
-}
+	// Get AI response
+	aiResponse, err := services.FetchGPTResponse(*videoInfo, questionRequest.UserQuestion)
+	if err != nil {
+		http.Error(w, "Failed to fetch AI response", http.StatusInternalServerError)
+		return
+	}
 
-func HandleVideoContext(w http.ResponseWriter, r *http.Request) {
-	// Handle retrieving video context here
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Video context placeholder"))
+	// Return the AI response as a JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"response": aiResponse})
 }

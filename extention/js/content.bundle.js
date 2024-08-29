@@ -198,6 +198,10 @@ function activateLearningMode() {
   var secondaryInner = document.getElementById('secondary-inner');
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none'; // Hide the sidebar
+
+    var videoUrl = window.location.href; // Grab the video URL
+    sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
+
     (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
   }
 }
@@ -210,6 +214,23 @@ function deactivateLearningMode() {
   if (chatContainer) {
     chatContainer.remove(); // Remove the chat container
   }
+}
+function sendVideoInfoToBackend(videoUrl) {
+  fetch('http://localhost:8080/processVideo', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      videoUrl: videoUrl
+    })
+  }).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    console.log('Success:', data);
+  })["catch"](function (error) {
+    console.error('Error:', error);
+  });
 }
 /******/ })()
 ;
