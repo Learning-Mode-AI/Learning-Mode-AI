@@ -1,53 +1,184 @@
-## Backend Structure
+# YouTube Learning Mode Backend
 
-Here's a breakdown of the folders in the Go backend structure, explaining what files would go in each and why they are important:
+This is the Golang backend service for the YouTube Learning Mode project. It acts as the main orchestrator, handling requests from the frontend (e.g., a browser extension), communicating with the YouTube Info Service (Python microservice), and interacting with OpenAI's GPT-4 API to provide AI-powered responses based on YouTube video content.
 
-### 1. **backend/**
-   - **Purpose:** This is the root directory for your Go backend. It contains all the source code for the backend of the project.
-   - **Files:**
-     - **`main.go`:** The entry point of your Go application. This file initializes the application, sets up routes, and starts the HTTP server. It typically imports the necessary packages and calls functions from other packages (like handlers, services, etc.) to start the application.
+## Features
 
-### 2. **handlers/**
-   - **Purpose:** This directory contains all the HTTP handler functions. Handlers are responsible for processing incoming HTTP requests, invoking the appropriate services, and returning the HTTP response.
-   - **Files:**
-     - **`questionHandler.go`:** Handles requests related to questions (e.g., asking a question, retrieving questions). It processes the request, interacts with services or models, and sends back a response.
-     - **`videoContextHandler.go`:** Manages requests related to video context (e.g., fetching context data for a specific video). Similar to other handlers, it interfaces with services and models to fulfill the request.
-     - **Other Handlers:** Each handler corresponds to a different aspect of your application's API, organizing the code based on the feature or functionality being addressed.
+- **Video Processing**: Accepts YouTube video URLs and extracts video information and transcripts via the Python microservice.
+- **AI Integration**: Initializes AI chat sessions using OpenAI's GPT-4 API based on video content.
+- **Question Handling**: Processes user questions about the video content and returns AI-generated responses.
+- **API Endpoints**: Provides endpoints for processing videos and handling user questions.
+- **Microservices Architecture**: Designed for scalability and modularity.
 
-### 3. **models/**
-   - **Purpose:** This directory holds the data models that represent the structure of the data in your application. Models are typically used to define the schema for database entities and facilitate data manipulation.
-   - **Files:**
-     - **`question.go`:** Defines the structure of a question entity (e.g., fields like ID, text, answer). It may also include methods for interacting with the database or validating data.
-     - **`videoContext.go`:** Represents the structure of a video context entity, which might include fields like video ID, timestamp, and associated context data.
-     - **Other Models:** Each file represents a different data entity within your application, keeping the code organized and modular.
+## Prerequisites
 
-### 4. **services/**
-   - **Purpose:** This directory contains the business logic of your application. Services are responsible for executing the core functionality, often interacting with external APIs, processing data, or handling complex operations.
-   - **Files:**
-     - **`aiService.go`:** Handles AI-related operations, such as interacting with an AI service to generate answers or context-aware responses.
-     - **`youtubeService.go`:** Manages interactions with the YouTube API, such as fetching video data or extracting metadata.
-     - **Other Services:** Each service file corresponds to a distinct piece of business logic, making the codebase modular and easier to maintain.
+- **Go**: Version 1.16 or higher.
+- **OpenAI API Key**: For GPT-4 integration.
+- **YouTube Info Service**: Ensure the Python microservice is running and accessible locally.
 
-### 5. **utils/**
-   - **Purpose:** This directory holds utility functions and helpers that are used across different parts of the application. Utility functions are often generic and reusable.
-   - **Files:**
-     - **`utils.go`:** Contains various utility functions, such as string manipulation, data formatting, or other helper functions that do not belong to a specific service or model.
-   - **Importance:** Keeping utility functions in a separate directory promotes code reusability and avoids duplication.
+## Installation
 
-### 6. **middleware/**
-   - **Purpose:** This directory contains middleware functions, which are used to process requests before they reach the handlers. Middleware can be used for tasks like authentication, logging, or request modification.
-   - **Files:**
-     - **`auth.go`:** Handles authentication-related middleware, such as verifying JWT tokens or checking user permissions before allowing access to specific routes.
-   - **Importance:** Middleware helps to separate concerns, making your code cleaner and more maintainable by handling cross-cutting concerns in a centralized way.
+### 1. Clone the Repository
 
-### 7. **config/**
-   - **Purpose:** This directory contains configuration files and functions that load and manage application settings. Configuration management is critical for handling different environments (development, production, etc.).
-   - **Files:**
-     - **`config.go`:** Loads configuration settings, such as database connection strings, API keys, or environment variables. It ensures that the application can be easily configured and managed across different environments.
-   - **Importance:** Centralizing configuration makes it easier to manage and change settings without modifying the codebase, facilitating deployment and scaling.
+```bash
+git clone https://github.com/AnasKhan0607/Youtube-Learning-Mode.git
+cd Youtube-Learning-Mode-Backend
+```
 
-### 8. **router/**
-   - **Purpose:** This directory contains the router setup, which defines all the routes and their corresponding handlers. The router directs incoming HTTP requests to the appropriate handler based on the URL and HTTP method.
-   - **Files:**
-     - **`router.go`:** Sets up the router, mapping routes to their respective handlers. It organizes the routing logic, making it easier to manage and extend.
-   - **Importance:** Having a dedicated router file or package makes it easier to manage and scale your application's routes, especially as the number of routes grows.
+### 2. Set Up Environment Variables
+
+Create a `.env` file in the root directory to store your environment variables:
+
+```bash
+OPENAI_API_KEY=your_openai_api_key_here
+```
+
+**Note:** Do not commit the `.env` file to version control.
+
+### 3. Install Dependencies
+
+```bash
+go mod download
+```
+
+## Running the Application
+
+### 1. Start the YouTube Info Service
+
+Make sure the [YouTube-Learning-Mode-Info-Service](https://github.com/AnasKhan0607/Youtube-Learning-Mode-Info-Service) Python microservice is running locally.
+
+```bash
+cd path/to/Youtube-Learning-Mode-Info-Service
+uvicorn app.main:app --reload
+```
+
+By default, it will be accessible at `http://localhost:8000`.
+
+### 2. Start the Backend Server
+
+```bash
+go run cmd/main.go
+```
+
+The server will start on port `8080`.
+
+### 3. Testing the API Endpoints
+
+#### Process Video Endpoint
+
+```bash
+curl -X POST http://localhost:8080/processVideo \
+-H "Content-Type: application/json" \
+-d '{"videoUrl": "https://www.youtube.com/watch?v=VIDEO_ID"}'
+```
+
+Replace `VIDEO_ID` with the actual YouTube video ID.
+
+#### Handle Question Endpoint
+
+```bash
+curl -X POST http://localhost:8080/api/question \
+-H "Content-Type: application/json" \
+-d '{"videoId": "VIDEO_ID", "userQuestion": "Your question here"}'
+```
+
+## API Endpoints
+
+### 1. `/processVideo` (POST)
+
+Processes a YouTube video URL, fetches video information and transcript, and initializes an AI chat session.
+
+- **Request Body**:
+
+  ```json
+  {
+    "videoUrl": "https://www.youtube.com/watch?v=VIDEO_ID"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "title": "Video Title",
+    "description": "Video Description",
+    "channel": "Channel Name",
+    "transcript": [
+      "0.00: Transcript line 1",
+      "0.05: Transcript line 2",
+      "..."
+    ]
+  }
+  ```
+
+### 2. `/api/question` (POST)
+
+Handles user questions related to the video content and returns AI-generated responses.
+
+- **Request Body**:
+
+  ```json
+  {
+    "videoId": "VIDEO_ID",
+    "userQuestion": "Your question here"
+  }
+  ```
+
+- **Response**:
+
+  ```json
+  {
+    "response": "AI-generated answer"
+  }
+  ```
+
+## Project Structure
+
+```
+├── cmd/
+│   └── main.go            # Entry point of the application
+├── pkg/
+│   ├── handlers/
+│   │   ├── videoHandler.go       # Handles /processVideo requests
+│   │   └── questionHandler.go    # Handles /api/question requests
+│   ├── services/
+│   │   ├── youtubeService.go     # Communicates with the YouTube Info Service
+│   │   ├── aiService.go          # Handles AI ChatGPT interactions
+│   └── router/
+│       └── router.go             # Defines API routes
+├── go.mod                 # Go module dependencies
+├── go.sum                 # Checksums for Go modules
+├── .env                   # Environment variables (DO NOT COMMIT)
+└── README.md              # Project documentation
+```
+
+## Dependencies
+
+- **Gorilla Mux**: Router for HTTP requests.
+- **OpenAI Go SDK**: For interacting with OpenAI's GPT-4 API.
+- **HTTP Client Libraries**: For making HTTP requests to the Python microservice.
+
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. **Fork the repository**.
+2. **Create a new branch**:
+
+   ```bash
+   git checkout -b feature/YourFeature
+   ```
+
+3. **Commit your changes**:
+
+   ```bash
+   git commit -am 'Add some feature'
+   ```
+
+4. **Push to the branch**:
+
+   ```bash
+   git push origin feature/YourFeature
+   ```
+
+5. **Open a Pull Request**.
