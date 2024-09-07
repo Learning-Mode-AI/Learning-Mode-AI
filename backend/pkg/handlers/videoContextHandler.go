@@ -13,7 +13,6 @@ type VideoRequest struct {
 }
 
 func ProcessVideo(w http.ResponseWriter, r *http.Request) {
-
 	// Handle CORS preflight requests
 	if r.Method == http.MethodOptions {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
@@ -45,14 +44,20 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Use the YouTube API to process the video information
+	// Fetch video information
 	videoInfo, err := services.FetchVideoInfo(videoID)
 	if err != nil {
+		log.Println("error:", err)
 		http.Error(w, "Failed to fetch video info", http.StatusInternalServerError)
 		return
 	}
 
-	print(videoInfo.Title)
+	// Create a new ChatGPT instance using the video context
+	aiChat, err = services.CreateChatGPTInstance(videoInfo)
+	if err != nil {
+		http.Error(w, "Failed to initialize ChatGPT instance", http.StatusInternalServerError)
+		return
+	}
 
 	// Return the video information as a response
 	w.Header().Set("Content-Type", "application/json")

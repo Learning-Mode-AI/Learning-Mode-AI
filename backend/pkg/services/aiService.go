@@ -1,81 +1,71 @@
 package services
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"net/http"
 	"os"
+
+	openai "github.com/sashabaranov/go-openai"
 )
 
-type GPTRequest struct {
-	Model    string       `json:"model"`
-	Messages []GPTMessage `json:"messages"`
+type AIChat struct {
+	ChatID   string
+	Client   *openai.Client
+	Messages []openai.ChatCompletionMessage // Store conversation history
 }
 
-type GPTMessage struct {
-	Role    string `json:"role"`
-	Content string `json:"content"`
-}
-
-type GPTResponse struct {
-	Choices []struct {
-		Message GPTMessage `json:"message"`
-	} `json:"choices"`
-}
-
-// FetchGPTResponse sends a request to the GPT-4 API with the provided context and question
-func FetchGPTResponse(videoInfo VideoInfo, userQuestion string) (string, error) {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	apiUrl := "https://api.openai.com/v1/chat/completions"
-
-	systemMessage := GPTMessage{
-		Role:    "system",
-		Content: fmt.Sprintf("You are a helpful assistant that provides detailed information based on the YouTube video with title: %s, description: %s, by channel: %s", videoInfo.Title, videoInfo.Description, videoInfo.Channel),
-	}
-
-	userMessage := GPTMessage{
-		Role:    "user",
+// FetchGPTResponse generates a response from GPT-4 based on the provided user question.
+func (ai *AIChat) FetchGPTResponse(userQuestion string) (string, error) {
+	// Append the user question to the conversation history
+	ai.Messages = append(ai.Messages, openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleUser,
 		Content: userQuestion,
-	}
+	})
 
-	gptRequest := GPTRequest{
-		Model: "gpt-4",
-		Messages: []GPTMessage{
-			systemMessage,
-			userMessage,
+	// Call the OpenAI API with the entire conversation history
+	resp, err := ai.Client.CreateChatCompletion(
+		context.Background(),
+		openai.ChatCompletionRequest{
+			Model:    openai.GPT4,
+			Messages: ai.Messages, // Pass the entire conversation history
 		},
-	}
+	)
 
-	requestBody, err := json.Marshal(gptRequest)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("ChatCompletion error: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", apiUrl, bytes.NewBuffer(requestBody))
-	if err != nil {
-		return "", err
+	// Append the AI response to the conversation history
+	ai.Messages = append(ai.Messages, resp.Choices[0].Message)
+
+	// Return the generated response
+	return resp.Choices[0].Message.Content, nil
+}
+
+// CreateChatGPTInstance initializes a ChatGPT instance with the video context.
+func CreateChatGPTInstance(videoInfo *VideoInfo) (*AIChat, error) {
+	apiKey := os.Getenv("OPENAI_API_KEY")
+	if apiKey == "" {
+		return nil, fmt.Errorf("OpenAI API key is missing")
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", apiKey))
+	client := openai.NewClient(apiKey)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+	// Initialize the ChatGPT session with the video context
+	initialMessage := fmt.Sprintf(
+		"You are helping a user based on the following video:\n\nTitle: %s\nDescription: %s\nChannel: %s\nTranscript:\n%s",
+		videoInfo.Title, videoInfo.Description, videoInfo.Channel, videoInfo.Transcript,
+	)
 
-	var gptResponse GPTResponse
-	err = json.NewDecoder(resp.Body).Decode(&gptResponse)
-	if err != nil {
-		return "", err
+	// Create the initial system message
+	systemMessage := openai.ChatCompletionMessage{
+		Role:    openai.ChatMessageRoleSystem,
+		Content: initialMessage,
 	}
 
-	if len(gptResponse.Choices) > 0 {
-		return gptResponse.Choices[0].Message.Content, nil
-	}
-
-	return "", fmt.Errorf("no response from GPT-4")
+	// Create and return AIChat instance, initializing with the system message
+	return &AIChat{
+		Client:   client,
+		Messages: []openai.ChatCompletionMessage{systemMessage}, // Initialize with system message
+	}, nil
 }

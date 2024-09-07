@@ -1,107 +1,56 @@
 package services
 
 import (
-	"context"
+	"encoding/json"
 	"fmt"
-	"io"
-	"os"
-	"strings"
-
-	"google.golang.org/api/option"
-	"google.golang.org/api/youtube/v3"
+	"io/ioutil"
+	"net/http"
+	"time"
 )
 
+// VideoInfo struct to represent video metadata and transcript
 type VideoInfo struct {
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Channel     string `json:"channel"`
-	Transcript  string `json:"transcript"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Channel     string   `json:"channel"`
+	Transcript  []string `json:"transcript"`
+	ChatID      string   `json:"chatId"` // Store the ChatGPT session ID
 }
 
+// FetchVideoInfo sends a request to the Python service to get video information and transcript
 func FetchVideoInfo(videoID string) (*VideoInfo, error) {
-	ctx := context.Background()
-	apiKey := os.Getenv("YOUTUBE_API_KEY")
-	youtubeService, err := youtube.NewService(ctx, option.WithAPIKey(apiKey))
+	// Define the URL to call the Python service
+	pythonServiceURL := fmt.Sprintf("http://localhost:8000/video-info/%s", videoID)
+
+	// Create an HTTP GET request to the Python service
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("GET", pythonServiceURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create YouTube client: %v", err)
+		return nil, fmt.Errorf("failed to create request: %v", err)
 	}
 
-	call := youtubeService.Videos.List([]string{"snippet"}).Id(videoID)
-	response, err := call.Do()
+	// Execute the request
+	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch video info: %v", err)
+		return nil, fmt.Errorf("failed to fetch video info from Python service: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("unexpected status code from Python service: %v", resp.Status)
 	}
 
-	if len(response.Items) == 0 {
-		return nil, fmt.Errorf("no video info found")
-	}
-
-	snippet := response.Items[0].Snippet
-
-	// Fetch the transcript
-	transcript, err := FetchVideoTranscript(youtubeService, videoID)
+	// Read and parse the response from Python service
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch video transcript: %v", err)
+		return nil, fmt.Errorf("failed to read response body: %v", err)
 	}
 
-	return &VideoInfo{
-		Title:       snippet.Title,
-		Description: snippet.Description,
-		Channel:     snippet.ChannelTitle,
-		Transcript:  transcript,
-	}, nil
-}
-
-// FetchVideoTranscript fetches the transcript (captions) for a given video ID.
-func FetchVideoTranscript(service *youtube.Service, videoID string) (string, error) {
-	// List all caption tracks associated with the video
-	captionsCall := service.Captions.List([]string{"snippet"}, "videoId").Id(videoID)
-	captionsResponse, err := captionsCall.Do()
+	var videoInfo VideoInfo
+	err = json.Unmarshal(body, &videoInfo)
 	if err != nil {
-		return "", fmt.Errorf("failed to fetch captions: %v", err)
+		return nil, fmt.Errorf("failed to unmarshal video info: %v", err)
 	}
 
-	if len(captionsResponse.Items) == 0 {
-		return "", fmt.Errorf("no captions available for video")
-	}
-
-	// Assuming the first caption track is the one we want (you might want to add more logic here)
-	captionID := captionsResponse.Items[0].Id
-
-	// Download the caption track in the desired format (e.g., "srt")
-	captionDownloadCall := service.Captions.Download(captionID).Tfmt("srt")
-	response, err := captionDownloadCall.Download()
-	if err != nil {
-		return "", fmt.Errorf("failed to download captions: %v", err)
-	}
-	defer response.Body.Close()
-
-	// Read the response body
-	captionData, err := io.ReadAll(response.Body)
-	if err != nil {
-		return "", fmt.Errorf("failed to read caption data: %v", err)
-	}
-
-	// Parse the SRT data
-	transcript := parseSRT(string(captionData))
-
-	return transcript, nil
-}
-
-// parseSRT parses the SRT data and returns it in "time:phrase" format.
-func parseSRT(srtData string) string {
-	lines := strings.Split(srtData, "\n")
-	var transcript []string
-	for i := 0; i < len(lines); i++ {
-		if strings.Contains(lines[i], "-->") {
-			// This line contains the timestamp
-			timestamp := lines[i]
-			// The next line should contain the phrase
-			if i+1 < len(lines) && lines[i+1] != "" {
-				phrase := lines[i+1]
-				transcript = append(transcript, fmt.Sprintf("%s: %s", timestamp, phrase))
-			}
-		}
-	}
-	return strings.Join(transcript, "\n")
+	return &videoInfo, nil
 }

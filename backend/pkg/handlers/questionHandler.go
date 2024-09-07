@@ -11,6 +11,8 @@ type QuestionRequest struct {
 	UserQuestion string `json:"userQuestion"`
 }
 
+var aiChat *services.AIChat
+
 func HandleQuestion(w http.ResponseWriter, r *http.Request) {
 	var questionRequest QuestionRequest
 
@@ -20,21 +22,19 @@ func HandleQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Fetch video info using the video ID
-	videoInfo, err := services.FetchVideoInfo(questionRequest.VideoID)
-	if err != nil {
-		http.Error(w, "Failed to fetch video info", http.StatusInternalServerError)
+	// Check if aiChat is initialized
+	if aiChat == nil {
+		http.Error(w, "AI session not initialized. Please process the video first.", http.StatusBadRequest)
 		return
 	}
 
-	// Get AI response
-	aiResponse, err := services.FetchGPTResponse(*videoInfo, questionRequest.UserQuestion)
+	// Use the existing AIChat instance to fetch a response
+	aiResponse, err := aiChat.FetchGPTResponse(questionRequest.UserQuestion)
 	if err != nil {
 		http.Error(w, "Failed to fetch AI response", http.StatusInternalServerError)
 		return
 	}
 
-	// Return the AI response as a JSON
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{"response": aiResponse})
 }
