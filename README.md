@@ -9,13 +9,16 @@ The **YouTube Learning Mode** extension is designed to bridge the gap between sy
 
 ### Frontend Figma Mockup
 **Youtube Learning Mode Toggle Off**
-<img src="./figmaFrontend1.jpg" alt="Frontend 1" width="400"/>
+
+<img src="./figmaFrontend1.jpg" alt="Frontend 1" width="500"/>
 
 **Youtube Learning Mode Message Sent**
-<img src="./figmaFrontend2.jpg" alt="Frontend 2" width="400"/>
+
+<img src="./figmaFrontend2.jpg" alt="Frontend 2" width="500"/>
 
 **Youtube Learning Mode Quiz Answered**
-<img src="./figmaFrontend3.jpg" alt="Frontend 3" width="400"/>
+
+<img src="./figmaFrontend3.jpg" alt="Frontend 3" width="500"/>
 
 [View full Figma here](https://www.figma.com/proto/1tL2i1Y62qbm56hW5J1QTp/Youtube-Learning-Mode-Prototype?node-id=2-59&t=LLPkUYyfIa6u5FHk-1)
 
@@ -92,8 +95,3 @@ Whether you're a student, a lifelong learner, or someone just curious about a sp
 ## Contributing
 
 Contributions are welcome! If you have ideas for new features or improvements, please open an issue or submit a pull request. 
-
-## Frontend Figma Mockup
-![Frontend 1](./figmaFrontend1.jpg)
-![Fromtend 2](./figmaFrontend2.jpg)
-![Frontend 3](./figmaFrontend3.jpg)
