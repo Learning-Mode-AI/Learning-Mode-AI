@@ -80,6 +80,6 @@ Whether you're a student, a lifelong learner, or someone just curious about a sp
 Contributions are welcome! If you have ideas for new features or improvements, please open an issue or submit a pull request. 
 
 ## Frontend Figma Mockup
-![Frontend 1](./figmaFrontend1.png)
-![Fromtend 2](./figmaFrontend2.png)
-![Frontend 3](./figmaFrontend3.png)
+![Frontend 1](./figmaFrontend1.jpg)
+![Fromtend 2](./figmaFrontend2.jpg)
+![Frontend 3](./figmaFrontend3.jpg)
