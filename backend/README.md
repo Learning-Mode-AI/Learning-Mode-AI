@@ -15,6 +15,8 @@ This is the Golang backend service for the YouTube Learning Mode project. It act
 - **Go**: Version 1.16 or higher.
 - **OpenAI API Key**: For GPT-4 integration.
 - **YouTube Info Service**: Ensure the Python microservice is running and accessible locally.
+- **Youtube Video Processing Serivce**: Ensure the Golang microservice is running and accessible locally.
+
 
 ## Installation
 
