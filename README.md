@@ -10,15 +10,15 @@ The **YouTube Learning Mode** extension is designed to bridge the gap between sy
 ### Frontend Figma Mockup
 **Youtube Learning Mode Toggle Off**
 
-<img src="./figmaFrontend1.jpg" alt="Frontend 1" width="500"/>
+<img src="./docs/figmaFrontend1.jpg" alt="Frontend 1" width="500"/>
 
 **Youtube Learning Mode Message Sent**
 
-<img src="./figmaFrontend2.jpg" alt="Frontend 2" width="500"/>
+<img src="./docs/figmaFrontend2.jpg" alt="Frontend 2" width="500"/>
 
 **Youtube Learning Mode Quiz Answered**
 
-<img src="./figmaFrontend3.jpg" alt="Frontend 3" width="500"/>
+<img src="./docs/figmaFrontend3.jpg" alt="Frontend 3" width="500"/>
 
 [View full Figma here](https://www.figma.com/proto/1tL2i1Y62qbm56hW5J1QTp/Youtube-Learning-Mode-Prototype?node-id=2-59&t=LLPkUYyfIa6u5FHk-1)
 
@@ -52,6 +52,11 @@ Whether you're a student, a lifelong learner, or someone just curious about a sp
 - **Google Chrome Extension APIs:** Utilized for integrating the extension into the YouTube interface.
 - **Webpack:** Bundles JavaScript files into a single content bundle, ensuring that the extension is optimized and modularized.
 - **Golang (Backend):** A Go-based backend may be developed to handle more complex AI-driven interactions, data storage, and processing needs.
+
+
+## System Design Diagram
+
+<img src="./docs/systemDesign.jpg" alt="Frontend 3" width="500"/>
 
 ## How to Use
 
