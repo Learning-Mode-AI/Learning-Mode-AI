@@ -56,7 +56,7 @@ Whether you're a student, a lifelong learner, or someone just curious about a sp
 
 ## System Design Diagram
 
-<img src="./docs/systemDesign.jpg" alt="Frontend 3" width="500"/>
+<img src="./docs/systemDesign.jpg" alt="Frontend 3" width="1000"/>
 
 ## How to Use
 
