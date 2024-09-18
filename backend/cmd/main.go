@@ -2,6 +2,7 @@ package main
 
 import (
 	"YOUTUBE-LEARNING-MODE/pkg/router"
+	"YOUTUBE-LEARNING-MODE/pkg/services"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -20,6 +21,7 @@ func init() {
 
 func main() {
 	r := router.NewRouter() // Initialize your router
+	services.InitRedis()
 
 	// Set CORS options
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

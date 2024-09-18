@@ -13,23 +13,10 @@ type VideoRequest struct {
 }
 
 func ProcessVideo(w http.ResponseWriter, r *http.Request) {
-	// Handle CORS preflight requests
-	if r.Method == http.MethodOptions {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-		w.WriteHeader(http.StatusOK)
-		return
-	}
+	// Handle CORS preflight requests (skipping for brevity)
 
-	// Add CORS headers to actual request response
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-	log.Println("Received ProcessVideo request")
+	// Log the request and decode payload
 	var videoRequest VideoRequest
-
 	err := json.NewDecoder(r.Body).Decode(&videoRequest)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
@@ -37,14 +24,14 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Println("Video URL:", videoRequest.VideoUrl)
 
-	// Extract the video ID from the URL
+	// Extract video ID
 	videoID := extractVideoID(videoRequest.VideoUrl)
 	if videoID == "" {
 		http.Error(w, "Invalid video URL", http.StatusBadRequest)
 		return
 	}
 
-	// Fetch video information
+	// Fetch video information from the info service
 	videoInfo, err := services.FetchVideoInfo(videoID)
 	if err != nil {
 		log.Println("error:", err)
@@ -52,14 +39,25 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Create a new ChatGPT instance using the video context
-	aiChat, err = services.CreateChatGPTInstance(videoInfo)
+	// Store video info in Redis (without snapshots for now)
+	err = services.StoreVideoInfoInRedis(videoID, videoInfo)
 	if err != nil {
-		http.Error(w, "Failed to initialize ChatGPT instance", http.StatusInternalServerError)
-		return
+		log.Println("Failed to store video info in Redis:", err)
 	}
 
-	// Return the video information as a response
+	// Extract timestamps from the transcript
+	timestamps := ExtractTimestampsFromTranscript(videoInfo.Transcript)
+	log.Println("Extracted Timestamps:", timestamps)
+
+	// Trigger snapshot processing (non-blocking)
+	go func() {
+		err = services.CallVideoProcessingService(videoID, videoRequest.VideoUrl, timestamps)
+		if err != nil {
+			log.Println("Failed to process snapshots:", err)
+		}
+	}()
+
+	// Return the video information (transcript) as a response to the client
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(videoInfo)
 }
@@ -71,4 +69,19 @@ func extractVideoID(url string) string {
 		return strings.Split(parts[1], "&")[0]
 	}
 	return ""
+}
+
+// ExtractTimestampsFromTranscript extracts all timestamps from the transcript array
+func ExtractTimestampsFromTranscript(transcript []string) []string {
+	var timestamps []string
+	for _, entry := range transcript {
+		// Split each entry on the colon to get the timestamp and the text
+		parts := strings.Split(entry, ":")
+		if len(parts) > 1 {
+			// The first part before the colon is the timestamp
+			timestamp := strings.TrimSpace(parts[0])
+			timestamps = append(timestamps, timestamp)
+		}
+	}
+	return timestamps
 }
