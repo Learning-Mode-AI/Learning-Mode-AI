@@ -1,71 +1,103 @@
 package services
 
 import (
-	"context"
+	"bytes"
+	"encoding/json"
 	"fmt"
-	"os"
-
-	openai "github.com/sashabaranov/go-openai"
+	"io"
+	"log"
+	"net/http"
+	"time"
 )
 
-type AIChat struct {
-	ChatID   string
-	Client   *openai.Client
-	Messages []openai.ChatCompletionMessage // Store conversation history
+// AIRequest struct to send to AI service
+type AIRequest struct {
+	VideoID      string   `json:"video_id"`
+	Title        string   `json:"title"`
+	Channel      string   `json:"channel"`
+	Transcript   []string `json:"transcript"`
+	UserQuestion string   `json:"user_question"`
 }
 
-// FetchGPTResponse generates a response from GPT-4 based on the provided user question.
-func (ai *AIChat) FetchGPTResponse(userQuestion string) (string, error) {
-	// Append the user question to the conversation history
-	ai.Messages = append(ai.Messages, openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleUser,
-		Content: userQuestion,
-	})
+// InitGPTSession initializes a GPT session for the given video information.
+func InitGPTSession(videoID, title, channel string, transcript []string) error {
+	// Create the AIRequest payload
+	payload := map[string]interface{}{
+		"video_id":   videoID,
+		"title":      title,
+		"channel":    channel,
+		"transcript": transcript,
+	}
 
-	// Call the OpenAI API with the entire conversation history
-	resp, err := ai.Client.CreateChatCompletion(
-		context.Background(),
-		openai.ChatCompletionRequest{
-			Model:    openai.GPT4,
-			Messages: ai.Messages, // Pass the entire conversation history
-		},
-	)
-
+	// Convert payload to JSON
+	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		return "", fmt.Errorf("ChatCompletion error: %v", err)
+		return fmt.Errorf("failed to marshal AIRequest: %v", err)
+	}
+	log.Println("this is the req body::", string(payloadBytes))
+
+	// Create an HTTP POST request
+	aiServiceURL := "http://localhost:8082/ai/init-session"
+	client := &http.Client{Timeout: 10 * time.Second}
+	req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Append the AI response to the conversation history
-	ai.Messages = append(ai.Messages, resp.Choices[0].Message)
+	// Set the content-type header to application/json
+	req.Header.Set("Content-Type", "application/json")
 
-	// Return the generated response
-	return resp.Choices[0].Message.Content, nil
+	// Make the HTTP request
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("failed to initialize GPT session: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body for debugging purposes
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Check if the response is successful
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("AI service returned an error: %v, Body: %s", resp.Status, string(body))
+	}
+
+	return nil
 }
 
-// CreateChatGPTInstance initializes a ChatGPT instance with the video context.
-func CreateChatGPTInstance(videoInfo *VideoInfo) (*AIChat, error) {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	if apiKey == "" {
-		return nil, fmt.Errorf("OpenAI API key is missing")
+// AskGPTQuestion sends a question to the AI service and returns the response.
+func AskGPTQuestion(videoID, userQuestion string) (string, error) {
+	// Create the AIRequest payload
+	reqPayload := AIRequest{
+		VideoID:      videoID,
+		UserQuestion: userQuestion,
 	}
 
-	client := openai.NewClient(apiKey)
-
-	// Initialize the ChatGPT session with the video context
-	initialMessage := fmt.Sprintf(
-		"You are helping a user based on the following video:\n\nTitle: %s\nDescription: %s\nChannel: %s\nTranscript:\n%s",
-		videoInfo.Title, videoInfo.Description, videoInfo.Channel, videoInfo.Transcript,
-	)
-
-	// Create the initial system message
-	systemMessage := openai.ChatCompletionMessage{
-		Role:    openai.ChatMessageRoleSystem,
-		Content: initialMessage,
+	// Convert payload to JSON
+	reqBody, err := json.Marshal(reqPayload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal AIRequest: %v", err)
 	}
 
-	// Create and return AIChat instance, initializing with the system message
-	return &AIChat{
-		Client:   client,
-		Messages: []openai.ChatCompletionMessage{systemMessage}, // Initialize with system message
-	}, nil
+	// Make HTTP POST request to the AI service
+	aiServiceURL := "http://localhost:8082/ai/ask-question"
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Post(aiServiceURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("failed to send question to GPT: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Parse the response
+	var aiResponse map[string]string
+	err = json.NewDecoder(resp.Body).Decode(&aiResponse)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse AI response: %v", err)
+	}
+
+	// Return the GPT response
+	return aiResponse["response"], nil
 }

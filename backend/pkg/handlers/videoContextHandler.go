@@ -45,6 +45,14 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		log.Println("Failed to store video info in Redis:", err)
 	}
 
+	// Initialize GPT session with video info
+	err = services.InitGPTSession(videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
+	if err != nil {
+		log.Println("Failed to initialize GPT session:", err)
+		http.Error(w, "Failed to initialize GPT session", http.StatusInternalServerError)
+		return
+	}
+
 	// Extract timestamps from the transcript
 	timestamps := ExtractTimestampsFromTranscript(videoInfo.Transcript)
 	log.Println("Extracted Timestamps:", timestamps)
