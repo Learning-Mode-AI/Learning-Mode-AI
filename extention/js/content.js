@@ -81,7 +81,9 @@ function askAIQuestion(videoUrl, question) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log('AI Response:', data.response);
+        const aiResponse = data.response;
+        addAIBubble(aiResponse); // Add AI response bubble
+        console.log('AI Response:', aiResponse);
     })
     .catch((error) => {
         console.error('Error:', error);
