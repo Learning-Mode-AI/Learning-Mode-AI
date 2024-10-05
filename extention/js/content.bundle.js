@@ -10,6 +10,7 @@
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   addAIBubble: () => (/* binding */ addAIBubble),
 /* harmony export */   createChatContainer: () => (/* binding */ createChatContainer)
 /* harmony export */ });
 /* harmony import */ var _js_content_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../js/content.js */ "./js/content.js");
@@ -257,23 +258,36 @@ function sendVideoInfoToBackend(videoUrl) {
   });
 }
 function askAIQuestion(videoUrl, question) {
+  // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
+  var videoId = extractVideoID(videoUrl);
+
+  // Make a POST request to the backend API
   fetch('http://localhost:8080/api/question', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify({
-      videoId: extractVideoID(videoUrl),
-      userQuestion: question
+      video_id: videoId,
+      // Updated to match the backend API's expected field name
+      user_question: question // Updated to match the backend API's expected field name
     })
   }).then(function (response) {
-    return response.json();
+    // Check if the response is OK and JSON
+    if (!response.ok) {
+      throw new Error('Failed to get AI response');
+    }
+    return response.json(); // Parse JSON response
   }).then(function (data) {
-    var aiResponse = data.response;
-    addAIBubble(aiResponse); // Add AI response bubble
-    console.log('AI Response:', aiResponse);
+    var aiResponse = data.response; // Extract the AI response from the backend
+    if (aiResponse) {
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(aiResponse); // Add the AI response bubble to the UI
+      console.log('AI Response:', aiResponse);
+    } else {
+      console.error('No AI response found in the response data.');
+    }
   })["catch"](function (error) {
-    console.error('Error:', error);
+    console.error('Error:', error); // Log any errors for debugging
   });
 }
 function extractVideoID(videoUrl) {

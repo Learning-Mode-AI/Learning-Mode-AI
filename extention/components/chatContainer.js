@@ -88,7 +88,7 @@ function addUserBubble(content) {
     chatArea.scrollTop = chatArea.scrollHeight; // Scroll to the bottom
 }
 
-function addAIBubble(content) {
+export function addAIBubble(content) {
     const chatArea = document.getElementById('chat-area');
     const aiBubble = document.createElement('div');
     aiBubble.className = 'chat-bubble ai-bubble';

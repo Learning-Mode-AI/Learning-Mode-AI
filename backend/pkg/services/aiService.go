@@ -71,6 +71,9 @@ func InitGPTSession(videoID, title, channel string, transcript []string) error {
 
 // AskGPTQuestion sends a question to the AI service and returns the response.
 func AskGPTQuestion(videoID, userQuestion string) (string, error) {
+	// Log the incoming parameters for debugging
+	log.Printf("Preparing to ask GPT a question. VideoID: %s, Question: %s", videoID, userQuestion)
+
 	// Create the AIRequest payload
 	reqPayload := AIRequest{
 		VideoID:      videoID,
@@ -83,6 +86,9 @@ func AskGPTQuestion(videoID, userQuestion string) (string, error) {
 		return "", fmt.Errorf("failed to marshal AIRequest: %v", err)
 	}
 
+	// Log the JSON payload for debugging
+	log.Printf("Request payload: %s", string(reqBody))
+
 	// Make HTTP POST request to the AI service
 	aiServiceURL := "http://localhost:8082/ai/ask-question"
 	client := &http.Client{Timeout: 10 * time.Second}
@@ -92,7 +98,7 @@ func AskGPTQuestion(videoID, userQuestion string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	// Read the raw response body
+	// Read the raw response body for logging and debugging
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %v", err)
@@ -103,6 +109,7 @@ func AskGPTQuestion(videoID, userQuestion string) (string, error) {
 
 	// Check if the content type contains "application/json"
 	contentType := resp.Header.Get("Content-Type")
+	log.Printf("Response Content-Type: %s", contentType) // Log the content type for debugging
 	if !strings.Contains(contentType, "application/json") {
 		return "", fmt.Errorf("AI service returned a non-JSON response: %s", string(body))
 	}

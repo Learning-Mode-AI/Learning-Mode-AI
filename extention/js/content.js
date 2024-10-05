@@ -1,6 +1,6 @@
 import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
-import { createChatContainer } from '../components/chatContainer.js';
+import { createChatContainer, addAIBubble} from '../components/chatContainer.js';
 
 function addButtonToPlayerControls(playerControls) {
     const toggleButton = learningModeToggle(toggleLearningMode);
@@ -72,23 +72,41 @@ function sendVideoInfoToBackend(videoUrl) {
 }
 
 export function askAIQuestion(videoUrl, question) {
-    fetch('http://localhost:8080/api/question', { 
+    // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
+    const videoId = extractVideoID(videoUrl);
+
+    // Make a POST request to the backend API
+    fetch('http://localhost:8080/api/question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ videoId: extractVideoID(videoUrl), userQuestion: question })
+        body: JSON.stringify({
+            video_id: videoId,  // Updated to match the backend API's expected field name
+            user_question: question  // Updated to match the backend API's expected field name
+        })
     })
-    .then(response => response.json())
+    .then(response => {
+        // Check if the response is OK and JSON
+        if (!response.ok) {
+            throw new Error('Failed to get AI response');
+        }
+        return response.json();  // Parse JSON response
+    })
     .then(data => {
-        const aiResponse = data.response;
-        addAIBubble(aiResponse); // Add AI response bubble
-        console.log('AI Response:', aiResponse);
+        const aiResponse = data.response;  // Extract the AI response from the backend
+        if (aiResponse) {
+            addAIBubble(aiResponse);  // Add the AI response bubble to the UI
+            console.log('AI Response:', aiResponse);
+        } else {
+            console.error('No AI response found in the response data.');
+        }
     })
     .catch((error) => {
-        console.error('Error:', error);
+        console.error('Error:', error);  // Log any errors for debugging
     });
 }
+
 
 function extractVideoID(videoUrl) {
     // Define the regex to match YouTube video ID in URLs
