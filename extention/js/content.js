@@ -71,7 +71,7 @@ function sendVideoInfoToBackend(videoUrl) {
     });
 }
 
-function askAIQuestion(videoUrl, question) {
+export function askAIQuestion(videoUrl, question) {
     fetch('http://localhost:8080/api/question', { 
         method: 'POST',
         headers: {
@@ -88,4 +88,15 @@ function askAIQuestion(videoUrl, question) {
     .catch((error) => {
         console.error('Error:', error);
     });
+}
+
+function extractVideoID(videoUrl) {
+    // Define the regex to match YouTube video ID in URLs
+    const videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+
+    // Execute the regex pattern to match the video ID
+    const match = videoUrl.match(videoIDPattern);
+
+    // Return the video ID if found, otherwise null
+    return match ? match[1] : null;
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -91,13 +92,34 @@ func AskGPTQuestion(videoID, userQuestion string) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	// Parse the response
+	// Read the raw response body
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Log the raw response for debugging
+	log.Printf("Raw AI Response: %s", string(body))
+
+	// Check if the content type contains "application/json"
+	contentType := resp.Header.Get("Content-Type")
+	if !strings.Contains(contentType, "application/json") {
+		return "", fmt.Errorf("AI service returned a non-JSON response: %s", string(body))
+	}
+
+	// Parse the JSON response
 	var aiResponse map[string]string
-	err = json.NewDecoder(resp.Body).Decode(&aiResponse)
+	err = json.Unmarshal(body, &aiResponse)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse AI response: %v", err)
 	}
 
+	// Check if "response" field is present
+	gptResponse, ok := aiResponse["response"]
+	if !ok {
+		return "", fmt.Errorf("AI response did not contain 'response' field: %v", aiResponse)
+	}
+
 	// Return the GPT response
-	return aiResponse["response"], nil
+	return gptResponse, nil
 }

@@ -1,3 +1,5 @@
+import { askAIQuestion } from '../js/content.js';
+
 export function createChatContainer(parentElement, width, height) {
     const chatContainer = document.createElement('div');
     chatContainer.id = 'custom-chat-container';
