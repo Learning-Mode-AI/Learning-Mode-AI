@@ -5,15 +5,13 @@ import (
 	"YOUTUBE-LEARNING-MODE/pkg/services"
 	"log"
 	"net/http"
-	"path/filepath"
 
 	"github.com/gorilla/handlers"
 	"github.com/joho/godotenv"
 )
 
 func init() {
-	envPath := filepath.Join("..", ".env")
-	err := godotenv.Load(envPath)
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
