@@ -12,7 +12,7 @@ import (
 // CallVideoProcessingService sends a request to the video processing service
 func CallVideoProcessingService(videoID, videoURL string, timestamps []string) error {
 	// Define the URL for the video processing service
-	videoProcessingServiceURL := "http://localhost:8081/process-snapshots"
+	videoProcessingServiceURL := "http://video-processing-service:8081/process-snapshots"
 
 	// Create the payload to send (videoID, videoURL, and timestamps)
 	payload := map[string]interface{}{

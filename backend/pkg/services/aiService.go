@@ -38,7 +38,7 @@ func InitGPTSession(videoID, title, channel string, transcript []string) error {
 	log.Println("this is the req body::", string(payloadBytes))
 
 	// Create an HTTP POST request
-	aiServiceURL := "http://localhost:8082/ai/init-session"
+	aiServiceURL := "http://ai-service:8082/ai/init-session"
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
@@ -90,7 +90,7 @@ func AskGPTQuestion(videoID, userQuestion string) (string, error) {
 	log.Printf("Request payload: %s", string(reqBody))
 
 	// Make HTTP POST request to the AI service
-	aiServiceURL := "http://localhost:8082/ai/ask-question"
+	aiServiceURL := "http://ai-service:8082/ai/ask-question"
 	client := &http.Client{Timeout: 10 * time.Second}
 	resp, err := client.Post(aiServiceURL, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
