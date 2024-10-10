@@ -1,6 +1,7 @@
 package services
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/config"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -38,7 +39,7 @@ func InitGPTSession(videoID, title, channel string, transcript []string) error {
 	log.Println("this is the req body::", string(payloadBytes))
 
 	// Create an HTTP POST request
-	aiServiceURL := "http://ai-service:8082/ai/init-session"
+	aiServiceURL := fmt.Sprintf("%s/ai/init-session", config.AiServiceURL)
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
@@ -90,8 +91,8 @@ func AskGPTQuestion(videoID, userQuestion string) (string, error) {
 	log.Printf("Request payload: %s", string(reqBody))
 
 	// Make HTTP POST request to the AI service
-	aiServiceURL := "http://ai-service:8082/ai/ask-question"
-	client := &http.Client{Timeout: 10 * time.Second}
+	aiServiceURL := fmt.Sprintf("%s/ai/ask-question", config.AiServiceURL)
+	client := &http.Client{Timeout: 20 * time.Second}
 	resp, err := client.Post(aiServiceURL, "application/json", bytes.NewBuffer(reqBody))
 	if err != nil {
 		return "", fmt.Errorf("failed to send question to GPT: %v", err)

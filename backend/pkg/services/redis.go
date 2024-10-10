@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"time"
 
+	"YOUTUBE-LEARNING-MODE/pkg/config"
+
 	"github.com/go-redis/redis/v8"
 )
 
@@ -16,9 +18,9 @@ var rdb *redis.Client
 
 func InitRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "redis:6379", // Replace with Redis server address
-		Password: "",           // If no password set
-		DB:       0,            // Use default DB
+		Addr:     config.RedisHost, // Replace with Redis server address
+		Password: "",               // If no password set
+		DB:       0,                // Use default DB
 	})
 }
 

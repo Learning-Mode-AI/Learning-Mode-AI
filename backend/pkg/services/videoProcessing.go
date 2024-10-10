@@ -1,6 +1,7 @@
 package services
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/config"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -12,7 +13,7 @@ import (
 // CallVideoProcessingService sends a request to the video processing service
 func CallVideoProcessingService(videoID, videoURL string, timestamps []string) error {
 	// Define the URL for the video processing service
-	videoProcessingServiceURL := "http://video-processing-service:8081/process-snapshots"
+	videoProcessingServiceURL := fmt.Sprintf("%s/process-snapshots", config.VideoProcessingServiceURL)
 
 	// Create the payload to send (videoID, videoURL, and timestamps)
 	payload := map[string]interface{}{

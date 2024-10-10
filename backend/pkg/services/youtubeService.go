@@ -1,6 +1,7 @@
 package services
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/config"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -20,7 +21,7 @@ type VideoInfo struct {
 // FetchVideoInfo sends a request to the Python service to get video information and transcript
 func FetchVideoInfo(videoID string) (*VideoInfo, error) {
 	// Define the URL to call the Python service
-	pythonServiceURL := fmt.Sprintf("http://youtube-info-service:8000/video-info/%s", videoID)
+	pythonServiceURL := fmt.Sprintf("%s/video-info/%s", config.YoutubeInfoServiceURL, videoID)
 
 	// Create an HTTP GET request to the Python service
 	client := &http.Client{Timeout: 10 * time.Second}

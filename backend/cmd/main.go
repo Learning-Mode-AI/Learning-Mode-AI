@@ -1,6 +1,7 @@
 package main
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/config"
 	"YOUTUBE-LEARNING-MODE/pkg/router"
 	"YOUTUBE-LEARNING-MODE/pkg/services"
 	"log"
@@ -15,6 +16,8 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+	config.InitConfig()
+	services.InitRedis()
 }
 
 func main() {
