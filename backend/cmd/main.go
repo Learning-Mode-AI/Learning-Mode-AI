@@ -22,7 +22,6 @@ func init() {
 
 func main() {
 	r := router.NewRouter() // Initialize your router
-	services.InitRedis()
 
 	// Set CORS options
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})

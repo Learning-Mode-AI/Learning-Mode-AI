@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/context"
 	"YOUTUBE-LEARNING-MODE/pkg/services"
 	"encoding/json"
 	"log"
@@ -45,13 +46,14 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		log.Println("Failed to store video info in Redis:", err)
 	}
 
-	// Initialize GPT session with video info
-	err = services.InitGPTSession(videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
+	// Initialize Assistant session with video info
+	assistantID, err := services.InitGPTSession(videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
 	if err != nil {
-		log.Println("Failed to initialize GPT session:", err)
-		http.Error(w, "Failed to initialize GPT session", http.StatusInternalServerError)
+		log.Println("Failed to initialize assistant session:", err)
+		http.Error(w, "Failed to initialize assistant session", http.StatusInternalServerError)
 		return
 	}
+	context.Instance.AssistantIDs.Store(videoID, assistantID)
 
 	// Extract timestamps from the transcript
 	timestamps := ExtractTimestampsFromTranscript(videoInfo.Transcript)

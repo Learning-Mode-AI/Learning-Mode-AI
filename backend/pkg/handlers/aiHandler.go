@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"YOUTUBE-LEARNING-MODE/pkg/context"
 	"YOUTUBE-LEARNING-MODE/pkg/services"
 	"encoding/json"
 	"log"
@@ -32,8 +33,16 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Retrieve the assistantID from context using videoID
+	assistantIDValue, ok := context.Instance.AssistantIDs.Load(questionReq.VideoID)
+	if !ok {
+		http.Error(w, "Assistant session not found for this video", http.StatusBadRequest)
+		return
+	}
+	assistantID, _ := assistantIDValue.(string)
+
 	// Ask GPT the question
-	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, questionReq.UserQuestion)
+	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, assistantID, questionReq.UserQuestion)
 	if err != nil {
 		log.Printf("Failed to get AI response: %v", err)
 		http.Error(w, "Failed to get AI response", http.StatusInternalServerError)
