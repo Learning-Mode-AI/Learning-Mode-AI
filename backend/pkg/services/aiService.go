@@ -87,15 +87,16 @@ func InitGPTSession(videoID, title, channel string, transcript []string) (string
 }
 
 // AskGPTQuestion sends a question to the AI service using the assistant_id and returns the response.
-func AskGPTQuestion(videoID, assistantID, userQuestion string) (string, error) {
+func AskGPTQuestion(videoID, assistantID, userQuestion string, timestamp int) (string, error) {
 	// Log the incoming parameters for debugging
-	log.Printf("Preparing to ask GPT a question. VideoID: %s, AssistantID: %s, Question: %s", videoID, assistantID, userQuestion)
+	log.Printf("Preparing to ask GPT a question. VideoID: %s, AssistantID: %s, Question: %s, Timestamp: %d", videoID, assistantID, userQuestion, timestamp)
 
 	// Create the request payload
 	reqPayload := map[string]interface{}{
 		"video_id":     videoID,
 		"assistant_id": assistantID,
 		"question":     userQuestion,
+		"timestamp":    timestamp,
 	}
 
 	// Convert payload to JSON
