@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"YOUTUBE-LEARNING-MODE/pkg/config"
+	"Learning-Mode-AI/pkg/config"
 
 	"github.com/go-redis/redis/v8"
 )

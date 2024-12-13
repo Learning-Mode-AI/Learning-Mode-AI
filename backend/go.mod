@@ -1,4 +1,4 @@
-module YOUTUBE-LEARNING-MODE
+module Learning-Mode-AI
 
 go 1.21.5
 

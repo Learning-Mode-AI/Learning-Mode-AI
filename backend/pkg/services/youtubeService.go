@@ -1,7 +1,7 @@
 package services
 
 import (
-	"YOUTUBE-LEARNING-MODE/pkg/config"
+	"Learning-Mode-AI/pkg/config"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"

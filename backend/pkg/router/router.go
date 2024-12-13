@@ -1,7 +1,7 @@
 package router
 
 import (
-	"YOUTUBE-LEARNING-MODE/pkg/handlers"
+	"Learning-Mode-AI/pkg/handlers"
 
 	"github.com/gorilla/mux"
 )

@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"YOUTUBE-LEARNING-MODE/pkg/context"
-	"YOUTUBE-LEARNING-MODE/pkg/services"
+	"Learning-Mode-AI/pkg/context"
+	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
 	"log"
 	"net/http"

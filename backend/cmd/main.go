@@ -1,9 +1,9 @@
 package main
 
 import (
-	"YOUTUBE-LEARNING-MODE/pkg/config"
-	"YOUTUBE-LEARNING-MODE/pkg/router"
-	"YOUTUBE-LEARNING-MODE/pkg/services"
+	"Learning-Mode-AI/pkg/config"
+	"Learning-Mode-AI/pkg/router"
+	"Learning-Mode-AI/pkg/services"
 	"log"
 	"net/http"
 
