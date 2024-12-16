@@ -1,4 +1,4 @@
-# PUT THIS FILE IN A SPERATE FOLDER AND MOVE ALL THE YOUTUBE-LEARNING-MODE SERVICES INTO THAT FOLDER
+# PUT THIS FILE IN A SPERATE FOLDER AND MOVE ALL THE Learning-Mode-AI SERVICES INTO THAT FOLDER
 # FOR IT TO WORK
 
 
@@ -17,7 +17,7 @@ services:
 
   main-backend:
     build:
-      context: ./Youtube-Learning-Mode/backend
+      context: ./Learning-Mode-AI/backend
     container_name: main-backend
     ports:
       - "8080:8080"
@@ -28,8 +28,8 @@ services:
 
   youtube-info-service:
     build:
-      context: ./Youtube-Learning-Mode-Info-Service
-    container_name: youtube-info-service
+      context: ./Learning-Mode-AI-info-service
+    container_name: info-service
     ports:
       - "8000:8000"
     depends_on:
@@ -39,7 +39,7 @@ services:
 
   ai-service:
     build:
-      context: ./Youtube-Learning-Mode-Ai-Service
+      context: ./Learning-Mode-AI-ai-Service
     container_name: ai-service
     ports:
       - "8082:8082"
@@ -50,8 +50,8 @@ services:
 
   video-processing-service:
     build:
-      context: ./Youtube-Learning-Mode-Video-Processing-Service
-    container_name: video-processing-service
+      context: ./Learning-Mode-AI-snapshot-Service
+    container_name: snapshot-service
     ports:
       - "8081:8081"
     depends_on:
