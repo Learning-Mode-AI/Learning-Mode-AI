@@ -26,10 +26,18 @@ function createChatContainer(parentElement, width, height) {
   chatContainer.style.display = 'flex';
   chatContainer.style.flexDirection = 'column';
   // Add blur effect with background color
-  chatContainer.style.backgroundColor = 'rgba(236, 176, 176, 0.6)'; // Semi-transparent #ECB0B0
-  chatContainer.style.backdropFilter = 'blur(10px)'; // Apply blur effect
-  chatContainer.style.webkitBackdropFilter = 'blur(10px)'; // Safari compatibility
-  chatContainer.style.borderTop = '1px solid rgba(0, 0, 0, 0.1)'; // Light border on top
+  chatContainer.style.position = "relative"; 
+  chatContainer.style.backgroundImage = "url('https://i.imgur.com/ijJQA28.png')";
+  chatContainer.style.backgroundSize = "cover";
+  chatContainer.style.backgroundPosition = "center";
+  chatContainer.style.backgroundRepeat = "no-repeat";
+  chatContainer.style.position = "relative";
+
+
+  
+
+  
+  
   // Header section
   const header = document.createElement('div');
   header.style.backgroundColor = '#000';
@@ -108,6 +116,7 @@ inputArea.appendChild(sendButton);
   chatContainer.appendChild(header);
   chatContainer.appendChild(chatArea);
   chatContainer.appendChild(inputArea);
+  
 
   // Append the chat container to the parent element
   parentElement.appendChild(chatContainer);
@@ -134,6 +143,7 @@ function addUserBubble(content) {
   userBubble.style.borderRadius = '12px';
   userBubble.style.marginBottom = '10px';
   userBubble.style.maxWidth = '70%';
+  userBubble.style.fontWeight = 'bold';
   userBubble.innerText = content;
   chatArea.appendChild(userBubble);
   chatArea.scrollTop = chatArea.scrollHeight; // Scroll to the bottom
@@ -149,6 +159,7 @@ function addAIBubble(content) {
   aiBubble.style.borderRadius = '12px';
   aiBubble.style.marginBottom = '10px';
   aiBubble.style.maxWidth = '70%';
+  aiBubble.style.fontWeight = 'bold';
   aiBubble.innerText = content;
   chatArea.appendChild(aiBubble);
   chatArea.scrollTop = chatArea.scrollHeight; // Scroll to the bottom
