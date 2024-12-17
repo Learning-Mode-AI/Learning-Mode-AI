@@ -75,6 +75,10 @@ export function askAIQuestion(videoUrl, question) {
     // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
     const videoId = extractVideoID(videoUrl);
 
+     // Access the video element to grab the current timestamp
+     const videoElement = document.querySelector('video');
+     const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
+
     // Make a POST request to the backend API
     fetch('http://localhost:8080/api/question', {
         method: 'POST',
@@ -83,7 +87,8 @@ export function askAIQuestion(videoUrl, question) {
         },
         body: JSON.stringify({
             video_id: videoId,  // Updated to match the backend API's expected field name
-            user_question: question  // Updated to match the backend API's expected field name
+            user_question: question,  // Updated to match the backend API's expected field name
+            timestamp: currentTimestamp // Current timestamp of the video
         })
     })
     .then(response => {
