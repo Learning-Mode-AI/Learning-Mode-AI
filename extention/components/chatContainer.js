@@ -10,7 +10,7 @@ export function createChatContainer(parentElement, width, height) {
     chatContainer.style.overflow = 'hidden';
     chatContainer.style.display = 'flex';
     chatContainer.style.flexDirection = 'column';
-    chatContainer.style.backgroundColor = '#181818';
+    chatContainer.style.backgroundColor = '#FBFBFB';
 
     // Chat area for displaying bubbles
     const chatArea = document.createElement('div');
@@ -43,7 +43,7 @@ export function createChatContainer(parentElement, width, height) {
     sendButton.style.padding = '10px';
     sendButton.style.border = 'none';
     sendButton.style.borderRadius = '4px';
-    sendButton.style.backgroundColor = '#3ea6ff';
+    sendButton.style.backgroundColor = '#DD1313';
     sendButton.style.color = '#fff';
     sendButton.style.cursor = 'pointer';
     sendButton.style.fontSize = '14px';
@@ -76,8 +76,8 @@ function addUserBubble(content) {
     const userBubble = document.createElement('div');
     userBubble.className = 'chat-bubble user-bubble';
     userBubble.style.alignSelf = 'flex-end';
-    userBubble.style.backgroundColor = '#3ea6ff';
-    userBubble.style.color = '#fff';
+    userBubble.style.backgroundColor = '#FBFBFB';
+    userBubble.style.color = '#1E1E1E';
     userBubble.style.padding = '10px';
     userBubble.style.borderRadius = '12px';
     userBubble.style.marginBottom = '10px';
@@ -93,8 +93,8 @@ export function addAIBubble(content) {
     const aiBubble = document.createElement('div');
     aiBubble.className = 'chat-bubble ai-bubble';
     aiBubble.style.alignSelf = 'flex-start';
-    aiBubble.style.backgroundColor = '#444';
-    aiBubble.style.color = '#fff';
+    aiBubble.style.backgroundColor = '#ECB0B0';
+    aiBubble.style.color = '#1E1E1E';
     aiBubble.style.padding = '10px';
     aiBubble.style.borderRadius = '12px';
     aiBubble.style.marginBottom = '10px';
