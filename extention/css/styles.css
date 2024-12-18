@@ -1,14 +1,93 @@
+/* Chat Container */
+#custom-chat-container {
+    width: 100%;
+    height: 600px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background-image: url('https://i.imgur.com/ijJQA28.png'); /* Background image */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Header */
+#custom-chat-container .header {
+    background-color: #000;
+    color: #FFF;
+    padding: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Chat Area */
+#chat-area {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: #FFF;
+}
+
+/* Input Area */
+.input-area {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    position: relative;
+}
+
+/* Input Field */
+#chat-input {
+    flex: 1;
+    padding: 12px 50px 12px 12px;
+    border-radius: 25px;
+    border: 1px solid #DBDBDB;
+    font-size: 14px;
+    outline: none;
+}
+
+/* Send Button */
+.send-button {
+    position: absolute;
+    right: 18px;
+    width: 35px;
+    height: 35px;
+    border: none;
+    border-radius: 50%;
+    background-color: #DD1313;
+    color: #FFF;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.send-button:hover {
+    background-color: #B30F0F;
+}
+
+/* Bubbles */
 .chat-bubble {
-    word-wrap: break-word;
     padding: 10px;
     border-radius: 12px;
     margin-bottom: 10px;
     max-width: 70%;
+    font-weight: bold;
 }
 
 .user-bubble {
     align-self: flex-end;
-    background-color: #FBFBFB;
+    background-color: #DBDBDB;
     color: #1E1E1E;
 }
 
@@ -18,29 +97,29 @@
     color: #1E1E1E;
 }
 
-/* body, .pink-background {
-    background-color: #FFC0CB; 
-    margin: 0;
-    padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-}
 
-button {
-    background-color: #ECB080; 
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 10px 20px;
-    font-size: 16px;
+/* Learning Mode Toggle */
+.learning-mode-switch-container {
+    width: 36px;
+    height: 18px;
+    background-color: #ccc;
+    border-radius: 9px;
+    position: relative;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
+    transition: background-color 0.3s;
 }
 
-button:hover {
-    background-color: #ECB080; 
-} */
+.learning-mode-switch-circle {
+    width: 16px;
+    height: 16px;
+    background-color: #fff;
+    border-radius: 50%;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    transition: left 0.3s;
+}
 
+.learning-mode-switch-container:hover {
+    background-color: #bbb; 
+}
