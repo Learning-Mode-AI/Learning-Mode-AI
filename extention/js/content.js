@@ -16,7 +16,7 @@ function toggleLearningMode() {
 
     if (!isOn) {
         switchButton.setAttribute('aria-checked', 'true');
-        switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#3ea6ff';
+        switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ECB0B0';
         toggleCircle.style.left = '19px';
         activateLearningMode();
     } else {
