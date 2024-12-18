@@ -26,22 +26,17 @@ function createChatContainer(parentElement, width, height) {
   chatContainer.style.display = 'flex';
   chatContainer.style.flexDirection = 'column';
   // Add blur effect with background color
-  chatContainer.style.position = "relative"; 
+  chatContainer.style.position = "relative";
   chatContainer.style.backgroundImage = "url('https://i.imgur.com/ijJQA28.png')";
   chatContainer.style.backgroundSize = "cover";
   chatContainer.style.backgroundPosition = "center";
   chatContainer.style.backgroundRepeat = "no-repeat";
   chatContainer.style.position = "relative";
 
-
-  
-
-  
-  
   // Header section
-  const header = document.createElement('div');
+  var header = document.createElement('div');
   header.style.backgroundColor = '#000';
-  header.style.color = '#FFF'; 
+  header.style.color = '#FFF';
   header.style.padding = '10px';
   header.style.fontSize = '16px';
   header.style.fontWeight = 'bold';
@@ -54,69 +49,66 @@ function createChatContainer(parentElement, width, height) {
   chatArea.style.flex = '1';
   chatArea.style.padding = '10px';
   chatArea.style.overflowY = 'auto';
-  chatArea.style.display = 'flex'; 
-  chatArea.style.flexDirection = 'column'; 
-  chatArea.style.gap = '10px'; 
+  chatArea.style.display = 'flex';
+  chatArea.style.flexDirection = 'column';
+  chatArea.style.gap = '10px';
   chatArea.style.overflowY = 'auto';
   chatArea.style.color = '#fff';
-  
 
- // Input area for sending messages
-const inputArea = document.createElement('div');
-inputArea.style.display = 'flex';
-inputArea.style.alignItems = 'center';
-inputArea.style.padding = '10px';
-inputArea.style.position = 'relative';
+  // Input area for sending messages
+  var inputArea = document.createElement('div');
+  inputArea.style.display = 'flex';
+  inputArea.style.alignItems = 'center';
+  inputArea.style.padding = '10px';
+  inputArea.style.position = 'relative';
 
-// Input field
-const inputField = document.createElement('input');
-inputField.type = 'text';
-inputField.id = 'chat-input';
-inputField.placeholder = 'Write a message...';
-inputField.style.flex = '1';
-inputField.style.padding = '12px 50px 12px 12px'; // Extra padding for button space
-inputField.style.borderRadius = '25px';
-inputField.style.border = '1px solid #DBDBDB';
-inputField.style.fontSize = '14px';
-inputField.style.outline = 'none';
+  // Input field
+  var inputField = document.createElement('input');
+  inputField.type = 'text';
+  inputField.id = 'chat-input';
+  inputField.placeholder = 'Write a message...';
+  inputField.style.flex = '1';
+  inputField.style.padding = '12px 50px 12px 12px'; // Extra padding for button space
+  inputField.style.borderRadius = '25px';
+  inputField.style.border = '1px solid #DBDBDB';
+  inputField.style.fontSize = '14px';
+  inputField.style.outline = 'none';
 
-// Circular send button
-const sendButton = document.createElement('button');
-sendButton.innerHTML = '➤'; // Right arrow icon
-sendButton.style.position = 'absolute';
-sendButton.style.right = '18px'; // Position inside the input
-sendButton.style.width = '35px';
-sendButton.style.height = '35px';
-sendButton.style.border = 'none';
-sendButton.style.borderRadius = '50%'; // Circular shape
-sendButton.style.backgroundColor = '#DD1313'; // Accent color
-sendButton.style.color = '#FFF';
-sendButton.style.fontSize = '16px';
-sendButton.style.cursor = 'pointer';
-sendButton.style.display = 'flex';
-sendButton.style.justifyContent = 'center';
-sendButton.style.alignItems = 'center';
-sendButton.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-sendButton.style.transition = 'background-color 0.3s ease';
+  // Circular send button
+  var sendButton = document.createElement('button');
+  sendButton.innerHTML = '➤'; // Right arrow icon
+  sendButton.style.position = 'absolute';
+  sendButton.style.right = '18px'; // Position inside the input
+  sendButton.style.width = '35px';
+  sendButton.style.height = '35px';
+  sendButton.style.border = 'none';
+  sendButton.style.borderRadius = '50%'; // Circular shape
+  sendButton.style.backgroundColor = '#DD1313'; // Accent color
+  sendButton.style.color = '#FFF';
+  sendButton.style.fontSize = '16px';
+  sendButton.style.cursor = 'pointer';
+  sendButton.style.display = 'flex';
+  sendButton.style.justifyContent = 'center';
+  sendButton.style.alignItems = 'center';
+  sendButton.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+  sendButton.style.transition = 'background-color 0.3s ease';
 
-// Hover effect for button
-sendButton.addEventListener('mouseover', () => {
+  // Hover effect for button
+  sendButton.addEventListener('mouseover', function () {
     sendButton.style.backgroundColor = '#B30F0F';
-});
-sendButton.addEventListener('mouseout', () => {
+  });
+  sendButton.addEventListener('mouseout', function () {
     sendButton.style.backgroundColor = '#DD1313';
-});
+  });
 
-// Append input field and button to input area
-inputArea.appendChild(inputField);
-inputArea.appendChild(sendButton);
-
+  // Append input field and button to input area
+  inputArea.appendChild(inputField);
+  inputArea.appendChild(sendButton);
 
   // Append chat area and input area to chat container
   chatContainer.appendChild(header);
   chatContainer.appendChild(chatArea);
   chatContainer.appendChild(inputArea);
-  
 
   // Append the chat container to the parent element
   parentElement.appendChild(chatContainer);
@@ -128,7 +120,7 @@ inputArea.appendChild(sendButton);
       addUserBubble(userQuestion);
       inputField.value = '';
       var videoUrl = window.location.href;
-      (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
+      (0, _js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
     }
   });
 }
@@ -259,7 +251,7 @@ function toggleLearningMode() {
   var isOn = switchButton.getAttribute('aria-checked') === 'true';
   if (!isOn) {
     switchButton.setAttribute('aria-checked', 'true');
-    switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#3ea6ff';
+    switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ECB0B0';
     toggleCircle.style.left = '19px';
     activateLearningMode();
   } else {
