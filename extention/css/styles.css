@@ -14,6 +14,17 @@
     background-repeat: no-repeat;
 }
 
+#custom-chat-container.fullscreen {
+    position: fixed; 
+    width: 400px; 
+    height: 600px;
+    bottom: 80px; 
+    right: 20px; 
+    opacity: 0.5;
+    z-index: 10000;
+}
+
+
 /* Header */
 #custom-chat-container .header {
     background-color: #000;

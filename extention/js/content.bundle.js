@@ -60,6 +60,23 @@ function createChatContainer(parentElement) {
       (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
     }
   });
+  document.addEventListener('fullscreenchange', function () {
+    var chatContainer = document.getElementById('custom-chat-container');
+    var isFullscreen = !!document.fullscreenElement;
+    var secondaryInner = document.getElementById('secondary-inner');
+    if (chatContainer) {
+      if (isFullscreen) {
+        document.body.appendChild(chatContainer);
+        chatContainer.classList.add('fullscreen');
+      } else {
+        if (secondaryInner) {
+          secondaryInner.appendChild(chatContainer);
+          chatContainer.classList.remove('fullscreen');
+          chatContainer.style.position = 'relative';
+        }
+      }
+    }
+  });
 }
 function addUserBubble(content) {
   var chatArea = document.getElementById('chat-area');
@@ -170,13 +187,28 @@ function toggleLearningMode() {
 function activateLearningMode() {
   var sidebar = document.getElementById('related');
   var secondaryInner = document.getElementById('secondary-inner');
+  var chatContainer = document.getElementById('custom-chat-container');
+  var isFullscreen = !!document.fullscreenElement;
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none'; // Hide the sidebar
 
     var videoUrl = window.location.href; // Grab the video URL
     sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
 
-    (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+    if (isFullscreen) {
+      if (!chatContainer) {
+        (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(document.body); // Append to body in full-screen
+        chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.classList.add('fullscreen');
+      }
+    } else {
+      if (!chatContainer) {
+        (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+      }
+    }
+    if (sidebar && !isFullscreen) {
+      sidebar.style.display = 'none';
+    }
   }
 }
 function deactivateLearningMode() {

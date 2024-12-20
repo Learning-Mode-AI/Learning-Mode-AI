@@ -47,6 +47,25 @@ export function createChatContainer(parentElement) {
             askAIQuestion(videoUrl, userQuestion);
         }
     });
+
+    document.addEventListener('fullscreenchange', () => {
+        const chatContainer = document.getElementById('custom-chat-container');
+        const isFullscreen = !!document.fullscreenElement;
+        const secondaryInner = document.getElementById('secondary-inner');
+
+        if (chatContainer) {
+            if (isFullscreen) {
+                document.body.appendChild(chatContainer);
+                chatContainer.classList.add('fullscreen');
+            } else {
+                if (secondaryInner) {
+                    secondaryInner.appendChild(chatContainer);
+                    chatContainer.classList.remove('fullscreen');
+                    chatContainer.style.position = 'relative';
+                }
+            }
+        }
+    });
 }
 
 export function addUserBubble(content) {
