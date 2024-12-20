@@ -23,7 +23,16 @@ function createChatContainer(parentElement) {
   // Header
   var header = document.createElement('div');
   header.className = 'header';
-  header.innerText = 'Chat-Bot';
+
+  // Toggle Button
+  var toggleButton = document.createElement('button');
+  toggleButton.className = 'toggle-button';
+  toggleButton.innerHTML = '☰';
+  toggleButton.title = 'Toggle Visibility';
+  header.appendChild(toggleButton);
+  var headerTitle = document.createElement('span');
+  headerTitle.innerText = 'Chat-Bot';
+  header.appendChild(headerTitle);
 
   // Chat Area
   var chatArea = document.createElement('div');
@@ -49,6 +58,14 @@ function createChatContainer(parentElement) {
   chatContainer.appendChild(chatArea);
   chatContainer.appendChild(inputArea);
   parentElement.appendChild(chatContainer);
+
+  // Toggle visibility of chatArea and inputArea
+  toggleButton.addEventListener('click', function () {
+    var isVisible = chatArea.style.display !== 'none';
+    chatArea.style.display = isVisible ? 'none' : 'flex';
+    inputArea.style.display = isVisible ? 'none' : 'flex';
+    chatContainer.style.height = isVisible ? '50px' : '600px';
+  });
 
   // Event listener for send button
   sendButton.addEventListener('click', function () {
