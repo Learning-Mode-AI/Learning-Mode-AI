@@ -76,6 +76,7 @@ export function createChatContainer(parentElement) {
             if (isFullscreen) {
                 document.body.appendChild(chatContainer);
                 chatContainer.classList.add('fullscreen');
+                chatContainer.style.position = 'fixed'; 
             } else {
                 if (secondaryInner) {
                     secondaryInner.appendChild(chatContainer);
