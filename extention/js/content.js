@@ -30,6 +30,8 @@ function toggleLearningMode() {
 function activateLearningMode() {
     const sidebar = document.getElementById('related');
     const secondaryInner = document.getElementById('secondary-inner');
+    let chatContainer = document.getElementById('custom-chat-container');
+    const isFullscreen = !!document.fullscreenElement;
 
     if (sidebar && secondaryInner) {
         sidebar.style.display = 'none'; // Hide the sidebar
@@ -37,7 +39,21 @@ function activateLearningMode() {
         const videoUrl = window.location.href; // Grab the video URL
         sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
 
-        createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+        if (isFullscreen) {
+            if (!chatContainer) {
+                createChatContainer(document.body); // Append to body in full-screen
+                chatContainer = document.getElementById('custom-chat-container');
+                chatContainer.classList.add('fullscreen');
+            }
+        } else {
+            if (!chatContainer) {
+                createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+            }
+        }
+
+        if (sidebar && !isFullscreen) {
+            sidebar.style.display = 'none';
+        }
     }
 }
 

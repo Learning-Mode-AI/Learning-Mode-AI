@@ -12,16 +12,84 @@
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    transition: height 0.3s ease; 
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 16px; 
+    font-weight: 400; 
 }
 
-/* Header */
-#custom-chat-container .header {
-    background-color: #000;
-    color: #FFF;
-    padding: 10px;
+#custom-chat-container.fullscreen {
+    position: fixed;
+    width: 400px;
+    height: 600px;
+    bottom: 80px;
+    right: 20px;
+    z-index: 10000;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: none; 
+}
+
+/* Semi-Transparent Background Image in Full-Screen */
+#custom-chat-container.fullscreen::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://i.imgur.com/ijJQA28.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.6; 
+    z-index: 1; 
+}
+
+#custom-chat-container.fullscreen > * {
+    position: relative;
+    z-index: 2; 
+    opacity: 1;
+}
+
+
+
+/* Chat Header */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: black;
+    font-family: 'Gabarito', sans-serif; 
     font-size: 16px;
-    font-weight: bold;
+    color: white;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+/* Toggle Button */
+.toggle-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.toggle-button:hover {
+    color: #ECB0B0; 
+}
+
+/* Chat Header Title */
+.header span {
+    flex: 1;
     text-align: center;
+    font-weight: bold;
 }
 
 /* Chat Area */
@@ -33,6 +101,8 @@
     flex-direction: column;
     gap: 10px;
     color: #FFF;
+    font-size: 16px;
+    font-weight: 400;
 }
 
 /* Input Area */
@@ -51,6 +121,9 @@
     border: 1px solid #DBDBDB;
     font-size: 14px;
     outline: none;
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 16px;
+    font-weight: 400;
 }
 
 /* Send Button */
@@ -62,6 +135,7 @@
     border: none;
     border-radius: 50%;
     background-color: #DD1313;
+    font-size: 20px; 
     color: #FFF;
     font-size: 16px;
     cursor: pointer;
@@ -82,7 +156,7 @@
     border-radius: 12px;
     margin-bottom: 10px;
     max-width: 70%;
-    font-weight: bold;
+    font-weight: 400;
 }
 
 .user-bubble {

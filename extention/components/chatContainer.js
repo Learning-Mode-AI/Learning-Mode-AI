@@ -7,7 +7,18 @@ export function createChatContainer(parentElement) {
     // Header
     const header = document.createElement('div');
     header.className = 'header';
-    header.innerText = 'Chat-Bot';
+
+    // Toggle Button
+    const toggleButton = document.createElement('button');
+    toggleButton.className = 'toggle-button';
+    toggleButton.innerHTML = '☰';
+    toggleButton.title = 'Toggle Visibility';
+
+    header.appendChild(toggleButton);
+
+    const headerTitle = document.createElement('span');
+    headerTitle.innerText = 'Chat-Bot';
+    header.appendChild(headerTitle);
 
     // Chat Area
     const chatArea = document.createElement('div');
@@ -37,6 +48,14 @@ export function createChatContainer(parentElement) {
 
     parentElement.appendChild(chatContainer);
 
+    // Toggle visibility of chatArea and inputArea
+    toggleButton.addEventListener('click', () => {
+        const isVisible = chatArea.style.display !== 'none';
+        chatArea.style.display = isVisible ? 'none' : 'flex';
+        inputArea.style.display = isVisible ? 'none' : 'flex';
+        chatContainer.style.height = isVisible ? '50px' : '600px';
+    });
+
     // Event listener for send button
     sendButton.addEventListener('click', () => {
         const userQuestion = inputField.value;
@@ -45,6 +64,26 @@ export function createChatContainer(parentElement) {
             inputField.value = '';
             const videoUrl = window.location.href;
             askAIQuestion(videoUrl, userQuestion);
+        }
+    });
+
+    document.addEventListener('fullscreenchange', () => {
+        const chatContainer = document.getElementById('custom-chat-container');
+        const isFullscreen = !!document.fullscreenElement;
+        const secondaryInner = document.getElementById('secondary-inner');
+
+        if (chatContainer) {
+            if (isFullscreen) {
+                document.body.appendChild(chatContainer);
+                chatContainer.classList.add('fullscreen');
+                chatContainer.style.position = 'fixed'; 
+            } else {
+                if (secondaryInner) {
+                    secondaryInner.appendChild(chatContainer);
+                    chatContainer.classList.remove('fullscreen');
+                    chatContainer.style.position = 'relative';
+                }
+            }
         }
     });
 }
