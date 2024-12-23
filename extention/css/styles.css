@@ -13,6 +13,9 @@
     background-position: center;
     background-repeat: no-repeat;
     transition: height 0.3s ease; 
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 16px; 
+    font-weight: 400; 
 }
 
 #custom-chat-container.fullscreen {
@@ -60,6 +63,8 @@
     align-items: center;
     justify-content: space-between;
     background-color: black;
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 16px;
     color: white;
     padding: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -96,6 +101,8 @@
     flex-direction: column;
     gap: 10px;
     color: #FFF;
+    font-size: 16px;
+    font-weight: 400;
 }
 
 /* Input Area */
@@ -114,6 +121,9 @@
     border: 1px solid #DBDBDB;
     font-size: 14px;
     outline: none;
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 16px;
+    font-weight: 400;
 }
 
 /* Send Button */
@@ -125,6 +135,7 @@
     border: none;
     border-radius: 50%;
     background-color: #DD1313;
+    font-size: 20px; 
     color: #FFF;
     font-size: 16px;
     cursor: pointer;
@@ -145,7 +156,7 @@
     border-radius: 12px;
     margin-bottom: 10px;
     max-width: 70%;
-    font-weight: bold;
+    font-weight: 400;
 }
 
 .user-bubble {
