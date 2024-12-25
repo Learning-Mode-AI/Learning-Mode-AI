@@ -2,7 +2,7 @@
 
 ## **Objective**
 
-While the video summary feature aims to provide users with the ability to generate and view concise summaries of the entire videos within the Leanring Mode Interface. The quiz feature needs to integrate seamlessly with the existing architecture, involving the Main backend and the AI Service. Scalability, performance, and modularity are key considerations.
+The quiz service aims to enhance user engagement, learning, and knowledge retention by dynamically generating, delivering, and evaluating quizzes based on video content. It serves as a dedicated microservice that integrates seamlessly with the existing infrastructure, leveraging AI capabilities to create meaningful interactions and educational experiences.
 
 ---
 
@@ -104,38 +104,17 @@ While the video summary feature aims to provide users with the ability to genera
         
     - **Description:** Generates the full quiz based on the entire transcript and metadata.
         
-    - **Request Payload:**
+    - **Input:**
         
-        ```
-        {
-          "video_id": "<video_id>",
-          "transcript": "<transcript>"
-          "metadata": <metadata>
-        }
-        ```
+        - Video ID
+        - Full transcript
+        - Video metadata(Especially length of video)
         
     - **Response Payload:**
         
-        ```
-        {
-          "quiz_id": "<quiz_id>",
-          "video_id": "<video_id>",
-          "questions": [
-            {
-                "question_text": "Which the options below best describes js?",
-                "options":  ["Option 1", "Option 2", "Option 3", "Option 4"],
-                "correct_answer": 1,
-                "explanation":  ["Explanation 1", "Explanation 2", "Explanation 3", "Explanation 4"],
-            },
-            {
-                "question_text": "Which the options below best describes CORS?",
-                "options":  ["Option 1", "Option 2", "Option 3", "Option 4"],
-                "correct_answer": 3,
-                "explanation":  ["Explanation 1", "Explanation 2", "Explanation 3", "Explanation 4"],
-            }, ...
-          ]
-        }
-        ```
+        - Unique quiz ID
+        - List of questions with options, correct answers, and explanations.
+
 
 - **Endpoint:** `GET /quiz/{quiz_id}`
 
@@ -187,39 +166,13 @@ While the video summary feature aims to provide users with the ability to genera
 
     - **Request Payload:**
         
-        ```
-        {
-          "question_id": "<question_id>",
-          "quiz_context": {
-                "question_text": "What is the purpose of the internet?",
-            "options": [
-                "Communication",
-                "Gaming",
-                "Education",
-                "All of the above"
-            ],
-            "correct_index": 3,
-            }
-        }
-        ```
+        - Video ID
+        - Current timestamp
+        - Transcript
 
-        - **Response Payload:**
-        ```
-        {
-            "explanation1": <exp1>,
-            "explanation2": <exp2>,
-            "explanation3": <exp3>,
-            "explanation4": <exp4>, 
-        }
-        ```
-
-
-
-3. **AI Service-check answer**
-
- - **Endpoint:** `POST /check-answer`
-        
-    - **Description:** Validates the user's answer, determines correctness, and provides an explanation.
+    - **Response Payload:**
+        - One question related to the timestamp
+        - Options and explanation of each.
 
 ### **Data Flow**
 
@@ -276,11 +229,15 @@ Implement the whole quizzes generation. Quiz Service, retrieves the quiz if ther
 
 - Easier to implement.
 
-- Easier to store and retrieve since timestamp doesnt matter.
+- Easier to store and retrieve since timestamp is less dynamic.
 
 ### **Trade-offs:**
 
 - If a user is watching a long video, the questions might not be instantly relevant.
+
+- To address long video, for videos longer than 1 hour, transcript is divided into manageable chunks and each chunk is processed independently for quiz generation.
+
+- Each generated question is assigned a timestamp which correspond to the section it relates to. But the logic could be complicated.
 ---
 ## **Acceptance Criteria**
 
