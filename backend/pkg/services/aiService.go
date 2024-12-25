@@ -147,3 +147,43 @@ func AskGPTQuestion(videoID, assistantID, userQuestion string, timestamp int) (s
 func getAIServiceURL() string {
 	return config.AiServiceURL
 }
+
+func GetVideoSummary(transcript string) (string, error) {
+    payload := map[string]string{"transcript": transcript}
+    payloadBytes, err := json.Marshal(payload)
+    if err != nil {
+        return "", fmt.Errorf("failed to marshal payload: %v", err)
+    }
+
+    aiServiceURL := fmt.Sprintf("%s/ai/generate-summary", config.AiServiceURL)
+    client := &http.Client{Timeout: 10 * time.Second}
+    req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
+    if err != nil {
+        return "", fmt.Errorf("failed to create request: %v", err)
+    }
+    req.Header.Set("Content-Type", "application/json")
+
+    resp, err := client.Do(req)
+    if err != nil {
+        return "", fmt.Errorf("failed to call AI Service: %v", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != http.StatusOK {
+        body, _ := io.ReadAll(resp.Body)
+        return "", fmt.Errorf("AI Service error: %s", string(body))
+    }
+
+    var aiResponse map[string]string
+    err = json.NewDecoder(resp.Body).Decode(&aiResponse)
+    if err != nil {
+        return "", fmt.Errorf("failed to decode AI response: %v", err)
+    }
+
+    summary, ok := aiResponse["summary"]
+    if !ok {
+        return "", fmt.Errorf("summary not found in AI response")
+    }
+
+    return summary, nil
+}
