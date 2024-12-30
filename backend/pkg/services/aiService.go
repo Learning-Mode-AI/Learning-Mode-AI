@@ -148,42 +148,50 @@ func getAIServiceURL() string {
 	return config.AiServiceURL
 }
 
-func GetVideoSummary(transcript string) (string, error) {
-    payload := map[string]string{"transcript": transcript}
-    payloadBytes, err := json.Marshal(payload)
-    if err != nil {
-        return "", fmt.Errorf("failed to marshal payload: %v", err)
-    }
+func GetVideoSummary(videoID string) (string, error) {
+	// Construct the request payload
+	payload := map[string]string{"video_id": videoID}
+	payloadBytes, err := json.Marshal(payload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal payload: %v", err)
+	}
 
-    aiServiceURL := fmt.Sprintf("%s/ai/generate-summary", config.AiServiceURL)
-    client := &http.Client{Timeout: 10 * time.Second}
-    req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
-    if err != nil {
-        return "", fmt.Errorf("failed to create request: %v", err)
-    }
-    req.Header.Set("Content-Type", "application/json")
+	// Define the AI Service URL
+	aiServiceURL := fmt.Sprintf("%s/ai/generate-summary", config.AiServiceURL)
+	client := &http.Client{Timeout: 10 * time.Second}
 
-    resp, err := client.Do(req)
-    if err != nil {
-        return "", fmt.Errorf("failed to call AI Service: %v", err)
-    }
-    defer resp.Body.Close()
+	// Make the POST request to the AI Service
+	req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
+	if err != nil {
+		return "", fmt.Errorf("failed to create request: %v", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
 
-    if resp.StatusCode != http.StatusOK {
-        body, _ := io.ReadAll(resp.Body)
-        return "", fmt.Errorf("AI Service error: %s", string(body))
-    }
+	// Execute the request
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("failed to call AI Service: %v", err)
+	}
+	defer resp.Body.Close()
 
-    var aiResponse map[string]string
-    err = json.NewDecoder(resp.Body).Decode(&aiResponse)
-    if err != nil {
-        return "", fmt.Errorf("failed to decode AI response: %v", err)
-    }
+	// Handle non-200 responses
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("AI Service error: %s", string(body))
+	}
 
-    summary, ok := aiResponse["summary"]
-    if !ok {
-        return "", fmt.Errorf("summary not found in AI response")
-    }
+	// Decode the AI Service response
+	var aiResponse map[string]string
+	err = json.NewDecoder(resp.Body).Decode(&aiResponse)
+	if err != nil {
+		return "", fmt.Errorf("failed to decode AI response: %v", err)
+	}
 
-    return summary, nil
+	// Extract and return the summary
+	summary, ok := aiResponse["summary"]
+	if !ok {
+		return "", fmt.Errorf("summary not found in AI response")
+	}
+
+	return summary, nil
 }

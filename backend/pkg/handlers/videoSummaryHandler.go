@@ -8,8 +8,7 @@ import (
 )
 
 type VideoSummaryRequest struct {
-	VideoID    string `json:"video_id"`
-	Transcript string `json:"transcript"`
+	VideoID string `json:"video_id"` // Only video_id is required
 }
 
 type VideoSummaryResponse struct {
@@ -24,14 +23,21 @@ func VideoSummaryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Call AI Service to generate the summary
-	summary, err := services.GetVideoSummary(req.Transcript)
+	// Validate that video_id is provided
+	if req.VideoID == "" {
+		http.Error(w, "video_id is required", http.StatusBadRequest)
+		return
+	}
+
+	// Call AI Service to generate the summary using video_id
+	summary, err := services.GetVideoSummary(req.VideoID)
 	if err != nil {
 		log.Printf("Error generating video summary: %v", err)
 		http.Error(w, "Failed to generate summary", http.StatusInternalServerError)
 		return
 	}
 
+	// Respond with the generated summary
 	resp := VideoSummaryResponse{Summary: summary}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
