@@ -1,4 +1,4 @@
-import { askAIQuestion } from '../js/content.js';
+import { askAIQuestion, generateVideoSummary } from '../js/content.js';
 
 export function createChatContainer(parentElement) {
     const chatContainer = document.createElement('div');
@@ -8,17 +8,26 @@ export function createChatContainer(parentElement) {
     const header = document.createElement('div');
     header.className = 'header';
 
-    // Toggle Button
+    // Toggle Button (☰)
     const toggleButton = document.createElement('button');
     toggleButton.className = 'toggle-button';
     toggleButton.innerHTML = '☰';
     toggleButton.title = 'Toggle Visibility';
 
-    header.appendChild(toggleButton);
-
+    // Header Title
     const headerTitle = document.createElement('span');
     headerTitle.innerText = 'Chat-Bot';
+
+    // Summary Button (Minimalistic Icon)
+    const summaryButton = document.createElement('button');
+    summaryButton.className = 'summary-button-header';
+    summaryButton.title = 'Generate Summary';
+    summaryButton.innerHTML = '&#x1F4D6;'; // Unicode book icon for "summary"
+
+    // Append buttons and title to header
+    header.appendChild(toggleButton);
     header.appendChild(headerTitle);
+    header.appendChild(summaryButton);
 
     // Chat Area
     const chatArea = document.createElement('div');
@@ -37,11 +46,11 @@ export function createChatContainer(parentElement) {
     sendButton.className = 'send-button';
     sendButton.innerHTML = '➤';
 
-    // Append input field and button to input area
+    // Append input field and send button to input area
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
 
-    // Append all elements
+    // Append header, chat area, and input area to chat container
     chatContainer.appendChild(header);
     chatContainer.appendChild(chatArea);
     chatContainer.appendChild(inputArea);
@@ -67,24 +76,10 @@ export function createChatContainer(parentElement) {
         }
     });
 
-    document.addEventListener('fullscreenchange', () => {
-        const chatContainer = document.getElementById('custom-chat-container');
-        const isFullscreen = !!document.fullscreenElement;
-        const secondaryInner = document.getElementById('secondary-inner');
-
-        if (chatContainer) {
-            if (isFullscreen) {
-                document.body.appendChild(chatContainer);
-                chatContainer.classList.add('fullscreen');
-                chatContainer.style.position = 'fixed'; 
-            } else {
-                if (secondaryInner) {
-                    secondaryInner.appendChild(chatContainer);
-                    chatContainer.classList.remove('fullscreen');
-                    chatContainer.style.position = 'relative';
-                }
-            }
-        }
+    // Event listener for summary button
+    summaryButton.addEventListener('click', () => {
+        const videoUrl = window.location.href;
+        generateVideoSummary(videoUrl);
     });
 }
 

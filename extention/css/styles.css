@@ -197,3 +197,56 @@
 .learning-mode-switch-container:hover {
     background-color: #bbb; 
 }
+
+/* Header Styling */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* Distributes space between child elements */
+    background-color: black;
+    font-family: 'Gabarito', sans-serif;
+    font-size: 16px;
+    color: white;
+    padding: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+}
+
+/* Toggle Button (☰) */
+.toggle-button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.toggle-button:hover {
+    color: #ECB0B0;
+}
+
+/* Summary Button in Header (Minimal Icon) */
+.summary-button-header {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: auto; /* Push it to the far-right */
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+}
+
+.summary-button-header:hover {
+    color: #ECB0B0; /* Subtle hover effect */
+}
+
+/* Header Title */
+.header span {
+    flex: 1;
+    text-align: center; /* Centers the title */
+    font-weight: bold;
+}
