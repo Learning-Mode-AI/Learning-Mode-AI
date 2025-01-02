@@ -1,6 +1,7 @@
 import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
 import { createChatContainer, addAIBubble} from '../components/chatContainer.js';
+import { createContainer2 } from '../components/container2.js';
 
 function addButtonToPlayerControls(playerControls) {
     const toggleButton = learningModeToggle(toggleLearningMode);
@@ -49,6 +50,7 @@ function activateLearningMode() {
             if (!chatContainer) {
                 createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
             }
+            createContainer2(secondaryInner);
         }
 
         if (sidebar && !isFullscreen) {
