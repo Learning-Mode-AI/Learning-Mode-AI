@@ -1,4 +1,4 @@
-import { askAIQuestion, generateVideoSummary } from '../js/content.js';
+import { askAIQuestion } from '../js/content.js';
 
 export function createChatContainer(parentElement) {
     const chatContainer = document.createElement('div');
@@ -18,16 +18,9 @@ export function createChatContainer(parentElement) {
     const headerTitle = document.createElement('span');
     headerTitle.innerText = 'Chat-Bot';
 
-    // Summary Button (Minimalistic Icon)
-    const summaryButton = document.createElement('button');
-    summaryButton.className = 'summary-button-header';
-    summaryButton.title = 'Generate Summary';
-    summaryButton.innerHTML = '&#x1F4D6;'; // Unicode book icon for "summary"
-
     // Append buttons and title to header
     header.appendChild(toggleButton);
     header.appendChild(headerTitle);
-    header.appendChild(summaryButton);
 
     // Chat Area
     const chatArea = document.createElement('div');
@@ -74,12 +67,6 @@ export function createChatContainer(parentElement) {
             const videoUrl = window.location.href;
             askAIQuestion(videoUrl, userQuestion);
         }
-    });
-
-    // Event listener for summary button
-    summaryButton.addEventListener('click', () => {
-        const videoUrl = window.location.href;
-        generateVideoSummary(videoUrl);
     });
 }
 

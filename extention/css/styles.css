@@ -1,7 +1,7 @@
 /* Chat Container */
 #custom-chat-container {
     width: 100%;
-    height: 600px;
+    height: 500px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     overflow: hidden;
@@ -198,6 +198,90 @@
     background-color: #bbb; 
 }
 
+#features-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    height: 400px;
+    margin: 10px 0;
+}
+
+.features-header {
+    display: flex;
+    justify-content: center; /* Center-align text */
+    align-items: center;
+    background: #DD1313;
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 16px;
+    color: white;
+    padding: 10px;
+    border-radius: 10px 10px 0 0;
+    font-weight: bold;
+    position: relative; /* Allows positioning child elements */
+}
+
+.dropdown-button {
+    position: absolute;
+    right: 10px; /* Moves button to the right of the header */
+    top: 50%; /* Centers vertically */
+    transform: translateY(-50%); /* Aligns vertically */
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.features-options {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    background: #DD1313;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: absolute; 
+    right: 0; 
+    width: 150px; 
+}
+
+.feature-option {
+    font-family: 'Gabarito', sans-serif; 
+    font-size: 10px; 
+    color: white;
+    padding: 8px 10px;
+    cursor: pointer;
+}
+
+.feature-option:hover {
+    background: #B30F0F;
+}
+
+/* Feature Content Wrapper */
+#content-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+/* Feature Content Sections */
+.feature-content {
+    background: #F5F5F5;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    height: 300px;
+    color: #333;
+    font-family: 'Gabarito', sans-serif;
+    font-size: 14px;
+    font-weight: bold;
+    border: 1px solid #ddd;
+}
+
+
 /* Header Styling */
 .header {
     display: flex;
@@ -225,24 +309,6 @@
     color: #ECB0B0;
 }
 
-/* Summary Button in Header (Minimal Icon) */
-.summary-button-header {
-    background: none;
-    border: none;
-    color: white;
-    font-size: 18px;
-    cursor: pointer;
-    margin-left: auto; /* Push it to the far-right */
-    padding: 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: color 0.3s ease;
-}
-
-.summary-button-header:hover {
-    color: #ECB0B0; /* Subtle hover effect */
-}
 
 /* Header Title */
 .header span {

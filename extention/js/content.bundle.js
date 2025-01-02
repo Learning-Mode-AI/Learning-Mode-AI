@@ -34,16 +34,9 @@ function createChatContainer(parentElement) {
   var headerTitle = document.createElement('span');
   headerTitle.innerText = 'Chat-Bot';
 
-  // Summary Button (Minimalistic Icon)
-  var summaryButton = document.createElement('button');
-  summaryButton.className = 'summary-button-header';
-  summaryButton.title = 'Generate Summary';
-  summaryButton.innerHTML = '&#x1F4D6;'; // Unicode book icon for "summary"
-
   // Append buttons and title to header
   header.appendChild(toggleButton);
   header.appendChild(headerTitle);
-  header.appendChild(summaryButton);
 
   // Chat Area
   var chatArea = document.createElement('div');
@@ -88,12 +81,6 @@ function createChatContainer(parentElement) {
       (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
     }
   });
-
-  // Event listener for summary button
-  summaryButton.addEventListener('click', function () {
-    var videoUrl = window.location.href;
-    (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl);
-  });
 }
 function addUserBubble(content) {
   var chatArea = document.getElementById('chat-area');
@@ -110,6 +97,105 @@ function addAIBubble(content) {
   aiBubble.innerText = content;
   chatArea.appendChild(aiBubble);
   chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+/***/ }),
+
+/***/ "./components/container2.js":
+/*!**********************************!*\
+  !*** ./components/container2.js ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createContainer2: () => (/* binding */ createContainer2)
+/* harmony export */ });
+/* harmony import */ var _js_content_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../js/content.js */ "./js/content.js");
+
+function createContainer2(parentElement) {
+  var featuresPanel = document.createElement('div');
+  featuresPanel.id = 'features-panel';
+
+  // Header
+  var header = document.createElement('div');
+  header.className = 'features-header';
+  var headerTitle = document.createElement('span');
+  headerTitle.innerText = 'Use Unique Features';
+
+  // Dropdown button
+  var dropdownButton = document.createElement('button');
+  dropdownButton.className = 'dropdown-button';
+  dropdownButton.innerHTML = '▼'; // Downward arrow
+  dropdownButton.title = 'Toggle Options';
+  header.appendChild(headerTitle);
+  header.appendChild(dropdownButton);
+
+  // Options list
+  var optionsList = document.createElement('ul');
+  optionsList.className = 'features-options';
+  optionsList.style.display = 'none'; // Initially hidden
+
+  var options = ['Fact Check', 'Generate Quiz*', 'Short Summary*', 'Long Summary', 'Get Resources'];
+  options.forEach(function (option, index) {
+    var optionItem = document.createElement('li');
+    optionItem.className = 'feature-option';
+    optionItem.innerText = option;
+    optionItem.dataset.index = index; // Assign index to each option
+    optionsList.appendChild(optionItem);
+  });
+
+  // Append header and options list to the panel
+  featuresPanel.appendChild(header);
+  featuresPanel.appendChild(optionsList);
+
+  // Content holders
+  var contentWrapper = document.createElement('div');
+  contentWrapper.id = 'content-wrapper';
+  var summaryHolder = document.createElement('div');
+  summaryHolder.id = 'summary-holder';
+  summaryHolder.className = 'feature-content';
+  summaryHolder.innerText = 'Summary Holder';
+  summaryHolder.style.display = 'none';
+  var quizHolder = document.createElement('div');
+  quizHolder.id = 'quiz-holder';
+  quizHolder.className = 'feature-content';
+  quizHolder.innerText = 'Quiz Holder';
+  quizHolder.style.display = 'none';
+  contentWrapper.appendChild(summaryHolder);
+  contentWrapper.appendChild(quizHolder);
+  featuresPanel.appendChild(contentWrapper);
+
+  // Append panel to parent element
+  parentElement.appendChild(featuresPanel);
+
+  // Toggle options visibility on button click
+  dropdownButton.addEventListener('click', function () {
+    var isVisible = optionsList.style.display !== 'none';
+    optionsList.style.display = isVisible ? 'none' : 'block';
+  });
+
+  // Show/hide content on option click
+  optionsList.addEventListener('click', function (e) {
+    if (e.target && e.target.className.includes('feature-option')) {
+      var selectedOption = e.target.dataset.index;
+
+      // Hide all content
+      summaryHolder.style.display = 'none';
+      quizHolder.style.display = 'none';
+
+      // Show relevant content
+      if (selectedOption === '2') {
+        // 'Short Summary*'
+        var videoUrl = window.location.href;
+        (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl); // Generate and display the summary
+      } else if (selectedOption === '1') {
+        // 'Generate Quiz*'
+        quizHolder.style.display = 'block';
+      }
+    }
+    optionsList.style.display = 'none'; // Close dropdown after selection
+  });
 }
 
 /***/ }),
@@ -178,6 +264,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_waitForElement_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../components/waitForElement.js */ "./components/waitForElement.js");
 /* harmony import */ var _components_learningModeToggle_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/learningModeToggle.js */ "./components/learningModeToggle.js");
 /* harmony import */ var _components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/chatContainer.js */ "./components/chatContainer.js");
+/* harmony import */ var _components_container2_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/container2.js */ "./components/container2.js");
+
 
 
 
@@ -219,9 +307,15 @@ function activateLearningMode() {
         chatContainer = document.getElementById('custom-chat-container');
         chatContainer.classList.add('fullscreen');
       }
+      if (!document.getElementById('features-panel')) {
+        (0,_components_container2_js__WEBPACK_IMPORTED_MODULE_3__.createContainer2)(document.body); // Append container2 to body in full-screen
+      }
     } else {
       if (!chatContainer) {
         (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+      }
+      if (!document.getElementById('features-panel')) {
+        (0,_components_container2_js__WEBPACK_IMPORTED_MODULE_3__.createContainer2)(secondaryInner); // Append container2 to the secondary-inner element
       }
     }
     if (sidebar && !isFullscreen) {
@@ -232,11 +326,15 @@ function activateLearningMode() {
 function deactivateLearningMode() {
   var sidebar = document.getElementById('related');
   var chatContainer = document.getElementById('custom-chat-container');
+  var featuresPanel = document.getElementById('features-panel');
   if (sidebar) {
     sidebar.style.display = ''; // Show the sidebar
   }
   if (chatContainer) {
     chatContainer.remove(); // Remove the chat container
+  }
+  if (featuresPanel) {
+    featuresPanel.remove(); // Remove the container2 features panel
   }
 }
 function sendVideoInfoToBackend(videoUrl) {
@@ -272,44 +370,33 @@ function askAIQuestion(videoUrl, question) {
     },
     body: JSON.stringify({
       video_id: videoId,
-      // Updated to match the backend API's expected field name
       user_question: question,
-      // Updated to match the backend API's expected field name
-      timestamp: currentTimestamp // Current timestamp of the video
+      timestamp: currentTimestamp
     })
   }).then(function (response) {
-    // Check if the response is OK and JSON
     if (!response.ok) {
       throw new Error('Failed to get AI response');
     }
-    return response.json(); // Parse JSON response
+    return response.json();
   }).then(function (data) {
-    var aiResponse = data.response; // Extract the AI response from the backend
+    var aiResponse = data.response;
     if (aiResponse) {
-      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(aiResponse); // Add the AI response bubble to the UI
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(aiResponse);
       console.log('AI Response:', aiResponse);
-    } else {
-      console.error('No AI response found in the response data.');
     }
   })["catch"](function (error) {
-    console.error('Error:', error); // Log any errors for debugging
+    console.error('Error fetching AI response:', error);
   });
-}
-function extractVideoID(videoUrl) {
-  // Define the regex to match YouTube video ID in URLs
-  var videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-
-  // Execute the regex pattern to match the video ID
-  var match = videoUrl.match(videoIDPattern);
-
-  // Return the video ID if found, otherwise null
-  return match ? match[1] : null;
 }
 function generateVideoSummary(videoUrl) {
   var videoId = extractVideoID(videoUrl);
   if (!videoId) {
     console.error('Invalid video URL: Unable to extract video ID');
-    (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('Error: Unable to extract video ID.');
+    var summaryHolder = document.getElementById('summary-holder');
+    if (summaryHolder) {
+      summaryHolder.innerText = 'Error: Unable to extract video ID.';
+      summaryHolder.style.display = 'block';
+    }
     return;
   }
   console.log('Sending video_id:', videoId); // Debugging log to confirm videoId
@@ -321,7 +408,7 @@ function generateVideoSummary(videoUrl) {
     },
     body: JSON.stringify({
       video_id: videoId
-    }) // Payload matches backend expectation
+    })
   }).then(function (response) {
     if (!response.ok) {
       // Log detailed error message from the backend
@@ -332,17 +419,27 @@ function generateVideoSummary(videoUrl) {
     }
     return response.json();
   }).then(function (data) {
-    console.log('Summary Response:', data); // Debugging log
-    var summary = data.summary;
-    if (summary) {
-      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(summary); // Display summary in chat
-    } else {
-      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('No summary available for this video.');
+    var summaryHolder = document.getElementById('summary-holder');
+    if (data.summary && summaryHolder) {
+      summaryHolder.innerText = data.summary;
+      summaryHolder.style.display = 'block';
+    } else if (summaryHolder) {
+      summaryHolder.innerText = 'No summary available for this video.';
+      summaryHolder.style.display = 'block';
     }
   })["catch"](function (error) {
-    console.error('Error fetching video summary:', error); // Log the error
-    (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('Error fetching video summary.');
+    console.error('Error fetching video summary:', error);
+    var summaryHolder = document.getElementById('summary-holder');
+    if (summaryHolder) {
+      summaryHolder.innerText = 'Error fetching video summary.';
+      summaryHolder.style.display = 'block';
+    }
   });
+}
+function extractVideoID(videoUrl) {
+  var videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  var match = videoUrl.match(videoIDPattern);
+  return match ? match[1] : null;
 }
 
 /***/ })
