@@ -115,6 +115,102 @@ function addAIBubble(content) {
 
 /***/ }),
 
+/***/ "./components/container2.js":
+/*!**********************************!*\
+  !*** ./components/container2.js ***!
+  \**********************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   createContainer2: () => (/* binding */ createContainer2)
+/* harmony export */ });
+function createContainer2(parentElement) {
+  var featuresPanel = document.createElement('div');
+  featuresPanel.id = 'features-panel';
+
+  // Header
+  var header = document.createElement('div');
+  header.className = 'features-header';
+  var headerTitle = document.createElement('span');
+  headerTitle.innerText = 'Use Unique Features';
+
+  // Dropdown button
+  var dropdownButton = document.createElement('button');
+  dropdownButton.className = 'dropdown-button';
+  dropdownButton.innerHTML = '▼'; // Downward arrow
+  dropdownButton.title = 'Toggle Options';
+  header.appendChild(headerTitle);
+  header.appendChild(dropdownButton);
+
+  // Options list
+  var optionsList = document.createElement('ul');
+  optionsList.className = 'features-options';
+  optionsList.style.display = 'none'; // Initially hidden
+
+  var options = ['Fact Check', 'Generate Quiz*', 'Short Summary*', 'Long Summary', 'Get Resources'];
+  options.forEach(function (option, index) {
+    var optionItem = document.createElement('li');
+    optionItem.className = 'feature-option';
+    optionItem.innerText = option;
+    optionItem.dataset.index = index; // Assign index to each option
+    optionsList.appendChild(optionItem);
+  });
+
+  // Append header and options list to the panel
+  featuresPanel.appendChild(header);
+  featuresPanel.appendChild(optionsList);
+
+  // Content holders
+  var contentWrapper = document.createElement('div');
+  contentWrapper.id = 'content-wrapper';
+  var summaryHolder = document.createElement('div');
+  summaryHolder.id = 'summary-holder';
+  summaryHolder.className = 'feature-content';
+  summaryHolder.innerText = 'Summary Holder';
+  summaryHolder.style.display = 'none';
+  var quizHolder = document.createElement('div');
+  quizHolder.id = 'quiz-holder';
+  quizHolder.className = 'feature-content';
+  quizHolder.innerText = 'Quiz Holder';
+  quizHolder.style.display = 'none';
+  contentWrapper.appendChild(summaryHolder);
+  contentWrapper.appendChild(quizHolder);
+  featuresPanel.appendChild(contentWrapper);
+
+  // Append panel to parent element
+  parentElement.appendChild(featuresPanel);
+
+  // Toggle options visibility on button click
+  dropdownButton.addEventListener('click', function () {
+    var isVisible = optionsList.style.display !== 'none';
+    optionsList.style.display = isVisible ? 'none' : 'block';
+  });
+
+  // Show/hide content on option click
+  optionsList.addEventListener('click', function (e) {
+    if (e.target && e.target.className.includes('feature-option')) {
+      var selectedOption = e.target.dataset.index;
+
+      // Hide all content
+      summaryHolder.style.display = 'none';
+      quizHolder.style.display = 'none';
+
+      // Show relevant content
+      if (selectedOption === '1') {
+        // 'Generate Quiz*'
+        quizHolder.style.display = 'block';
+      } else if (selectedOption === '2') {
+        // 'Short Summary*'
+        summaryHolder.style.display = 'block';
+      }
+    }
+    optionsList.style.display = 'none'; // Close dropdown after selection
+  });
+}
+
+/***/ }),
+
 /***/ "./components/learningModeToggle.js":
 /*!******************************************!*\
   !*** ./components/learningModeToggle.js ***!
@@ -178,6 +274,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_waitForElement_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../components/waitForElement.js */ "./components/waitForElement.js");
 /* harmony import */ var _components_learningModeToggle_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/learningModeToggle.js */ "./components/learningModeToggle.js");
 /* harmony import */ var _components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/chatContainer.js */ "./components/chatContainer.js");
+/* harmony import */ var _components_container2_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/container2.js */ "./components/container2.js");
+
 
 
 
@@ -223,6 +321,7 @@ function activateLearningMode() {
       if (!chatContainer) {
         (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
       }
+      (0,_components_container2_js__WEBPACK_IMPORTED_MODULE_3__.createContainer2)(secondaryInner);
     }
     if (sidebar && !isFullscreen) {
       sidebar.style.display = 'none';
