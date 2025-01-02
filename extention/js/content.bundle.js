@@ -24,15 +24,26 @@ function createChatContainer(parentElement) {
   var header = document.createElement('div');
   header.className = 'header';
 
-  // Toggle Button
+  // Toggle Button (☰)
   var toggleButton = document.createElement('button');
   toggleButton.className = 'toggle-button';
   toggleButton.innerHTML = '☰';
   toggleButton.title = 'Toggle Visibility';
-  header.appendChild(toggleButton);
+
+  // Header Title
   var headerTitle = document.createElement('span');
   headerTitle.innerText = 'Chat-Bot';
+
+  // Summary Button (Minimalistic Icon)
+  var summaryButton = document.createElement('button');
+  summaryButton.className = 'summary-button-header';
+  summaryButton.title = 'Generate Summary';
+  summaryButton.innerHTML = '&#x1F4D6;'; // Unicode book icon for "summary"
+
+  // Append buttons and title to header
+  header.appendChild(toggleButton);
   header.appendChild(headerTitle);
+  header.appendChild(summaryButton);
 
   // Chat Area
   var chatArea = document.createElement('div');
@@ -49,11 +60,11 @@ function createChatContainer(parentElement) {
   sendButton.className = 'send-button';
   sendButton.innerHTML = '➤';
 
-  // Append input field and button to input area
+  // Append input field and send button to input area
   inputArea.appendChild(inputField);
   inputArea.appendChild(sendButton);
 
-  // Append all elements
+  // Append header, chat area, and input area to chat container
   chatContainer.appendChild(header);
   chatContainer.appendChild(chatArea);
   chatContainer.appendChild(inputArea);
@@ -77,23 +88,11 @@ function createChatContainer(parentElement) {
       (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
     }
   });
-  document.addEventListener('fullscreenchange', function () {
-    var chatContainer = document.getElementById('custom-chat-container');
-    var isFullscreen = !!document.fullscreenElement;
-    var secondaryInner = document.getElementById('secondary-inner');
-    if (chatContainer) {
-      if (isFullscreen) {
-        document.body.appendChild(chatContainer);
-        chatContainer.classList.add('fullscreen');
-        chatContainer.style.position = 'fixed';
-      } else {
-        if (secondaryInner) {
-          secondaryInner.appendChild(chatContainer);
-          chatContainer.classList.remove('fullscreen');
-          chatContainer.style.position = 'relative';
-        }
-      }
-    }
+
+  // Event listener for summary button
+  summaryButton.addEventListener('click', function () {
+    var videoUrl = window.location.href;
+    (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl);
   });
 }
 function addUserBubble(content) {
@@ -173,7 +172,8 @@ function waitForElement(selector, callback) {
 
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   askAIQuestion: () => (/* binding */ askAIQuestion)
+/* harmony export */   askAIQuestion: () => (/* binding */ askAIQuestion),
+/* harmony export */   generateVideoSummary: () => (/* binding */ generateVideoSummary)
 /* harmony export */ });
 /* harmony import */ var _components_waitForElement_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../components/waitForElement.js */ "./components/waitForElement.js");
 /* harmony import */ var _components_learningModeToggle_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/learningModeToggle.js */ "./components/learningModeToggle.js");
@@ -304,6 +304,45 @@ function extractVideoID(videoUrl) {
 
   // Return the video ID if found, otherwise null
   return match ? match[1] : null;
+}
+function generateVideoSummary(videoUrl) {
+  var videoId = extractVideoID(videoUrl);
+  if (!videoId) {
+    console.error('Invalid video URL: Unable to extract video ID');
+    (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('Error: Unable to extract video ID.');
+    return;
+  }
+  console.log('Sending video_id:', videoId); // Debugging log to confirm videoId
+
+  fetch('http://localhost:8080/video-summary', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      video_id: videoId
+    }) // Payload matches backend expectation
+  }).then(function (response) {
+    if (!response.ok) {
+      // Log detailed error message from the backend
+      response.text().then(function (text) {
+        console.error("Server responded with error: ".concat(response.status, " - ").concat(text));
+      });
+      throw new Error("Failed to fetch video summary: ".concat(response.status));
+    }
+    return response.json();
+  }).then(function (data) {
+    console.log('Summary Response:', data); // Debugging log
+    var summary = data.summary;
+    if (summary) {
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(summary); // Display summary in chat
+    } else {
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('No summary available for this video.');
+    }
+  })["catch"](function (error) {
+    console.error('Error fetching video summary:', error); // Log the error
+    (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('Error fetching video summary.');
+  });
 }
 
 /***/ })

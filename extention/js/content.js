@@ -139,3 +139,46 @@ function extractVideoID(videoUrl) {
     // Return the video ID if found, otherwise null
     return match ? match[1] : null;
 }
+
+export function generateVideoSummary(videoUrl) {
+    const videoId = extractVideoID(videoUrl);
+
+    if (!videoId) {
+        console.error('Invalid video URL: Unable to extract video ID');
+        addAIBubble('Error: Unable to extract video ID.');
+        return;
+    }
+
+    console.log('Sending video_id:', videoId); // Debugging log to confirm videoId
+
+    fetch('http://localhost:8080/video-summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ video_id: videoId }), // Payload matches backend expectation
+    })
+        .then((response) => {
+            if (!response.ok) {
+                // Log detailed error message from the backend
+                response.text().then((text) => {
+                    console.error(`Server responded with error: ${response.status} - ${text}`);
+                });
+                throw new Error(`Failed to fetch video summary: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then((data) => {
+            console.log('Summary Response:', data); // Debugging log
+            const summary = data.summary;
+            if (summary) {
+                addAIBubble(summary); // Display summary in chat
+            } else {
+                addAIBubble('No summary available for this video.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching video summary:', error); // Log the error
+            addAIBubble('Error fetching video summary.');
+        });
+}
