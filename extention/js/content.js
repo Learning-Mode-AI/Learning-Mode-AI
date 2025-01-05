@@ -2,6 +2,7 @@ import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
 import { createChatContainer, addAIBubble } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
+import { marked } from 'marked'; // Import the Marked library for Markdown rendering
 
 function addButtonToPlayerControls(playerControls) {
     const toggleButton = learningModeToggle(toggleLearningMode);
@@ -137,10 +138,10 @@ export function askAIQuestion(videoUrl, question) {
 
 export function generateVideoSummary(videoUrl) {
     const videoId = extractVideoID(videoUrl);
+    const summaryHolder = document.getElementById('summary-holder');
 
     if (!videoId) {
         console.error('Invalid video URL: Unable to extract video ID');
-        const summaryHolder = document.getElementById('summary-holder');
         if (summaryHolder) {
             summaryHolder.innerText = 'Error: Unable to extract video ID.';
             summaryHolder.style.display = 'block';
@@ -148,7 +149,19 @@ export function generateVideoSummary(videoUrl) {
         return;
     }
 
-    console.log('Sending video_id:', videoId); // Debugging log to confirm videoId
+    // Check if the summary is already stored in local storage
+    const storedSummary = localStorage.getItem(`summary_${videoId}`);
+    if (storedSummary) {
+        console.log('Using cached summary from local storage.');
+        if (summaryHolder) {
+            summaryHolder.innerHTML = marked(storedSummary); // Render Markdown from cache
+            summaryHolder.style.display = 'block';
+        }
+        return;
+    }
+
+    // If no stored summary, fetch from the API
+    console.log('Fetching summary from server for:', videoId); 
 
     fetch('http://localhost:8080/video-summary', {
         method: 'POST',
@@ -159,7 +172,6 @@ export function generateVideoSummary(videoUrl) {
     })
         .then((response) => {
             if (!response.ok) {
-                // Log detailed error message from the backend
                 response.text().then((text) => {
                     console.error(`Server responded with error: ${response.status} - ${text}`);
                 });
@@ -168,18 +180,20 @@ export function generateVideoSummary(videoUrl) {
             return response.json();
         })
         .then((data) => {
-            const summaryHolder = document.getElementById('summary-holder');
-            if (data.summary && summaryHolder) {
-                summaryHolder.innerText = data.summary;
+            if (data.summary) {
+                // Store the summary in local storage
+                localStorage.setItem(`summary_${videoId}`, data.summary);
+                
+                // Render the summary using Markdown
+                summaryHolder.innerHTML = marked(data.summary);
                 summaryHolder.style.display = 'block';
-            } else if (summaryHolder) {
+            } else {
                 summaryHolder.innerText = 'No summary available for this video.';
                 summaryHolder.style.display = 'block';
             }
         })
         .catch((error) => {
             console.error('Error fetching video summary:', error);
-            const summaryHolder = document.getElementById('summary-holder');
             if (summaryHolder) {
                 summaryHolder.innerText = 'Error fetching video summary.';
                 summaryHolder.style.display = 'block';

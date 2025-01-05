@@ -44,9 +44,12 @@ export function createContainer2(parentElement) {
 
     const summaryHolder = document.createElement('div');
     summaryHolder.id = 'summary-holder';
-    summaryHolder.className = 'feature-content';
-    summaryHolder.innerText = 'Summary Holder';
-    summaryHolder.style.display = 'none';
+    summaryHolder.className = 'minimal-summary';
+
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loading-indicator';
+    loadingIndicator.className = 'loading-indicator';  // Handled by CSS
+    loadingIndicator.innerText = 'Generating summary...';
 
     const quizHolder = document.createElement('div');
     quizHolder.id = 'quiz-holder';
@@ -56,6 +59,7 @@ export function createContainer2(parentElement) {
 
     contentWrapper.appendChild(summaryHolder);
     contentWrapper.appendChild(quizHolder);
+    contentWrapper.appendChild(loadingIndicator);
 
     featuresPanel.appendChild(contentWrapper);
 
@@ -76,13 +80,19 @@ export function createContainer2(parentElement) {
             // Hide all content
             summaryHolder.style.display = 'none';
             quizHolder.style.display = 'none';
+            loadingIndicator.style.display = 'block';
 
             // Show relevant content
             if (selectedOption === '2') { // 'Short Summary*'
                 const videoUrl = window.location.href;
-                generateVideoSummary(videoUrl); // Generate and display the summary
+                generateVideoSummary(videoUrl, (formattedContent) => {
+                    summaryHolder.innerHTML = formattedContent;
+                    summaryHolder.style.display = 'block';
+                    loadingIndicator.style.display = 'none';
+                });
             } else if (selectedOption === '1') { // 'Generate Quiz*'
                 quizHolder.style.display = 'block';
+                loadingIndicator.style.display = 'none';
             }
         }
         optionsList.style.display = 'none'; // Close dropdown after selection
