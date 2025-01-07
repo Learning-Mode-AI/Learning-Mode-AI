@@ -58,3 +58,15 @@ func GetVideoInfoFromRedis(videoID string) (*VideoInfo, error) {
 
 	return &videoInfo, nil
 }
+
+func StoreVideoSummaryInRedis(videoID string, summary string) error {
+	return rdb.Set(ctx, "summary:"+videoID, summary, 24*time.Hour).Err()
+}
+
+func GetVideoSummaryFromRedis(videoID string) (string, error) {
+	summary, err := rdb.Get(ctx, "summary:"+videoID).Result()
+	if err == redis.Nil {
+		return "", nil
+	}
+	return summary, err
+}

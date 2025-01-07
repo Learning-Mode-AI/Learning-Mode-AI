@@ -183,14 +183,14 @@ function createContainer2(parentElement) {
     if (e.target && e.target.className.includes('feature-option')) {
       var selectedOption = e.target.dataset.index;
 
-      // Hide all content
+      // Hide all content initially
       summaryHolder.style.display = 'none';
       quizHolder.style.display = 'none';
-      loadingIndicator.style.display = 'block';
 
-      // Show relevant content
+      // Only show loading for 'Short Summary'
       if (selectedOption === '2') {
         // 'Short Summary*'
+        loadingIndicator.style.display = 'block';
         var videoUrl = window.location.href;
         (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl, function (formattedContent) {
           summaryHolder.innerHTML = formattedContent;
@@ -200,10 +200,13 @@ function createContainer2(parentElement) {
       } else if (selectedOption === '1') {
         // 'Generate Quiz*'
         quizHolder.style.display = 'block';
-        loadingIndicator.style.display = 'none';
+      } else if (selectedOption === '0' || selectedOption === '3' || selectedOption === '4') {
+        // For 'Fact Check', 'Long Summary', and 'Get Resources', no loading indicator
+        summaryHolder.style.display = 'block';
+        summaryHolder.innerText = e.target.innerText + " content will be shown here.";
       }
+      optionsList.style.display = 'none'; // Close dropdown after selection
     }
-    optionsList.style.display = 'none'; // Close dropdown after selection
   });
 }
 
