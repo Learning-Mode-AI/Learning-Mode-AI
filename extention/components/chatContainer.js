@@ -56,6 +56,7 @@ export function createChatContainer(parentElement) {
         chatContainer.style.height = isVisible ? '50px' : '600px';
     });
 
+    // This is a test change for branch switching
     // Event listener for send button
     sendButton.addEventListener('click', () => {
         const userQuestion = inputField.value;
