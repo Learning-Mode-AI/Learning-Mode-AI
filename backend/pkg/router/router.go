@@ -12,6 +12,7 @@ func NewRouter() *mux.Router {
 	// Define your routes here
 	r.HandleFunc("/processVideo", handlers.ProcessVideo).Methods("POST")
 	r.HandleFunc("/api/question", handlers.AskGPTQuestion).Methods("POST")
+	r.HandleFunc("/api/quiz", handlers.GenerateQuiz).Methods("POST")
 
 	return r
 }

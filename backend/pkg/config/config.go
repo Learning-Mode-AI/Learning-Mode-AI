@@ -9,6 +9,7 @@ var (
 	YoutubeInfoServiceURL     string
 	VideoProcessingServiceURL string
 	AiServiceURL              string
+	QuizServiceURL			  string
 	RedisHost                 string
 )
 
@@ -18,6 +19,7 @@ func InitConfig() {
 		YoutubeInfoServiceURL = "http://localhost:8000"
 		VideoProcessingServiceURL = "http://localhost:8081"
 		AiServiceURL = "http://localhost:8082"
+		QuizServiceURL="http://localhost:8084"
 		RedisHost = "localhost:6379"
 		fmt.Println("Running in local mode")
 	} else {
