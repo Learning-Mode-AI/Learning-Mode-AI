@@ -1,6 +1,6 @@
 import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
-import { createChatContainer, addAIBubble} from '../components/chatContainer.js';
+import { createChatContainer, addAIBubble } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
 
 function addButtonToPlayerControls(playerControls) {
@@ -29,6 +29,26 @@ function toggleLearningMode() {
 }
 
 function activateLearningMode() {
+    // Fetch user ID from storage or trigger authentication
+    getUserId((userId) => {
+        if (!userId) {
+            console.error("User not authenticated. Initiating login process...");
+            authenticateUser((id) => {
+                if (id) {
+                    console.log("User authenticated with ID:", id);
+                    initializeLearningMode();
+                } else {
+                    console.error("Authentication failed.");
+                }
+            });
+        } else {
+            console.log("Learning Mode activated for User ID:", userId);
+            initializeLearningMode();
+        }
+    });
+}
+
+function initializeLearningMode() {
     const sidebar = document.getElementById('related');
     const secondaryInner = document.getElementById('secondary-inner');
     let chatContainer = document.getElementById('custom-chat-container');
@@ -62,7 +82,7 @@ function activateLearningMode() {
 function deactivateLearningMode() {
     const sidebar = document.getElementById('related');
     const chatContainer = document.getElementById('custom-chat-container');
-    
+
     if (sidebar) {
         sidebar.style.display = ''; // Show the sidebar
     }
@@ -71,73 +91,100 @@ function deactivateLearningMode() {
     }
 }
 
-
 function sendVideoInfoToBackend(videoUrl) {
-    fetch('http://localhost:8080/processVideo', { 
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ videoUrl: videoUrl })
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
+    getUserId((userId, email) => {
+        if (!userId || !email) {
+            console.error("User not authenticated. Unable to send video info.");
+            return;
+        }
+
+        fetch('http://localhost:8080/processVideo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ videoUrl: videoUrl, userId: userId, email: email })
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
     });
 }
+
 
 export function askAIQuestion(videoUrl, question) {
-    // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
     const videoId = extractVideoID(videoUrl);
 
-     // Access the video element to grab the current timestamp
-     const videoElement = document.querySelector('video');
-     const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
+    const videoElement = document.querySelector('video');
+    const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0;
 
-    // Make a POST request to the backend API
-    fetch('http://localhost:8080/api/question', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            video_id: videoId,  // Updated to match the backend API's expected field name
-            user_question: question,  // Updated to match the backend API's expected field name
-            timestamp: currentTimestamp // Current timestamp of the video
+    getUserId((userId) => {
+        if (!userId) {
+            console.error("User not authenticated. Unable to ask AI question.");
+            return;
+        }
+
+        fetch('http://localhost:8080/api/question', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                video_id: videoId,
+                user_question: question,
+                timestamp: currentTimestamp,
+                userId: userId
+            })
         })
-    })
-    .then(response => {
-        // Check if the response is OK and JSON
-        if (!response.ok) {
-            throw new Error('Failed to get AI response');
-        }
-        return response.json();  // Parse JSON response
-    })
-    .then(data => {
-        const aiResponse = data.response;  // Extract the AI response from the backend
-        if (aiResponse) {
-            addAIBubble(aiResponse);  // Add the AI response bubble to the UI
-            console.log('AI Response:', aiResponse);
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to get AI response');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const aiResponse = data.response;
+                if (aiResponse) {
+                    addAIBubble(aiResponse);
+                    console.log('AI Response:', aiResponse);
+                } else {
+                    console.error('No AI response found in the response data.');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
+}
+
+function extractVideoID(videoUrl) {
+    const videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = videoUrl.match(videoIDPattern);
+    return match ? match[1] : null;
+}
+
+function getUserId(callback) {
+    chrome.storage.local.get(["userId", "email"], (data) => {
+        if (data.userId && data.email) {
+            console.log("User ID and Email found in storage:", data.userId, data.email);
+            callback(data.userId, data.email);
         } else {
-            console.error('No AI response found in the response data.');
+            console.error("User ID not found. Initiating Google OAuth...");
+            chrome.runtime.sendMessage({ type: "AUTHENTICATE_USER" }, (response) => {
+                if (response?.userId && response?.email) {
+                    console.log("Authenticated User ID and Email:", response.userId, response.email);
+                    callback(response.userId, response.email);
+                } else {
+                    console.error("Authentication failed:", response?.error || "Unknown error");
+                    callback(null, null);
+                }
+            });
         }
-    })
-    .catch((error) => {
-        console.error('Error:', error);  // Log any errors for debugging
     });
 }
 
 
-function extractVideoID(videoUrl) {
-    // Define the regex to match YouTube video ID in URLs
-    const videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-
-    // Execute the regex pattern to match the video ID
-    const match = videoUrl.match(videoIDPattern);
-
-    // Return the video ID if found, otherwise null
-    return match ? match[1] : null;
-}
