@@ -56,17 +56,41 @@ export function createChatContainer(parentElement) {
         chatContainer.style.height = isVisible ? '50px' : '600px';
     });
 
-    // This is a test change for branch switching
-    // Event listener for send button
-    sendButton.addEventListener('click', () => {
+    // Handle user sending the question
+    const sendQuestion = () => {
         const userQuestion = inputField.value;
         if (userQuestion) {
             addUserBubble(userQuestion);
-            inputField.value = '';
+            inputField.value = '';  
             const videoUrl = window.location.href;
-            askAIQuestion(videoUrl, userQuestion);
+            askAIQuestion(videoUrl, userQuestion); 
+        }
+    };
+
+    // Event listener for send button
+    sendButton.addEventListener('click', sendQuestion);
+
+    // Event listener for keypress (Enter key)
+    inputField.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && event.ctrlKey) {
+            inputField.value += '\n';
+        } else if (event.key === 'Enter' && !event.ctrlKey) {
+            event.preventDefault(); 
+            sendQuestion();  
         }
     });
+    
+
+    // // Event listener for send button
+    // sendButton.addEventListener('click', () => {
+    //     const userQuestion = inputField.value;
+    //     if (userQuestion) {
+    //         addUserBubble(userQuestion);
+    //         inputField.value = '';
+    //         const videoUrl = window.location.href;
+    //         askAIQuestion(videoUrl, userQuestion);
+    //     }
+    // });
 
     document.addEventListener('fullscreenchange', () => {
         const chatContainer = document.getElementById('custom-chat-container');
