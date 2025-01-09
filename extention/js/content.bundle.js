@@ -301,6 +301,25 @@ function toggleLearningMode() {
   }
 }
 function activateLearningMode() {
+  // Fetch user ID from storage or trigger authentication
+  getUserId(function (userId) {
+    if (!userId) {
+      console.error("User not authenticated. Initiating login process...");
+      authenticateUser(function (id) {
+        if (id) {
+          console.log("User authenticated with ID:", id);
+          initializeLearningMode();
+        } else {
+          console.error("Authentication failed.");
+        }
+      });
+    } else {
+      console.log("Learning Mode activated for User ID:", userId);
+      initializeLearningMode();
+    }
+  });
+}
+function initializeLearningMode() {
   var sidebar = document.getElementById('related');
   var secondaryInner = document.getElementById('secondary-inner');
   var chatContainer = document.getElementById('custom-chat-container');
@@ -339,70 +358,93 @@ function deactivateLearningMode() {
   }
 }
 function sendVideoInfoToBackend(videoUrl) {
-  fetch('http://localhost:8080/processVideo', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      videoUrl: videoUrl
-    })
-  }).then(function (response) {
-    return response.json();
-  }).then(function (data) {
-    console.log('Success:', data);
-  })["catch"](function (error) {
-    console.error('Error:', error);
+  getUserId(function (userId, email) {
+    if (!userId || !email) {
+      console.error("User not authenticated. Unable to send video info.");
+      return;
+    }
+    fetch('http://localhost:8080/processVideo', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        videoUrl: videoUrl,
+        userId: userId,
+        email: email
+      })
+    }).then(function (response) {
+      return response.json();
+    }).then(function (data) {
+      console.log('Success:', data);
+    })["catch"](function (error) {
+      console.error('Error:', error);
+    });
   });
 }
 function askAIQuestion(videoUrl, question) {
-  // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
   var videoId = extractVideoID(videoUrl);
-
-  // Access the video element to grab the current timestamp
   var videoElement = document.querySelector('video');
-  var currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
-
-  // Make a POST request to the backend API
-  fetch('http://localhost:8080/api/question', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      video_id: videoId,
-      // Updated to match the backend API's expected field name
-      user_question: question,
-      // Updated to match the backend API's expected field name
-      timestamp: currentTimestamp // Current timestamp of the video
-    })
-  }).then(function (response) {
-    // Check if the response is OK and JSON
-    if (!response.ok) {
-      throw new Error('Failed to get AI response');
+  var currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0;
+  getUserId(function (userId) {
+    if (!userId) {
+      console.error("User not authenticated. Unable to ask AI question.");
+      return;
     }
-    return response.json(); // Parse JSON response
-  }).then(function (data) {
-    var aiResponse = data.response; // Extract the AI response from the backend
-    if (aiResponse) {
-      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(aiResponse); // Add the AI response bubble to the UI
-      console.log('AI Response:', aiResponse);
-    } else {
-      console.error('No AI response found in the response data.');
-    }
-  })["catch"](function (error) {
-    console.error('Error:', error); // Log any errors for debugging
+    fetch('http://localhost:8080/api/question', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        video_id: videoId,
+        user_question: question,
+        timestamp: currentTimestamp,
+        userId: userId
+      })
+    }).then(function (response) {
+      if (!response.ok) {
+        throw new Error('Failed to get AI response');
+      }
+      return response.json();
+    }).then(function (data) {
+      var aiResponse = data.response;
+      if (aiResponse) {
+        (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)(aiResponse);
+        console.log('AI Response:', aiResponse);
+      } else {
+        console.error('No AI response found in the response data.');
+      }
+    })["catch"](function (error) {
+      console.error('Error:', error);
+    });
   });
 }
 function extractVideoID(videoUrl) {
-  // Define the regex to match YouTube video ID in URLs
   var videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-
-  // Execute the regex pattern to match the video ID
   var match = videoUrl.match(videoIDPattern);
-
-  // Return the video ID if found, otherwise null
   return match ? match[1] : null;
+}
+function getUserId(callback) {
+  chrome.storage.local.get(["userId", "email"], function (data) {
+    if (data.userId && data.email) {
+      console.log("User ID and Email found in storage:", data.userId, data.email);
+      callback(data.userId, data.email);
+    } else {
+      console.error("User ID not found. Initiating Google OAuth...");
+      chrome.runtime.sendMessage({
+        type: "AUTHENTICATE_USER"
+      }, function (response) {
+        if (response !== null && response !== void 0 && response.userId && response !== null && response !== void 0 && response.email) {
+          console.log("Authenticated User ID and Email:", response.userId, response.email);
+          callback(response.userId, response.email);
+        } else {
+          console.error("Authentication failed:", (response === null || response === void 0 ? void 0 : response.error) || "Unknown error");
+          callback(null, null);
+        }
+      });
+    }
+  });
 }
 
 /***/ })

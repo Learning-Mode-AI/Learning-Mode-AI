@@ -1,9 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Learning Mode",
-  "version": "1.0",
+  "version": "1.7",
   "description": "Transform YouTube videos into interactive learning experiences.",
-  "permissions": ["activeTab", "storage", "scripting", "tabs"],
+  "permissions": ["activeTab", "storage", "scripting", "tabs", "identity"],
+  "oauth2": {
+    "client_id": "39038565082-ipae4iiuiu39s7802uma3e76ugacrc2q.apps.googleusercontent.com",
+    "scopes": ["https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"]
+  },
   "action": {
       "default_icon": "hello_extensions.png"
   },
