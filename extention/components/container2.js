@@ -1,4 +1,4 @@
-export function createContainer2(parentElement) {
+export function createContainer2(parentElement, react) {
     const featuresPanel = document.createElement('div');
     featuresPanel.id = 'features-panel';
 
@@ -46,11 +46,7 @@ export function createContainer2(parentElement) {
     summaryHolder.innerText = 'Summary Holder';
     summaryHolder.style.display = 'none';
 
-    const quizHolder = document.createElement('div');
-    quizHolder.id = 'quiz-holder';
-    quizHolder.className = 'feature-content';
-    quizHolder.innerText = 'Quiz Holder';
-    quizHolder.style.display = 'none';
+    const quizHolder = react(secondaryInner)
 
     contentWrapper.appendChild(summaryHolder);
     contentWrapper.appendChild(quizHolder);

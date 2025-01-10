@@ -1,7 +1,11 @@
 import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
-import { createChatContainer, addAIBubble} from '../components/chatContainer.js';
+import { createChatContainer, addAIBubble } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
+import { App } from '../react/app.jsx'
+import ReactDOM from 'react-dom/client';
+import React from 'react';
+
 
 function addButtonToPlayerControls(playerControls) {
     const toggleButton = learningModeToggle(toggleLearningMode);
@@ -28,6 +32,14 @@ function toggleLearningMode() {
     }
 }
 
+function createReactRoot(parentElement) {
+    const reactRoot = document.createElement('div');
+    reactRoot.id = 'react-root';
+    parentElement.appendChild(reactRoot);
+    const root = ReactDOM.createRoot(document.getElementById('react-root'));
+    root.render(<App />)
+}
+
 function activateLearningMode() {
     const sidebar = document.getElementById('related');
     const secondaryInner = document.getElementById('secondary-inner');
@@ -50,7 +62,7 @@ function activateLearningMode() {
             if (!chatContainer) {
                 createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
             }
-            createContainer2(secondaryInner);
+            createContainer2(secondaryInner, createReactRoot);
         }
 
         if (sidebar && !isFullscreen) {
@@ -62,7 +74,7 @@ function activateLearningMode() {
 function deactivateLearningMode() {
     const sidebar = document.getElementById('related');
     const chatContainer = document.getElementById('custom-chat-container');
-    
+
     if (sidebar) {
         sidebar.style.display = ''; // Show the sidebar
     }
@@ -73,29 +85,29 @@ function deactivateLearningMode() {
 
 
 function sendVideoInfoToBackend(videoUrl) {
-    fetch('http://localhost:8080/processVideo', { 
+    fetch('http://localhost:8080/processVideo', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({ videoUrl: videoUrl })
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Success:', data);
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
 }
 
 export function askAIQuestion(videoUrl, question) {
     // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
     const videoId = extractVideoID(videoUrl);
 
-     // Access the video element to grab the current timestamp
-     const videoElement = document.querySelector('video');
-     const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
+    // Access the video element to grab the current timestamp
+    const videoElement = document.querySelector('video');
+    const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
 
     // Make a POST request to the backend API
     fetch('http://localhost:8080/api/question', {
@@ -109,25 +121,25 @@ export function askAIQuestion(videoUrl, question) {
             timestamp: currentTimestamp // Current timestamp of the video
         })
     })
-    .then(response => {
-        // Check if the response is OK and JSON
-        if (!response.ok) {
-            throw new Error('Failed to get AI response');
-        }
-        return response.json();  // Parse JSON response
-    })
-    .then(data => {
-        const aiResponse = data.response;  // Extract the AI response from the backend
-        if (aiResponse) {
-            addAIBubble(aiResponse);  // Add the AI response bubble to the UI
-            console.log('AI Response:', aiResponse);
-        } else {
-            console.error('No AI response found in the response data.');
-        }
-    })
-    .catch((error) => {
-        console.error('Error:', error);  // Log any errors for debugging
-    });
+        .then(response => {
+            // Check if the response is OK and JSON
+            if (!response.ok) {
+                throw new Error('Failed to get AI response');
+            }
+            return response.json();  // Parse JSON response
+        })
+        .then(data => {
+            const aiResponse = data.response;  // Extract the AI response from the backend
+            if (aiResponse) {
+                addAIBubble(aiResponse);  // Add the AI response bubble to the UI
+                console.log('AI Response:', aiResponse);
+            } else {
+                console.error('No AI response found in the response data.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);  // Log any errors for debugging
+        });
 }
 
 
