@@ -368,14 +368,19 @@
 
 /* General styling for the loading indicator */
 .loading-indicator {
-    display: none; /* Hidden by default */
+    display: none; 
     text-align: center;
     padding: 10px;
     font-size: 16px;
     color: #333;
     font-style: italic;
     opacity: 0.8;
-    animation: fadeInOut 1.5s infinite; /* Animation for a subtle effect */
+    animation: fadeInOut 1.5s infinite;
+}
+
+.loading-indicator[style*="display: none"] {
+    animation: none;
+    opacity: 0;
 }
 
 /* Keyframe animation for a gentle fade effect */
@@ -383,4 +388,108 @@
     0% { opacity: 0.5; }
     50% { opacity: 1; }
     100% { opacity: 0.5; }
+}
+
+/* Dropdown Styling */
+#optionsList {
+    position: absolute;
+    z-index: 2000; /* Higher z-index than summary-holder */
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Centering for 'Coming Soon' features */
+#summary-holder.coming-soon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 40px;
+    box-sizing: border-box;
+    height: 320px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #ffefef, #ffffff);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1000; /* Lower than the dropdown */
+}
+
+/* Fix for the Feature Name Display */
+.feature-title {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    z-index: 10;  /* Ensure it stays above other elements */
+}
+
+/* Rocket Icon Styling */
+.rocket-icon {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+/* Coming Soon Text */
+.coming-soon-text {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
+}
+
+/* Interest Question Styling */
+.interest-question {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 20px;
+}
+
+/* Show Interest Button Styling */
+.show-interest-button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 20px;
+    background-color: #DD1313;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.show-interest-button:hover {
+    background-color: #B30F0F;
+}
+
+/* Custom Scrollbar Styling for Features with Scrollbars */
+.scrollable {
+    overflow-y: auto;
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: #ECB0B0 transparent;
+}
+
+/* Webkit Browsers (Chrome, Edge, Safari) */
+.scrollable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable::-webkit-scrollbar-thumb {
+    background: #ECB0B0;
+    border-radius: 10px; /* Rounded edges */
+    border: none;
+}
+
+/* Remove Up/Down Arrows for Webkit */
+.scrollable::-webkit-scrollbar-button {
+    display: none;
 }

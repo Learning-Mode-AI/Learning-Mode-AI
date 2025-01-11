@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"Learning-Mode-AI/pkg/config"
@@ -69,4 +70,24 @@ func GetVideoSummaryFromRedis(videoID string) (string, error) {
 		return "", nil
 	}
 	return summary, err
+}
+
+func StoreInterestClick(feature string) error {
+    sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Replace spaces with underscores
+    key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
+    err := rdb.Incr(ctx, key).Err()
+    if err != nil {
+        return fmt.Errorf("failed to increment interest count for feature %s: %v", feature, err)
+    }
+    return nil
+}
+
+func GetInterestCount(feature string) (int64, error) {
+    sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Consistent sanitization
+    key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
+    count, err := rdb.Get(ctx, key).Int64()
+    if err != nil {
+        return 0, fmt.Errorf("failed to get interest count for feature %s: %v", feature, err)
+    }
+    return count, nil
 }

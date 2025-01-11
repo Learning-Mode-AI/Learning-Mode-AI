@@ -121,12 +121,12 @@ function createContainer2(parentElement) {
   var header = document.createElement('div');
   header.className = 'features-header';
   var headerTitle = document.createElement('span');
-  headerTitle.innerText = 'Use Unique Features';
+  headerTitle.innerText = 'Reinforce Your Learning';
 
   // Dropdown button
   var dropdownButton = document.createElement('button');
   dropdownButton.className = 'dropdown-button';
-  dropdownButton.innerHTML = '▼'; // Downward arrow
+  dropdownButton.innerHTML = '▼';
   dropdownButton.title = 'Toggle Options';
   header.appendChild(headerTitle);
   header.appendChild(dropdownButton);
@@ -134,14 +134,13 @@ function createContainer2(parentElement) {
   // Options list
   var optionsList = document.createElement('ul');
   optionsList.className = 'features-options';
-  optionsList.style.display = 'none'; // Initially hidden
-
+  optionsList.style.display = 'none';
   var options = ['Fact Check', 'Generate Quiz*', 'Short Summary*', 'Long Summary', 'Get Resources'];
   options.forEach(function (option, index) {
     var optionItem = document.createElement('li');
     optionItem.className = 'feature-option';
     optionItem.innerText = option;
-    optionItem.dataset.index = index; // Assign index to each option
+    optionItem.dataset.index = index;
     optionsList.appendChild(optionItem);
   });
 
@@ -157,12 +156,10 @@ function createContainer2(parentElement) {
   summaryHolder.className = 'minimal-summary';
   var loadingIndicator = document.createElement('div');
   loadingIndicator.id = 'loading-indicator';
-  loadingIndicator.className = 'loading-indicator'; // Handled by CSS
-  loadingIndicator.innerText = 'Generating summary...';
+  loadingIndicator.className = 'loading-indicator';
   var quizHolder = document.createElement('div');
   quizHolder.id = 'quiz-holder';
   quizHolder.className = 'feature-content';
-  quizHolder.innerText = 'Quiz Holder';
   quizHolder.style.display = 'none';
   contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(quizHolder);
@@ -172,40 +169,92 @@ function createContainer2(parentElement) {
   // Append panel to parent element
   parentElement.appendChild(featuresPanel);
 
-  // Toggle options visibility on button click
+  // Feature controls
+  var featuresWithInterestButton = ["Fact Check", "Long Summary", "Get Resources", "Generate Quiz*"];
+  var activeFeatures = ["Short Summary*"];
+  var featuresWithLoading = ["Short Summary*"];
+
+  // Toggle options visibility
+  // Ensure dropdown has a higher z-index
   dropdownButton.addEventListener('click', function () {
-    var isVisible = optionsList.style.display !== 'none';
-    optionsList.style.display = isVisible ? 'none' : 'block';
+    optionsList.style.zIndex = '2000'; // Set higher z-index than the summaryHolder
+    optionsList.style.display = optionsList.style.display === 'none' ? 'block' : 'none';
   });
 
   // Show/hide content on option click
   optionsList.addEventListener('click', function (e) {
-    if (e.target && e.target.className.includes('feature-option')) {
-      var selectedOption = e.target.dataset.index;
+    var selectedOption = e.target.innerText;
+    if (selectedOption) {
+      // Close the dropdown menu automatically
+      optionsList.style.display = 'none';
 
-      // Hide all content initially
+      /// Reset visibility and scrollable state, and remove 'coming-soon' styling
       summaryHolder.style.display = 'none';
       quizHolder.style.display = 'none';
+      loadingIndicator.style.display = 'none';
+      summaryHolder.classList.remove('coming-soon');
+      summaryHolder.classList.remove('scrollable');
+      summaryHolder.style.overflowY = 'auto';
 
-      // Only show loading for 'Short Summary'
-      if (selectedOption === '2') {
-        // 'Short Summary*'
+      // Show loading if required for the feature
+      if (featuresWithLoading.includes(selectedOption)) {
+        loadingIndicator.innerText = "Loading ".concat(selectedOption, "...");
         loadingIndicator.style.display = 'block';
-        var videoUrl = window.location.href;
-        (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl, function (formattedContent) {
-          summaryHolder.innerHTML = formattedContent;
-          summaryHolder.style.display = 'block';
-          loadingIndicator.style.display = 'none';
-        });
-      } else if (selectedOption === '1') {
-        // 'Generate Quiz*'
-        quizHolder.style.display = 'block';
-      } else if (selectedOption === '0' || selectedOption === '3' || selectedOption === '4') {
-        // For 'Fact Check', 'Long Summary', and 'Get Resources', no loading indicator
-        summaryHolder.style.display = 'block';
-        summaryHolder.innerText = e.target.innerText + " content will be shown here.";
       }
-      optionsList.style.display = 'none'; // Close dropdown after selection
+
+      // Check if the selected feature is an active feature
+      if (activeFeatures.includes(selectedOption)) {
+        if (selectedOption === "Short Summary*") {
+          var videoUrl = window.location.href;
+          loadingIndicator.classList.add('active');
+          summaryHolder.classList.remove('active');
+          (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl, function (formattedContent) {
+            summaryHolder.innerHTML = formattedContent;
+            summaryHolder.classList.add('active');
+            loadingIndicator.classList.remove('active');
+            summaryHolder.classList.add('scrollable'); // Enable scrollbar for summary
+            summaryHolder.style.overflowY = 'auto';
+          }, function () {
+            loadingIndicator.classList.remove('active');
+            alert('Failed to generate summary. Please try again.');
+          });
+        } else if (selectedOption === "Generate Quiz*") {
+          quizHolder.innerText = "Generating your quiz...";
+          quizHolder.style.display = 'block';
+          loadingIndicator.style.display = 'none';
+        }
+        summaryHolder.classList.add('scrollable');
+        summaryHolder.style.overflowY = 'auto';
+        return; // Prevent further actions for active features
+      }
+
+      // If the feature is a "Coming Soon" feature with new layout
+      summaryHolder.classList.add('coming-soon');
+      summaryHolder.style.display = 'flex';
+      summaryHolder.style.overflow = 'hidden'; // Prevent scrollbars only for coming soon
+      summaryHolder.innerHTML = "\n            <div class=\"coming-soon-feature\">\n                <div class=\"feature-title\">".concat(selectedOption, "</div>\n                <img src=\"https://cdn-icons-png.flaticon.com/512/9541/9541346.png\" \n                    alt=\"Rocket Icon\" class=\"rocket-icon\" />\n                <p class=\"coming-soon-text\"><strong>Coming Soon</strong></p>\n                <p class=\"interest-question\">Is this something you would use?</p>\n                <button class=\"show-interest-button\" data-feature=\"").concat(selectedOption, "\">Show Interest</button>\n            </div>\n        ");
+
+      // Add the Show Interest button functionality
+      summaryHolder.querySelector('.show-interest-button').addEventListener('click', function () {
+        fetch('http://localhost:8080/api/show-interest', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            feature: selectedOption
+          })
+        }).then(function (response) {
+          return response.json();
+        }).then(function (data) {
+          return alert("Thank you for your interest in ".concat(selectedOption, "!"));
+        })["catch"](function (error) {
+          return console.error('Error:', error);
+        });
+      });
+
+      // Final fallback to ensure loading indicator is hidden
+      loadingIndicator.style.display = 'none';
     }
   });
 }
