@@ -67,8 +67,8 @@ function createChatContainer(parentElement) {
     chatContainer.style.height = isVisible ? '50px' : '600px';
   });
 
-  // Event listener for send button
-  sendButton.addEventListener('click', function () {
+  // Handle user sending the question
+  var sendQuestion = function sendQuestion() {
     var userQuestion = inputField.value;
     if (userQuestion) {
       addUserBubble(userQuestion);
@@ -76,7 +76,32 @@ function createChatContainer(parentElement) {
       var videoUrl = window.location.href;
       (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
     }
+  };
+
+  // Event listener for send button
+  sendButton.addEventListener('click', sendQuestion);
+
+  // Event listener for keypress (Enter key)
+  inputField.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && event.ctrlKey) {
+      inputField.value += '\n';
+    } else if (event.key === 'Enter' && !event.ctrlKey) {
+      event.preventDefault();
+      sendQuestion();
+    }
   });
+
+  // // Event listener for send button
+  // sendButton.addEventListener('click', () => {
+  //     const userQuestion = inputField.value;
+  //     if (userQuestion) {
+  //         addUserBubble(userQuestion);
+  //         inputField.value = '';
+  //         const videoUrl = window.location.href;
+  //         askAIQuestion(videoUrl, userQuestion);
+  //     }
+  // });
+
   document.addEventListener('fullscreenchange', function () {
     var chatContainer = document.getElementById('custom-chat-container');
     var isFullscreen = !!document.fullscreenElement;
