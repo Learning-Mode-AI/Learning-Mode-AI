@@ -13,6 +13,7 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/processVideo", handlers.ProcessVideo).Methods("POST")
 	r.HandleFunc("/api/question", handlers.AskGPTQuestion).Methods("POST")
 	r.HandleFunc("/api/quiz", handlers.GenerateQuiz).Methods("POST")
+	r.HandleFunc("/video-summary", handlers.VideoSummaryHandler).Methods("POST")
 
 	return r
 }
