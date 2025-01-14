@@ -499,6 +499,7 @@ function askAIQuestion(videoUrl, question) {
 function generateVideoSummary(videoUrl, onSuccess, onError) {
   var videoId = extractVideoID(videoUrl);
   var summaryHolder = document.getElementById('summary-holder');
+  var loadingIndicator = document.getElementById('loading-indicator');
   if (!videoId) {
     console.error('Invalid video URL: Unable to extract video ID');
     if (summaryHolder) {
@@ -513,10 +514,11 @@ function generateVideoSummary(videoUrl, onSuccess, onError) {
   if (storedSummary) {
     console.log('Using cached summary from local storage.');
     if (summaryHolder) {
-      summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(storedSummary); // Render Markdown from cache
+      summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(storedSummary);
       summaryHolder.style.display = 'block';
+      loadingIndicator.style.display = 'none';
     }
-    onSuccess && onSuccess((0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(data.summary)); // Call success callback
+    onSuccess && onSuccess((0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(storedSummary));
     return;
   }
 

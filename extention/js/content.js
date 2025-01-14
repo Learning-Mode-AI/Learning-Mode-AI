@@ -139,7 +139,7 @@ export function askAIQuestion(videoUrl, question) {
 export function generateVideoSummary(videoUrl, onSuccess, onError) {
     const videoId = extractVideoID(videoUrl);
     const summaryHolder = document.getElementById('summary-holder');
-
+    const loadingIndicator = document.getElementById('loading-indicator');
     if (!videoId) {
         console.error('Invalid video URL: Unable to extract video ID');
         if (summaryHolder) {
@@ -154,10 +154,11 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     if (storedSummary) {
         console.log('Using cached summary from local storage.');
         if (summaryHolder) {
-            summaryHolder.innerHTML = marked(storedSummary); // Render Markdown from cache
+            summaryHolder.innerHTML = marked(storedSummary);
             summaryHolder.style.display = 'block';
+            loadingIndicator.style.display = 'none';
         }
-        onSuccess && onSuccess(marked(data.summary)); // Call success callback
+        onSuccess && onSuccess(marked(storedSummary));
         return;
     }
 
