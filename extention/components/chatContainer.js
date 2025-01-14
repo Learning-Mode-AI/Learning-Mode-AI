@@ -8,16 +8,18 @@ export function createChatContainer(parentElement) {
     const header = document.createElement('div');
     header.className = 'header';
 
-    // Toggle Button
+    // Toggle Button (☰)
     const toggleButton = document.createElement('button');
     toggleButton.className = 'toggle-button';
     toggleButton.innerHTML = '☰';
     toggleButton.title = 'Toggle Visibility';
 
-    header.appendChild(toggleButton);
-
+    // Header Title
     const headerTitle = document.createElement('span');
     headerTitle.innerText = 'Chat-Bot';
+
+    // Append buttons and title to header
+    header.appendChild(toggleButton);
     header.appendChild(headerTitle);
 
     // Chat Area
@@ -37,11 +39,11 @@ export function createChatContainer(parentElement) {
     sendButton.className = 'send-button';
     sendButton.innerHTML = '➤';
 
-    // Append input field and button to input area
+    // Append input field and send button to input area
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
 
-    // Append all elements
+    // Append header, chat area, and input area to chat container
     chatContainer.appendChild(header);
     chatContainer.appendChild(chatArea);
     chatContainer.appendChild(inputArea);

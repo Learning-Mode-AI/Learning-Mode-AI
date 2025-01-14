@@ -23,19 +23,35 @@ func VideoSummaryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate that video_id is provided
 	if req.VideoID == "" {
 		http.Error(w, "video_id is required", http.StatusBadRequest)
 		return
 	}
 
-	// Call AI Service to generate the summary using video_id
-	summary, err := services.GetVideoSummary(req.VideoID)
+	// Check if summary exists in Redis first
+	summary, err := services.GetVideoSummaryFromRedis(req.VideoID)
+	if err != nil {
+		log.Printf("Error retrieving summary from Redis: %v", err)
+	}
+
+	if summary != "" {
+		// Return cached summary if available
+		resp := VideoSummaryResponse{Summary: summary}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(resp)
+		return
+	}
+
+	// Call AI service only if summary not found in cache
+	summary, err = services.GetVideoSummary(req.VideoID)
 	if err != nil {
 		log.Printf("Error generating video summary: %v", err)
 		http.Error(w, "Failed to generate summary", http.StatusInternalServerError)
 		return
 	}
+
+	// Store the newly generated summary in Redis
+	services.StoreVideoSummaryInRedis(req.VideoID, summary)
 
 	// Respond with the generated summary
 	resp := VideoSummaryResponse{Summary: summary}
