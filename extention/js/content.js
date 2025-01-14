@@ -136,7 +136,7 @@ export function askAIQuestion(videoUrl, question) {
         });
 }
 
-export function generateVideoSummary(videoUrl) {
+export function generateVideoSummary(videoUrl, onSuccess, onError) {
     const videoId = extractVideoID(videoUrl);
     const summaryHolder = document.getElementById('summary-holder');
 
@@ -157,6 +157,7 @@ export function generateVideoSummary(videoUrl) {
             summaryHolder.innerHTML = marked(storedSummary); // Render Markdown from cache
             summaryHolder.style.display = 'block';
         }
+        onSuccess && onSuccess(marked(data.summary)); // Call success callback
         return;
     }
 
@@ -172,32 +173,31 @@ export function generateVideoSummary(videoUrl) {
     })
         .then((response) => {
             if (!response.ok) {
-                response.text().then((text) => {
-                    console.error(`Server responded with error: ${response.status} - ${text}`);
+                return response.text().then((text) => {
+                    throw new Error(`Server responded with error: ${response.status} - ${text}`);
                 });
-                throw new Error(`Failed to fetch video summary: ${response.status}`);
             }
             return response.json();
         })
         .then((data) => {
             if (data.summary) {
-                // Store the summary in local storage
                 localStorage.setItem(`summary_${videoId}`, data.summary);
-                
-                // Render the summary using Markdown
-                summaryHolder.innerHTML = marked(data.summary);
+                summaryHolder.innerHTML = marked(data.summary); // Render using 'marked'
                 summaryHolder.style.display = 'block';
+                onSuccess && onSuccess(data.summary);
             } else {
                 summaryHolder.innerText = 'No summary available for this video.';
                 summaryHolder.style.display = 'block';
+                onError && onError();
             }
         })
         .catch((error) => {
-            console.error('Error fetching video summary:', error);
+            console.error('Error fetching video summary:', error.message);  // Use 'error.message' for clarity
             if (summaryHolder) {
                 summaryHolder.innerText = 'Error fetching video summary.';
                 summaryHolder.style.display = 'block';
             }
+            onError && onError();
         });
 }
 

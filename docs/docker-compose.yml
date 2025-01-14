@@ -29,6 +29,8 @@ services:
   youtube-info-service:
     build:
       context: ./Learning-Mode-AI-info-service
+    env_file:
+      - ./Learning-Mode-AI-info-service/.env
     container_name: info-service
     ports:
       - "8000:8000"

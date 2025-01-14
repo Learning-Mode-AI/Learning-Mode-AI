@@ -71,14 +71,57 @@ function createChatContainer(parentElement) {
     chatContainer.style.height = isVisible ? '50px' : '600px';
   });
 
-  // Event listener for send button
-  sendButton.addEventListener('click', function () {
+  // Handle user sending the question
+  var sendQuestion = function sendQuestion() {
     var userQuestion = inputField.value;
     if (userQuestion) {
       addUserBubble(userQuestion);
       inputField.value = '';
       var videoUrl = window.location.href;
       (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
+    }
+  };
+
+  // Event listener for send button
+  sendButton.addEventListener('click', sendQuestion);
+
+  // Event listener for keypress (Enter key)
+  inputField.addEventListener('keydown', function (event) {
+    if (event.key === 'Enter' && event.ctrlKey) {
+      inputField.value += '\n';
+    } else if (event.key === 'Enter' && !event.ctrlKey) {
+      event.preventDefault();
+      sendQuestion();
+    }
+  });
+
+  // // Event listener for send button
+  // sendButton.addEventListener('click', () => {
+  //     const userQuestion = inputField.value;
+  //     if (userQuestion) {
+  //         addUserBubble(userQuestion);
+  //         inputField.value = '';
+  //         const videoUrl = window.location.href;
+  //         askAIQuestion(videoUrl, userQuestion);
+  //     }
+  // });
+
+  document.addEventListener('fullscreenchange', function () {
+    var chatContainer = document.getElementById('custom-chat-container');
+    var isFullscreen = !!document.fullscreenElement;
+    var secondaryInner = document.getElementById('secondary-inner');
+    if (chatContainer) {
+      if (isFullscreen) {
+        document.body.appendChild(chatContainer);
+        chatContainer.classList.add('fullscreen');
+        chatContainer.style.position = 'fixed';
+      } else {
+        if (secondaryInner) {
+          secondaryInner.appendChild(chatContainer);
+          chatContainer.classList.remove('fullscreen');
+          chatContainer.style.position = 'relative';
+        }
+      }
     }
   });
 }
@@ -112,6 +155,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   createContainer2: () => (/* binding */ createContainer2)
 /* harmony export */ });
 /* harmony import */ var _js_content_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../js/content.js */ "./js/content.js");
+/* harmony import */ var marked__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! marked */ "./node_modules/marked/lib/marked.esm.js");
+
+ // Ensure this import exists at the top
 
 function createContainer2(parentElement) {
   var featuresPanel = document.createElement('div');
@@ -206,17 +252,15 @@ function createContainer2(parentElement) {
       if (activeFeatures.includes(selectedOption)) {
         if (selectedOption === "Short Summary*") {
           var videoUrl = window.location.href;
-          loadingIndicator.classList.add('active');
-          summaryHolder.classList.remove('active');
           (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.generateVideoSummary)(videoUrl, function (formattedContent) {
-            summaryHolder.innerHTML = formattedContent;
-            summaryHolder.classList.add('active');
-            loadingIndicator.classList.remove('active');
+            summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_1__.marked)(formattedContent);
             summaryHolder.classList.add('scrollable'); // Enable scrollbar for summary
             summaryHolder.style.overflowY = 'auto';
+            summaryHolder.style.display = 'block';
+            loadingIndicator.style.display = 'none'; // Hide loading indicator
           }, function () {
-            loadingIndicator.classList.remove('active');
             alert('Failed to generate summary. Please try again.');
+            loadingIndicator.style.display = 'none'; // Hide loading indicator
           });
         } else if (selectedOption === "Generate Quiz*") {
           quizHolder.innerText = "Generating your quiz...";
@@ -452,7 +496,7 @@ function askAIQuestion(videoUrl, question) {
     console.error('Error fetching AI response:', error);
   });
 }
-function generateVideoSummary(videoUrl) {
+function generateVideoSummary(videoUrl, onSuccess, onError) {
   var videoId = extractVideoID(videoUrl);
   var summaryHolder = document.getElementById('summary-holder');
   if (!videoId) {
@@ -472,6 +516,7 @@ function generateVideoSummary(videoUrl) {
       summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(storedSummary); // Render Markdown from cache
       summaryHolder.style.display = 'block';
     }
+    onSuccess && onSuccess((0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(data.summary)); // Call success callback
     return;
   }
 
@@ -487,30 +532,29 @@ function generateVideoSummary(videoUrl) {
     })
   }).then(function (response) {
     if (!response.ok) {
-      response.text().then(function (text) {
-        console.error("Server responded with error: ".concat(response.status, " - ").concat(text));
+      return response.text().then(function (text) {
+        throw new Error("Server responded with error: ".concat(response.status, " - ").concat(text));
       });
-      throw new Error("Failed to fetch video summary: ".concat(response.status));
     }
     return response.json();
   }).then(function (data) {
     if (data.summary) {
-      // Store the summary in local storage
       localStorage.setItem("summary_".concat(videoId), data.summary);
-
-      // Render the summary using Markdown
-      summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(data.summary);
+      summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(data.summary); // Render using 'marked'
       summaryHolder.style.display = 'block';
+      onSuccess && onSuccess(data.summary);
     } else {
       summaryHolder.innerText = 'No summary available for this video.';
       summaryHolder.style.display = 'block';
+      onError && onError();
     }
   })["catch"](function (error) {
-    console.error('Error fetching video summary:', error);
+    console.error('Error fetching video summary:', error.message); // Use 'error.message' for clarity
     if (summaryHolder) {
       summaryHolder.innerText = 'Error fetching video summary.';
       summaryHolder.style.display = 'block';
     }
+    onError && onError();
   });
 }
 function extractVideoID(videoUrl) {

@@ -58,14 +58,59 @@ export function createChatContainer(parentElement) {
         chatContainer.style.height = isVisible ? '50px' : '600px';
     });
 
-    // Event listener for send button
-    sendButton.addEventListener('click', () => {
+    // Handle user sending the question
+    const sendQuestion = () => {
         const userQuestion = inputField.value;
         if (userQuestion) {
             addUserBubble(userQuestion);
-            inputField.value = '';
+            inputField.value = '';  
             const videoUrl = window.location.href;
-            askAIQuestion(videoUrl, userQuestion);
+            askAIQuestion(videoUrl, userQuestion); 
+        }
+    };
+
+    // Event listener for send button
+    sendButton.addEventListener('click', sendQuestion);
+
+    // Event listener for keypress (Enter key)
+    inputField.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && event.ctrlKey) {
+            inputField.value += '\n';
+        } else if (event.key === 'Enter' && !event.ctrlKey) {
+            event.preventDefault(); 
+            sendQuestion();  
+        }
+    });
+    
+
+    // // Event listener for send button
+    // sendButton.addEventListener('click', () => {
+    //     const userQuestion = inputField.value;
+    //     if (userQuestion) {
+    //         addUserBubble(userQuestion);
+    //         inputField.value = '';
+    //         const videoUrl = window.location.href;
+    //         askAIQuestion(videoUrl, userQuestion);
+    //     }
+    // });
+
+    document.addEventListener('fullscreenchange', () => {
+        const chatContainer = document.getElementById('custom-chat-container');
+        const isFullscreen = !!document.fullscreenElement;
+        const secondaryInner = document.getElementById('secondary-inner');
+
+        if (chatContainer) {
+            if (isFullscreen) {
+                document.body.appendChild(chatContainer);
+                chatContainer.classList.add('fullscreen');
+                chatContainer.style.position = 'fixed'; 
+            } else {
+                if (secondaryInner) {
+                    secondaryInner.appendChild(chatContainer);
+                    chatContainer.classList.remove('fullscreen');
+                    chatContainer.style.position = 'relative';
+                }
+            }
         }
     });
 }

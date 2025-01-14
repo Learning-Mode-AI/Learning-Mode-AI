@@ -1,4 +1,5 @@
 import { generateVideoSummary } from '../js/content.js';
+import { marked } from 'marked'; // Ensure this import exists at the top
 
 export function createContainer2(parentElement) {
     const featuresPanel = document.createElement('div');
@@ -103,17 +104,15 @@ optionsList.addEventListener('click', (e) => {
         if (activeFeatures.includes(selectedOption)) {
             if (selectedOption === "Short Summary*") {
                 const videoUrl = window.location.href;
-                loadingIndicator.classList.add('active');
-                summaryHolder.classList.remove('active');
                 generateVideoSummary(videoUrl, (formattedContent) => {
-                    summaryHolder.innerHTML = formattedContent;
-                    summaryHolder.classList.add('active');
-                    loadingIndicator.classList.remove('active');
+                    summaryHolder.innerHTML = marked(formattedContent);
                     summaryHolder.classList.add('scrollable'); // Enable scrollbar for summary
                     summaryHolder.style.overflowY = 'auto';
+                    summaryHolder.style.display = 'block';
+                    loadingIndicator.style.display = 'none';  // Hide loading indicator
                 }, () => {
-                    loadingIndicator.classList.remove('active');
                     alert('Failed to generate summary. Please try again.');
+                    loadingIndicator.style.display = 'none';  // Hide loading indicator
                 });
             }
             else if (selectedOption === "Generate Quiz*") {
