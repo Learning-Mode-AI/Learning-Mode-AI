@@ -20,6 +20,8 @@ function toggleLearningMode() {
         switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ECB0B0';
         toggleCircle.style.left = '19px';
         activateLearningMode();
+        showModal()
+
     } else {
         switchButton.setAttribute('aria-checked', 'false');
         switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ccc';
@@ -38,8 +40,7 @@ function activateLearningMode() {
         sidebar.style.display = 'none'; // Hide the sidebar
 
         const videoUrl = window.location.href; // Grab the video URL
-        sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
-
+        sendVideoInfoToBackend(videoUrl); 
         if (isFullscreen) {
             if (!chatContainer) {
                 createChatContainer(document.body); // Append to body in full-screen
@@ -68,26 +69,58 @@ function deactivateLearningMode() {
     }
     if (chatContainer) {
         chatContainer.remove(); // Remove the chat container
+    }  
+}
+
+function showModal() {
+    const modalOverlay = document.getElementById('chat-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'flex'; // Show the modal
+        console.log('Modal shown');
+    } else {
+        console.error('Modal overlay not found');
+    }
+}
+
+function hideModal() {
+    const modalOverlay = document.getElementById('chat-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'none'; // Hide the modal
+        console.log('Modal hidden');
+    } else {
+        console.error('Modal overlay not found');
     }
 }
 
 
+
 function sendVideoInfoToBackend(videoUrl) {
-    fetch('http://localhost:8080/processVideo', { 
+    fetch('http://localhost:8080/processVideo', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ videoUrl: videoUrl })
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Success:', data);
+        const status = data.transcription_status;
+        console.log('THIS IS THE DATA:', data)
+        if (status === 'pending') {
+            showModal();
+            addAIBubble('The video is being transcribed. This may take some time, please wait...');
+        } else if (status === 'completed') {
+            hideModal();
+            addAIBubble('Video Proccessed! You can now ask questions.');
+        } else if (status === 'failed') {
+            addAIBubble('Transcription failed. Please try again later.');
+        }
     })
-    .catch((error) => {
+    .catch(error => {
         console.error('Error:', error);
+        addAIBubble('An error occurred while processing the video. Please try again later.');
     });
 }
+
+
 
 export function askAIQuestion(videoUrl, question) {
     // Make sure videoUrl is properly formatted and extractVideoID is defined correctly

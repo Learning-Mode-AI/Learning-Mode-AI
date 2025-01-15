@@ -20,6 +20,15 @@ function createChatContainer(parentElement) {
   var chatContainer = document.createElement('div');
   chatContainer.id = 'custom-chat-container';
 
+  // Modal Overlay
+  var modalOverlay = document.createElement('div');
+  modalOverlay.id = 'chat-modal-overlay';
+  var modalContent = document.createElement('div');
+  modalContent.id = 'chat-modal-content';
+  modalContent.innerText = 'The video is being processed. Please wait...';
+  modalOverlay.appendChild(modalContent);
+  chatContainer.appendChild(modalOverlay);
+
   // Header
   var header = document.createElement('div');
   header.className = 'header';
@@ -293,6 +302,7 @@ function toggleLearningMode() {
     switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ECB0B0';
     toggleCircle.style.left = '19px';
     activateLearningMode();
+    showModal();
   } else {
     switchButton.setAttribute('aria-checked', 'false');
     switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ccc';
@@ -309,8 +319,7 @@ function activateLearningMode() {
     sidebar.style.display = 'none'; // Hide the sidebar
 
     var videoUrl = window.location.href; // Grab the video URL
-    sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
-
+    sendVideoInfoToBackend(videoUrl);
     if (isFullscreen) {
       if (!chatContainer) {
         (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(document.body); // Append to body in full-screen
@@ -338,6 +347,24 @@ function deactivateLearningMode() {
     chatContainer.remove(); // Remove the chat container
   }
 }
+function showModal() {
+  var modalOverlay = document.getElementById('chat-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.style.display = 'flex'; // Show the modal
+    console.log('Modal shown');
+  } else {
+    console.error('Modal overlay not found');
+  }
+}
+function hideModal() {
+  var modalOverlay = document.getElementById('chat-modal-overlay');
+  if (modalOverlay) {
+    modalOverlay.style.display = 'none'; // Hide the modal
+    console.log('Modal hidden');
+  } else {
+    console.error('Modal overlay not found');
+  }
+}
 function sendVideoInfoToBackend(videoUrl) {
   fetch('http://localhost:8080/processVideo', {
     method: 'POST',
@@ -350,9 +377,20 @@ function sendVideoInfoToBackend(videoUrl) {
   }).then(function (response) {
     return response.json();
   }).then(function (data) {
-    console.log('Success:', data);
+    var status = data.transcription_status;
+    console.log('THIS IS THE DATA:', data);
+    if (status === 'pending') {
+      showModal();
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('The video is being transcribed. This may take some time, please wait...');
+    } else if (status === 'completed') {
+      hideModal();
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('Video Proccessed! You can now ask questions.');
+    } else if (status === 'failed') {
+      (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('Transcription failed. Please try again later.');
+    }
   })["catch"](function (error) {
     console.error('Error:', error);
+    (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.addAIBubble)('An error occurred while processing the video. Please try again later.');
   });
 }
 function askAIQuestion(videoUrl, question) {
