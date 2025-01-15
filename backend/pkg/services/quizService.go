@@ -1,6 +1,7 @@
 package services
 
 import (
+	"Learning-Mode-AI/pkg/config"
 	"bytes"
 	"encoding/json"
 	"fmt"
@@ -29,7 +30,6 @@ type QuizResponse struct {
 	Questions []Question `json:"questions"`
 }
 
-var quizServiceBaseURL = "http://localhost:8084"
 
 func GenerateQuiz(videoID string) (*QuizResponse, error) {
 	payload := QuizRequest{VideoID: videoID}
@@ -38,7 +38,7 @@ func GenerateQuiz(videoID string) (*QuizResponse, error) {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	resp, err := http.Post(fmt.Sprintf("%s/quiz/generate-quiz", quizServiceBaseURL), "application/json", bytes.NewBuffer(body))
+	resp, err := http.Post(fmt.Sprintf("%s/quiz/generate-quiz", config.QuizServiceURL), "application/json", bytes.NewBuffer(body))
 	if err != nil {
 		return nil, fmt.Errorf("failed to call quiz service: %w", err)
 	}

@@ -26,6 +26,7 @@ func InitConfig() {
 		YoutubeInfoServiceURL = "http://youtube-info-service:8000"
 		VideoProcessingServiceURL = "http://video-processing-service:8081"
 		AiServiceURL = "http://ai-service:8082"
+		QuizServiceURL="http://quiz-service:8084"
 		RedisHost = "redis:6379"
 		fmt.Println("Running in Docker mode")
 	}

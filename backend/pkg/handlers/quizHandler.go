@@ -18,9 +18,10 @@ func GenerateQuiz(w http.ResponseWriter, r *http.Request) {
 
 	quiz, err := services.GenerateQuiz(request.VideoID)
 	if err != nil {
-		http.Error(w, "Failed to generate quiz", http.StatusInternalServerError)
+		http.Error(w, "Failed to generate quiz: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(quiz)
