@@ -158,7 +158,7 @@ func GetVideoSummary(videoID string) (string, error) {
 
 	// Define the AI Service URL
 	aiServiceURL := fmt.Sprintf("%s/ai/generate-summary", config.AiServiceURL)
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 60 * time.Second}
 
 	// Make the POST request to the AI Service
 	req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))

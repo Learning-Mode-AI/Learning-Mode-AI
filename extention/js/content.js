@@ -54,40 +54,97 @@ function initializeLearningMode() {
     let chatContainer = document.getElementById('custom-chat-container');
     const isFullscreen = !!document.fullscreenElement;
 
+    const videoUrl = window.location.href;
     if (sidebar && secondaryInner) {
-        sidebar.style.display = 'none'; // Hide the sidebar
+        sidebar.style.display = 'none';
 
-        const videoUrl = window.location.href; // Grab the video URL
-        sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
+        sendVideoInfoToBackend(videoUrl);
 
         if (isFullscreen) {
             if (!chatContainer) {
-                createChatContainer(document.body); // Append to body in full-screen
+                createChatContainer(document.body);
                 chatContainer = document.getElementById('custom-chat-container');
                 chatContainer.classList.add('fullscreen');
+            }
+            if (!document.getElementById('features-panel')) {
+                createContainer2(document.body); // Append container2 to body in full-screen
             }
         } else {
             if (!chatContainer) {
                 createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
             }
-            createContainer2(secondaryInner);
-        }
-
-        if (sidebar && !isFullscreen) {
-            sidebar.style.display = 'none';
+            if (!document.getElementById('features-panel')) {
+                createContainer2(secondaryInner); // Append container2 to the secondary-inner element
+            }
         }
     }
+
+    fetch('http://localhost:8080/api/quiz', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ video_id: extractVideoID(videoUrl) })
+    })
+        .then(response => response.json())
+        .then(data => {
+            const quizData = data.questions; // Array of questions with timestamps
+            const videoElement = document.querySelector('video');
+            const displayedTimestamps = new Set();
+
+            if (videoElement) {
+                setInterval(() => {
+                    const currentTime = Math.floor(videoElement.currentTime);
+
+                    quizData.forEach(question => {
+                        const questionTime = Math.floor(parseTimestamp(question.timestamp));
+
+                        if (currentTime === questionTime && !displayedTimestamps.has(questionTime)) {
+                            videoElement.pause();
+                            displayQuestionInQuizHolder(question);
+                            displayedTimestamps.add(questionTime);
+                        }
+                    });
+                }, 500);
+            }
+        })
+        .catch(error => console.error('Error fetching quiz data:', error));
 }
+
+function parseTimestamp(timestamp) {
+    const parts = timestamp.split(':');
+    return parts.length === 2
+        ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1])
+        : parseFloat(parts[0]);
+}
+
+function displayQuestionInQuizHolder(question) {
+    const quizHolder = document.getElementById('quiz-holder');
+    if (quizHolder) {
+        quizHolder.innerHTML = `
+            <div>
+                <h3>${question.text}</h3>
+                ${question.options.map((option, idx) =>
+            `<button class="quiz-option" data-index="${idx}">${option}</button>`
+        ).join('')}
+            </div>
+        `;
+        quizHolder.style.display = 'block';
+    }
+}
+
 
 function deactivateLearningMode() {
     const sidebar = document.getElementById('related');
     const chatContainer = document.getElementById('custom-chat-container');
+    const featuresPanel = document.getElementById('features-panel');
 
     if (sidebar) {
         sidebar.style.display = ''; // Show the sidebar
     }
     if (chatContainer) {
         chatContainer.remove(); // Remove the chat container
+    }
+    if (featuresPanel) {
+        featuresPanel.remove(); // Remove the container2 features panel
     }
 }
 
@@ -187,4 +244,48 @@ function getUserId(callback) {
     });
 }
 
+export function generateVideoSummary(videoUrl, onSuccess, onError) {
+    const videoId = extractVideoID(videoUrl);
+    if (!videoId) {
+        console.error('Invalid video URL: Unable to extract video ID');
+        onError && onError();
+        return;
+    }
+
+    // Check if the summary is already stored in local storage
+    const storedSummary = localStorage.getItem(`summary_${videoId}`);
+    if (storedSummary) {
+        console.log('Using cached summary from local storage.');
+        onSuccess && onSuccess(storedSummary);
+        return;
+    }
+
+    fetch('http://localhost:8080/video-summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ video_id: videoId }),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.text().then((text) => {
+                    throw new Error(`Server responded with error: ${response.status} - ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.summary) {
+                localStorage.setItem(`summary_${videoId}`, data.summary);
+                onSuccess && onSuccess(data.summary);
+            } else {
+                onError && onError();
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching video summary:', error.message);  // Use 'error.message' for clarity
+            onError && onError();
+        });
+}
 

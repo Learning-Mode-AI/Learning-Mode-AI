@@ -8,16 +8,18 @@ export function createChatContainer(parentElement) {
     const header = document.createElement('div');
     header.className = 'header';
 
-    // Toggle Button
+    // Toggle Button (☰)
     const toggleButton = document.createElement('button');
     toggleButton.className = 'toggle-button';
     toggleButton.innerHTML = '☰';
     toggleButton.title = 'Toggle Visibility';
 
-    header.appendChild(toggleButton);
-
+    // Header Title
     const headerTitle = document.createElement('span');
     headerTitle.innerText = 'Chat-Bot';
+
+    // Append buttons and title to header
+    header.appendChild(toggleButton);
     header.appendChild(headerTitle);
 
     // Chat Area
@@ -37,11 +39,11 @@ export function createChatContainer(parentElement) {
     sendButton.className = 'send-button';
     sendButton.innerHTML = '➤';
 
-    // Append input field and button to input area
+    // Append input field and send button to input area
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
 
-    // Append all elements
+    // Append header, chat area, and input area to chat container
     chatContainer.appendChild(header);
     chatContainer.appendChild(chatArea);
     chatContainer.appendChild(inputArea);
@@ -56,16 +58,41 @@ export function createChatContainer(parentElement) {
         chatContainer.style.height = isVisible ? '50px' : '600px';
     });
 
-    // Event listener for send button
-    sendButton.addEventListener('click', () => {
+    // Handle user sending the question
+    const sendQuestion = () => {
         const userQuestion = inputField.value;
         if (userQuestion) {
             addUserBubble(userQuestion);
-            inputField.value = '';
+            inputField.value = '';  
             const videoUrl = window.location.href;
-            askAIQuestion(videoUrl, userQuestion);
+            askAIQuestion(videoUrl, userQuestion); 
+        }
+    };
+
+    // Event listener for send button
+    sendButton.addEventListener('click', sendQuestion);
+
+    // Event listener for keypress (Enter key)
+    inputField.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' && event.ctrlKey) {
+            inputField.value += '\n';
+        } else if (event.key === 'Enter' && !event.ctrlKey) {
+            event.preventDefault(); 
+            sendQuestion();  
         }
     });
+    
+
+    // // Event listener for send button
+    // sendButton.addEventListener('click', () => {
+    //     const userQuestion = inputField.value;
+    //     if (userQuestion) {
+    //         addUserBubble(userQuestion);
+    //         inputField.value = '';
+    //         const videoUrl = window.location.href;
+    //         askAIQuestion(videoUrl, userQuestion);
+    //     }
+    // });
 
     document.addEventListener('fullscreenchange', () => {
         const chatContainer = document.getElementById('custom-chat-container');
