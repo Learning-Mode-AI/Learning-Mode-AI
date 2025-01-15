@@ -14,6 +14,8 @@ func NewRouter() *mux.Router {
 	r.HandleFunc("/api/question", handlers.AskGPTQuestion).Methods("POST")
 	r.HandleFunc("/api/quiz", handlers.GenerateQuiz).Methods("POST")
 	r.HandleFunc("/video-summary", handlers.VideoSummaryHandler).Methods("POST")
+	r.HandleFunc("/api/show-interest", handlers.ShowInterestHandler).Methods("POST")
+    r.HandleFunc("/api/interest-count/{feature}", handlers.GetInterestCountHandler).Methods("GET")
 
 	return r
 }
