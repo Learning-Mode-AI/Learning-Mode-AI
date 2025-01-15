@@ -46,15 +46,15 @@ export function createContainer2(parentElement, react) {
     summaryHolder.innerText = 'Summary Holder';
     summaryHolder.style.display = 'none';
 
-    const quizHolder = react(secondaryInner)
 
     contentWrapper.appendChild(summaryHolder);
-    contentWrapper.appendChild(quizHolder);
-
     featuresPanel.appendChild(contentWrapper);
 
     // Append panel to parent element
     parentElement.appendChild(featuresPanel);
+
+    // append the react quiz after the features panel has been added to the DOM
+    const quizHolder = react(contentWrapper)
 
     // Toggle options visibility on button click
     dropdownButton.addEventListener('click', () => {

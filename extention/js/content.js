@@ -38,6 +38,7 @@ function createReactRoot(parentElement) {
     parentElement.appendChild(reactRoot);
     const root = ReactDOM.createRoot(document.getElementById('react-root'));
     root.render(<App />)
+    return reactRoot
 }
 
 function activateLearningMode() {
