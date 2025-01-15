@@ -53,10 +53,21 @@ function createChatContainer(parentElement) {
   inputArea.appendChild(inputField);
   inputArea.appendChild(sendButton);
 
+  // Create typing indicator element
+  var typingIndicator = document.createElement('div');
+  typingIndicator.id = 'typing-indicator';
+  typingIndicator.className = 'typing-indicator';
+  typingIndicator.innerText = 'AI is typing...';
+  typingIndicator.style.display = 'none';
+  //chatContainer.appendChild(typingIndicator);
+
   // Append all elements
   chatContainer.appendChild(header);
   chatContainer.appendChild(chatArea);
+  chatContainer.appendChild(typingIndicator);
   chatContainer.appendChild(inputArea);
+  //chatContainer.appendChild(typingIndicator);
+
   parentElement.appendChild(chatContainer);
 
   // Toggle visibility of chatArea and inputArea
@@ -74,7 +85,21 @@ function createChatContainer(parentElement) {
       addUserBubble(userQuestion);
       inputField.value = '';
       var videoUrl = window.location.href;
-      (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion);
+      typingIndicator.style.display = 'block'; // Show typing indicator
+      console.log('Typing indicator shown');
+      (0,_js_content_js__WEBPACK_IMPORTED_MODULE_0__.askAIQuestion)(videoUrl, userQuestion).then(function (response) {
+        console.log('AI response received:', response);
+        typingIndicator.style.display = 'none'; // Hide typing indicator when AI response is displayed
+        console.log('Typing indicator hidden');
+        if (response) {
+          addAIBubble(response); // Add AI response to chat area
+        } else {
+          console.error('Received undefined AI response'); // Log error if response is undefined
+        }
+      })["catch"](function (error) {
+        typingIndicator.style.display = 'none'; // Ensure typing indicator is hidden on error
+        console.error('Error in askAIQuestion:', error);
+      });
     }
   };
 
@@ -90,18 +115,6 @@ function createChatContainer(parentElement) {
       sendQuestion();
     }
   });
-
-  // // Event listener for send button
-  // sendButton.addEventListener('click', () => {
-  //     const userQuestion = inputField.value;
-  //     if (userQuestion) {
-  //         addUserBubble(userQuestion);
-  //         inputField.value = '';
-  //         const videoUrl = window.location.href;
-  //         askAIQuestion(videoUrl, userQuestion);
-  //     }
-  // });
-
   document.addEventListener('fullscreenchange', function () {
     var chatContainer = document.getElementById('custom-chat-container');
     var isFullscreen = !!document.fullscreenElement;
@@ -389,7 +402,7 @@ function askAIQuestion(videoUrl, question) {
   var currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
 
   // Make a POST request to the backend API
-  fetch('http://localhost:8080/api/question', {
+  return fetch('http://localhost:8080/api/question', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'

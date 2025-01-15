@@ -41,9 +41,18 @@ export function createChatContainer(parentElement) {
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
 
+    // Create typing indicator element
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.className = 'typing-indicator'; 
+    typingIndicator.innerText = 'AI is typing...';
+    typingIndicator.style.display = 'none';
+
+
     // Append all elements
     chatContainer.appendChild(header);
     chatContainer.appendChild(chatArea);
+    chatContainer.appendChild(typingIndicator);
     chatContainer.appendChild(inputArea);
 
     parentElement.appendChild(chatContainer);
@@ -63,7 +72,21 @@ export function createChatContainer(parentElement) {
             addUserBubble(userQuestion);
             inputField.value = '';  
             const videoUrl = window.location.href;
-            askAIQuestion(videoUrl, userQuestion); 
+            typingIndicator.style.display = 'block'; // Show typing indicator
+            console.log('Typing indicator shown');
+            askAIQuestion(videoUrl, userQuestion).then((response) => {
+                console.log('AI response received:', response);
+                typingIndicator.style.display = 'none'; // Hide typing indicator when AI response is displayed
+                console.log('Typing indicator hidden');
+                if (response) {
+                    addAIBubble(response); // Add AI response to chat area
+                } else {
+                    console.error('Received undefined AI response'); // Log error if response is undefined
+                }
+            }).catch((error) => {
+                typingIndicator.style.display = 'none'; // Ensure typing indicator is hidden on error
+                console.error('Error in askAIQuestion:', error);
+            });
         }
     };
 
@@ -79,18 +102,6 @@ export function createChatContainer(parentElement) {
             sendQuestion();  
         }
     });
-    
-
-    // // Event listener for send button
-    // sendButton.addEventListener('click', () => {
-    //     const userQuestion = inputField.value;
-    //     if (userQuestion) {
-    //         addUserBubble(userQuestion);
-    //         inputField.value = '';
-    //         const videoUrl = window.location.href;
-    //         askAIQuestion(videoUrl, userQuestion);
-    //     }
-    // });
 
     document.addEventListener('fullscreenchange', () => {
         const chatContainer = document.getElementById('custom-chat-container');
