@@ -280,3 +280,27 @@
     font-weight: bold;
     border: 1px solid #ddd;
 }
+
+/* Typing Indicator Styling */
+.typing-indicator {
+    background-color: #e0e0e0;
+    color: #555;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 60%;
+    align-self: flex-start;
+    font-style: italic;
+    font-size: 0.9em;
+    opacity: 0.8;
+    animation: typingPulse 1.5s infinite ease-in-out;
+}
+
+/* Typing Indicator Animation */
+@keyframes typingPulse {
+    0%, 100% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+}
