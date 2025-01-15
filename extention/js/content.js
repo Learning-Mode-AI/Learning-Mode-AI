@@ -96,12 +96,13 @@ function sendVideoInfoToBackend(videoUrl) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ videoUrl: videoUrl })
     })
-    .then(response => response.json())
-    .then(data => {
+    //.then(response => response.json())
+    .then(response => {
         if (response.ok === true) {
             hideModal();
             addAIBubble('Video Proccessed! You can now ask questions.');
         } else{
+            hideModal();
             addAIBubble('Transcription failed. Please try again later.');
         }
     })
@@ -109,6 +110,51 @@ function sendVideoInfoToBackend(videoUrl) {
         console.error('Error:', error);
         addAIBubble('An error occurred while processing the video. Please try again later.');
     });
+}
+
+export function generateVideoSummary(videoUrl, onSuccess, onError) {
+    const videoId = extractVideoID(videoUrl);
+    if (!videoId) {
+        console.error('Invalid video URL: Unable to extract video ID');
+        onError && onError();
+        return;
+    }
+
+    // Check if the summary is already stored in local storage
+    const storedSummary = localStorage.getItem(`summary_${videoId}`);
+    if (storedSummary) {
+        console.log('Using cached summary from local storage.');
+        onSuccess && onSuccess(storedSummary);
+        return;
+    }
+
+    fetch('http://localhost:8080/video-summary', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ video_id: videoId }),
+    })
+        .then((response) => {
+            if (!response.ok) {
+                return response.text().then((text) => {
+                    throw new Error(`Server responded with error: ${response.status} - ${text}`);
+                });
+            }
+            return response.json();
+        })
+        .then((data) => {
+            if (data.summary) {
+                localStorage.setItem(`summary_${videoId}`, data.summary);
+                onSuccess && onSuccess(data.summary);
+            } else {
+                onError && onError();
+            }
+        })
+        .catch((error) => {
+            console.error('Error fetching video summary:', error.message);  // Use 'error.message' for clarity
+            onError && onError();
+        });
 }
 
 export function askAIQuestion(videoUrl, question) {

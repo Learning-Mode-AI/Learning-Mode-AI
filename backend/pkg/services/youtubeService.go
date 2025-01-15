@@ -11,12 +11,11 @@ import (
 
 // VideoInfo struct to represent video metadata and transcript
 type VideoInfo struct {
-	Title               string   `json:"title"`
-	Description         string   `json:"description"`
-	Channel             string   `json:"channel"`
-	Transcript          []string `json:"transcript"`
-	TranscriptionStatus string   `json:"transcription_status"`
-	ChatID              string   `json:"chatId"` // Store the ChatGPT session ID
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Channel     string   `json:"channel"`
+	Transcript  []string `json:"transcript"`
+	ChatID      string   `json:"chatId"` // Store the ChatGPT session ID
 }
 
 // FetchVideoInfo sends a request to the Python service to get video information and transcript
