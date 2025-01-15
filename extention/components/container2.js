@@ -111,7 +111,7 @@ optionsList.addEventListener('click', (e) => {
                     summaryHolder.style.display = 'block';
                     loadingIndicator.style.display = 'none';  // Hide loading indicator
                 }, () => {
-                    alert('Failed to generate summary. Please try again.');
+                    summaryHolder.innerText = 'Failed to Generate Summary';
                     loadingIndicator.style.display = 'none';  // Hide loading indicator
                 });
             }

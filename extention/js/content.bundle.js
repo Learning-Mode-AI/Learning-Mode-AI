@@ -259,7 +259,7 @@ function createContainer2(parentElement) {
             summaryHolder.style.display = 'block';
             loadingIndicator.style.display = 'none'; // Hide loading indicator
           }, function () {
-            alert('Failed to generate summary. Please try again.');
+            summaryHolder.innerText = 'Failed to Generate Summary';
             loadingIndicator.style.display = 'none'; // Hide loading indicator
           });
         } else if (selectedOption === "Generate Quiz*") {
@@ -370,12 +370,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_learningModeToggle_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/learningModeToggle.js */ "./components/learningModeToggle.js");
 /* harmony import */ var _components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/chatContainer.js */ "./components/chatContainer.js");
 /* harmony import */ var _components_container2_js__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../components/container2.js */ "./components/container2.js");
-/* harmony import */ var marked__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! marked */ "./node_modules/marked/lib/marked.esm.js");
 
 
 
-
- // Import the Marked library for Markdown rendering
 
 function addButtonToPlayerControls(playerControls) {
   var toggleButton = (0,_components_learningModeToggle_js__WEBPACK_IMPORTED_MODULE_1__.learningModeToggle)(toggleLearningMode);
@@ -498,14 +495,9 @@ function askAIQuestion(videoUrl, question) {
 }
 function generateVideoSummary(videoUrl, onSuccess, onError) {
   var videoId = extractVideoID(videoUrl);
-  var summaryHolder = document.getElementById('summary-holder');
-  var loadingIndicator = document.getElementById('loading-indicator');
   if (!videoId) {
     console.error('Invalid video URL: Unable to extract video ID');
-    if (summaryHolder) {
-      summaryHolder.innerText = 'Error: Unable to extract video ID.';
-      summaryHolder.style.display = 'block';
-    }
+    onError && onError();
     return;
   }
 
@@ -513,17 +505,9 @@ function generateVideoSummary(videoUrl, onSuccess, onError) {
   var storedSummary = localStorage.getItem("summary_".concat(videoId));
   if (storedSummary) {
     console.log('Using cached summary from local storage.');
-    if (summaryHolder) {
-      summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(storedSummary);
-      summaryHolder.style.display = 'block';
-      loadingIndicator.style.display = 'none';
-    }
-    onSuccess && onSuccess((0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(storedSummary));
+    onSuccess && onSuccess(storedSummary);
     return;
   }
-
-  // If no stored summary, fetch from the API
-  console.log('Fetching summary from server for:', videoId);
   fetch('http://localhost:8080/video-summary', {
     method: 'POST',
     headers: {
@@ -542,20 +526,12 @@ function generateVideoSummary(videoUrl, onSuccess, onError) {
   }).then(function (data) {
     if (data.summary) {
       localStorage.setItem("summary_".concat(videoId), data.summary);
-      summaryHolder.innerHTML = (0,marked__WEBPACK_IMPORTED_MODULE_4__.marked)(data.summary); // Render using 'marked'
-      summaryHolder.style.display = 'block';
       onSuccess && onSuccess(data.summary);
     } else {
-      summaryHolder.innerText = 'No summary available for this video.';
-      summaryHolder.style.display = 'block';
       onError && onError();
     }
   })["catch"](function (error) {
     console.error('Error fetching video summary:', error.message); // Use 'error.message' for clarity
-    if (summaryHolder) {
-      summaryHolder.innerText = 'Error fetching video summary.';
-      summaryHolder.style.display = 'block';
-    }
     onError && onError();
   });
 }

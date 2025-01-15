@@ -2,7 +2,6 @@ import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
 import { createChatContainer, addAIBubble } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
-import { marked } from 'marked'; // Import the Marked library for Markdown rendering
 
 function addButtonToPlayerControls(playerControls) {
     const toggleButton = learningModeToggle(toggleLearningMode);
@@ -138,14 +137,9 @@ export function askAIQuestion(videoUrl, question) {
 
 export function generateVideoSummary(videoUrl, onSuccess, onError) {
     const videoId = extractVideoID(videoUrl);
-    const summaryHolder = document.getElementById('summary-holder');
-    const loadingIndicator = document.getElementById('loading-indicator');
     if (!videoId) {
         console.error('Invalid video URL: Unable to extract video ID');
-        if (summaryHolder) {
-            summaryHolder.innerText = 'Error: Unable to extract video ID.';
-            summaryHolder.style.display = 'block';
-        }
+        onError && onError();
         return;
     }
 
@@ -153,17 +147,9 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     const storedSummary = localStorage.getItem(`summary_${videoId}`);
     if (storedSummary) {
         console.log('Using cached summary from local storage.');
-        if (summaryHolder) {
-            summaryHolder.innerHTML = marked(storedSummary);
-            summaryHolder.style.display = 'block';
-            loadingIndicator.style.display = 'none';
-        }
-        onSuccess && onSuccess(marked(storedSummary));
+        onSuccess && onSuccess(storedSummary);
         return;
     }
-
-    // If no stored summary, fetch from the API
-    console.log('Fetching summary from server for:', videoId); 
 
     fetch('http://localhost:8080/video-summary', {
         method: 'POST',
@@ -183,21 +169,13 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
         .then((data) => {
             if (data.summary) {
                 localStorage.setItem(`summary_${videoId}`, data.summary);
-                summaryHolder.innerHTML = marked(data.summary); // Render using 'marked'
-                summaryHolder.style.display = 'block';
                 onSuccess && onSuccess(data.summary);
             } else {
-                summaryHolder.innerText = 'No summary available for this video.';
-                summaryHolder.style.display = 'block';
                 onError && onError();
             }
         })
         .catch((error) => {
             console.error('Error fetching video summary:', error.message);  // Use 'error.message' for clarity
-            if (summaryHolder) {
-                summaryHolder.innerText = 'Error fetching video summary.';
-                summaryHolder.style.display = 'block';
-            }
             onError && onError();
         });
 }
