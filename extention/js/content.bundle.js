@@ -59,15 +59,12 @@ function createChatContainer(parentElement) {
   typingIndicator.className = 'typing-indicator';
   typingIndicator.innerText = 'AI is typing...';
   typingIndicator.style.display = 'none';
-  //chatContainer.appendChild(typingIndicator);
 
   // Append all elements
   chatContainer.appendChild(header);
   chatContainer.appendChild(chatArea);
   chatContainer.appendChild(typingIndicator);
   chatContainer.appendChild(inputArea);
-  //chatContainer.appendChild(typingIndicator);
-
   parentElement.appendChild(chatContainer);
 
   // Toggle visibility of chatArea and inputArea
