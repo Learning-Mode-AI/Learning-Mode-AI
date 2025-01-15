@@ -330,15 +330,13 @@ function activateLearningMode() {
   var secondaryInner = document.getElementById('secondary-inner');
   var chatContainer = document.getElementById('custom-chat-container');
   var isFullscreen = !!document.fullscreenElement;
+  var videoUrl = window.location.href;
   if (sidebar && secondaryInner) {
-    sidebar.style.display = 'none'; // Hide the sidebar
-
-    var videoUrl = window.location.href; // Grab the video URL
-    sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
-
+    sidebar.style.display = 'none';
+    sendVideoInfoToBackend(videoUrl);
     if (isFullscreen) {
       if (!chatContainer) {
-        (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(document.body); // Append to body in full-screen
+        (0,_components_chatContainer_js__WEBPACK_IMPORTED_MODULE_2__.createChatContainer)(document.body);
         chatContainer = document.getElementById('custom-chat-container');
         chatContainer.classList.add('fullscreen');
       }
@@ -348,9 +346,49 @@ function activateLearningMode() {
       }
       (0,_components_container2_js__WEBPACK_IMPORTED_MODULE_3__.createContainer2)(secondaryInner);
     }
-    if (sidebar && !isFullscreen) {
-      sidebar.style.display = 'none';
+  }
+  fetch('http://localhost:8080/api/quiz', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      video_id: extractVideoID(videoUrl)
+    })
+  }).then(function (response) {
+    return response.json();
+  }).then(function (data) {
+    var quizData = data.questions; // Array of questions with timestamps
+    var videoElement = document.querySelector('video');
+    var displayedTimestamps = new Set();
+    if (videoElement) {
+      setInterval(function () {
+        var currentTime = Math.floor(videoElement.currentTime);
+        quizData.forEach(function (question) {
+          var questionTime = Math.floor(parseTimestamp(question.timestamp));
+          if (currentTime === questionTime && !displayedTimestamps.has(questionTime)) {
+            videoElement.pause();
+            displayQuestionInQuizHolder(question);
+            displayedTimestamps.add(questionTime);
+          }
+        });
+      }, 500);
     }
+  })["catch"](function (error) {
+    return console.error('Error fetching quiz data:', error);
+  });
+}
+function parseTimestamp(timestamp) {
+  var parts = timestamp.split(':');
+  return parts.length === 2 ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1]) : parseFloat(parts[0]);
+}
+function displayQuestionInQuizHolder(question) {
+  var quizHolder = document.getElementById('quiz-holder');
+  if (quizHolder) {
+    quizHolder.innerHTML = "\n            <div>\n                <h3>".concat(question.text, "</h3>\n                ").concat(question.options.map(function (option, idx) {
+      return "<button class=\"quiz-option\" data-index=\"".concat(idx, "\">").concat(option, "</button>");
+    }).join(''), "\n            </div>\n        ");
+    quizHolder.style.display = 'block';
   }
 }
 function deactivateLearningMode() {
