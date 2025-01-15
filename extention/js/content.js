@@ -76,7 +76,6 @@ function showModal() {
     const modalOverlay = document.getElementById('chat-modal-overlay');
     if (modalOverlay) {
         modalOverlay.style.display = 'flex'; // Show the modal
-        console.log('Modal shown');
     } else {
         console.error('Modal overlay not found');
     }
@@ -86,13 +85,10 @@ function hideModal() {
     const modalOverlay = document.getElementById('chat-modal-overlay');
     if (modalOverlay) {
         modalOverlay.style.display = 'none'; // Hide the modal
-        console.log('Modal hidden');
     } else {
         console.error('Modal overlay not found');
     }
 }
-
-
 
 function sendVideoInfoToBackend(videoUrl) {
     fetch('http://localhost:8080/processVideo', {
@@ -102,15 +98,10 @@ function sendVideoInfoToBackend(videoUrl) {
     })
     .then(response => response.json())
     .then(data => {
-        const status = data.transcription_status;
-        console.log('THIS IS THE DATA:', data)
-        if (status === 'pending') {
-            showModal();
-            addAIBubble('The video is being transcribed. This may take some time, please wait...');
-        } else if (status === 'completed') {
+        if (response.ok === true) {
             hideModal();
             addAIBubble('Video Proccessed! You can now ask questions.');
-        } else if (status === 'failed') {
+        } else{
             addAIBubble('Transcription failed. Please try again later.');
         }
     })
@@ -119,8 +110,6 @@ function sendVideoInfoToBackend(videoUrl) {
         addAIBubble('An error occurred while processing the video. Please try again later.');
     });
 }
-
-
 
 export function askAIQuestion(videoUrl, question) {
     // Make sure videoUrl is properly formatted and extractVideoID is defined correctly

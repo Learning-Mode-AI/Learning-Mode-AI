@@ -58,7 +58,7 @@ We use Webpack to bundle our JavaScript files. This process is necessary because
 To build the project, run:
 
    ```bash
-   npx webpack --config webpack.config.js
+   npm run build
    ```
 
 Why is this required?
