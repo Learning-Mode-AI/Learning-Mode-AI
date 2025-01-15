@@ -1,0 +1,40 @@
+name: Build and Transfer Docker Image
+
+on:
+  push:
+    branches:
+      - production
+
+jobs:
+  build-and-transfer:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t ${GITHUB_REPOSITORY##*/}:latest .
+
+      - name: Save Docker Image as Tar
+        run: |
+          docker save -o ${GITHUB_REPOSITORY##*/}.tar ${GITHUB_REPOSITORY##*/}:latest
+
+      - name: Transfer Docker Image to EC2
+        uses: appleboy/scp-action@v0.2.4
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "${GITHUB_REPOSITORY##*/}.tar"
+          target: "/home/${{ secrets.EC2_USER }}/images/"
+
+      - name: Load Docker Image on EC2
+        uses: appleboy/ssh-action@v0.1.11
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            docker load < /home/${{ secrets.EC2_USER }}/images/${GITHUB_REPOSITORY##*/}.tar
