@@ -1,5 +1,3 @@
-let userId = null;
-
 function saveUserDetails(id, email) {
   chrome.storage.local.set({ userId: id, email: email }, () => {
     console.log("User ID and Email saved to storage:", id, email);
