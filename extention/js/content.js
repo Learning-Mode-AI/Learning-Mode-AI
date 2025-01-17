@@ -30,17 +30,9 @@ function toggleLearningMode() {
 
 function activateLearningMode() {
     // Fetch user ID from storage or trigger authentication
-    getUserId((userId) => {
+    getUserId((userId, _) => {
         if (!userId) {
-            console.error("User not authenticated. Initiating login process...");
-            authenticateUser((id) => {
-                if (id) {
-                    console.log("User authenticated with ID:", id);
-                    initializeLearningMode();
-                } else {
-                    console.error("Authentication failed.");
-                }
-            });
+            console.error("User not authenticated.");
         } else {
             console.log("Learning Mode activated for User ID:", userId);
             initializeLearningMode();
@@ -82,7 +74,7 @@ function initializeLearningMode() {
     fetch('http://localhost:8080/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_id: extractVideoID(videoUrl) })
+        body: JSON.stringify({ video_id: extractVideoID(videoUrl), userId: userId })
     })
         .then(response => response.json())
         .then(data => {
@@ -160,7 +152,7 @@ function sendVideoInfoToBackend(videoUrl) {
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ videoUrl: videoUrl, userId: userId, email: email })
+            body: JSON.stringify({ videoUrl: videoUrl, userId: userId })
         })
             .then(response => response.json())
             .then(data => {
@@ -179,7 +171,7 @@ export function askAIQuestion(videoUrl, question) {
     const videoElement = document.querySelector('video');
     const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0;
 
-    getUserId((userId) => {
+    getUserId((userId, _) => {
         if (!userId) {
             console.error("User not authenticated. Unable to ask AI question.");
             return;
@@ -255,7 +247,6 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     // Check if the summary is already stored in local storage
     const storedSummary = localStorage.getItem(`summary_${videoId}`);
     if (storedSummary) {
-        console.log('Using cached summary from local storage.');
         onSuccess && onSuccess(storedSummary);
         return;
     }
@@ -265,7 +256,7 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ video_id: videoId }),
+        body: JSON.stringify({ video_id: videoId, userId: userId }),
     })
         .then((response) => {
             if (!response.ok) {
