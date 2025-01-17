@@ -73,18 +73,15 @@ export function createChatContainer(parentElement) {
             inputField.value = '';  
             const videoUrl = window.location.href;
             typingIndicator.style.display = 'block'; // Show typing indicator
-            console.log('Typing indicator shown');
             askAIQuestion(videoUrl, userQuestion).then((response) => {
-                console.log('AI response received:', response);
-                typingIndicator.style.display = 'none'; // Hide typing indicator when AI response is displayed
-                console.log('Typing indicator hidden');
+                typingIndicator.style.display = 'none'; 
                 if (response) {
-                    addAIBubble(response); // Add AI response to chat area
+                    addAIBubble(response); 
                 } else {
-                    console.error('Received undefined AI response'); // Log error if response is undefined
+                    console.error('Received undefined AI response'); 
                 }
             }).catch((error) => {
-                typingIndicator.style.display = 'none'; // Ensure typing indicator is hidden on error
+                typingIndicator.style.display = 'none'; 
                 console.error('Error in askAIQuestion:', error);
             });
         }
