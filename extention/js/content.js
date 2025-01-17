@@ -154,7 +154,7 @@ export function askAIQuestion(videoUrl, question) {
     const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
 
     // Make a POST request to the backend API
-    fetch('http://localhost:8080/api/question', {
+    return fetch('http://localhost:8080/api/question', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
