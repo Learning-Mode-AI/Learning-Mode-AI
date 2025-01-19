@@ -54,9 +54,18 @@ export function createChatContainer(parentElement) {
     inputArea.appendChild(inputField);
     inputArea.appendChild(sendButton);
 
-    // Append header, chat area, and input area to chat container
+    // Create typing indicator element
+    const typingIndicator = document.createElement('div');
+    typingIndicator.id = 'typing-indicator';
+    typingIndicator.className = 'typing-indicator';
+    typingIndicator.innerText = 'AI is typing...';
+    typingIndicator.style.display = 'none';
+
+
+    // Append all elements
     chatContainer.appendChild(header);
     chatContainer.appendChild(chatArea);
+    chatContainer.appendChild(typingIndicator);
     chatContainer.appendChild(inputArea);
 
     parentElement.appendChild(chatContainer);
@@ -74,9 +83,20 @@ export function createChatContainer(parentElement) {
         const userQuestion = inputField.value;
         if (userQuestion) {
             addUserBubble(userQuestion);
-            inputField.value = '';  
+            inputField.value = '';
             const videoUrl = window.location.href;
-            askAIQuestion(videoUrl, userQuestion); 
+            typingIndicator.style.display = 'block'; // Show typing indicator
+            askAIQuestion(videoUrl, userQuestion).then((response) => {
+                typingIndicator.style.display = 'none';
+                if (response) {
+                    addAIBubble(response);
+                } else {
+                    console.error('Received undefined AI response');
+                }
+            }).catch((error) => {
+                typingIndicator.style.display = 'none';
+                console.error('Error in askAIQuestion:', error);
+            });
         }
     };
 
@@ -88,22 +108,10 @@ export function createChatContainer(parentElement) {
         if (event.key === 'Enter' && event.ctrlKey) {
             inputField.value += '\n';
         } else if (event.key === 'Enter' && !event.ctrlKey) {
-            event.preventDefault(); 
-            sendQuestion();  
+            event.preventDefault();
+            sendQuestion();
         }
     });
-    
-
-    // // Event listener for send button
-    // sendButton.addEventListener('click', () => {
-    //     const userQuestion = inputField.value;
-    //     if (userQuestion) {
-    //         addUserBubble(userQuestion);
-    //         inputField.value = '';
-    //         const videoUrl = window.location.href;
-    //         askAIQuestion(videoUrl, userQuestion);
-    //     }
-    // });
 
     document.addEventListener('fullscreenchange', () => {
         const chatContainer = document.getElementById('custom-chat-container');
@@ -114,7 +122,7 @@ export function createChatContainer(parentElement) {
             if (isFullscreen) {
                 document.body.appendChild(chatContainer);
                 chatContainer.classList.add('fullscreen');
-                chatContainer.style.position = 'fixed'; 
+                chatContainer.style.position = 'fixed';
             } else {
                 if (secondaryInner) {
                     secondaryInner.appendChild(chatContainer);

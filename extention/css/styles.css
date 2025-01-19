@@ -8,17 +8,17 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    background-image: url('https://i.imgur.com/ijJQA28.png'); /* Background image */
+    background-image: url("https://i.imgur.com/ijJQA28.png"); /* Background image */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    transition: height 0.3s ease; 
-    font-family: 'Gabarito', sans-serif; 
-    font-size: 16px; 
-    font-weight: 400; 
-}
-
-#custom-chat-container.fullscreen {
+    transition: height 0.3s ease;
+    font-family: "Gabarito", sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+  }
+  
+  #custom-chat-container.fullscreen {
     position: fixed;
     width: 400px;
     height: 600px;
@@ -30,17 +30,38 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    background: none; 
-}
-
-/* Modal Overlay */
+    background: none;
+  }
+  
+  /* Semi-Transparent Background Image in Full-Screen */
+  #custom-chat-container.fullscreen::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url("https://i.imgur.com/ijJQA28.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    opacity: 0.6;
+    z-index: 1;
+  }
+  
+  #custom-chat-container.fullscreen > * {
+    position: relative;
+    z-index: 2;
+    opacity: 1;
+  }
+  /* Modal Overlay */
 #chat-modal-overlay {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+    background-color: rgba(0, 0, 0, 0.5); /*Semi-transparent overlay */
     display: none; /* Hidden by default */
     justify-content: center;
     align-items: center;
@@ -59,111 +80,87 @@
     font-weight: 400;
     color: #333;
 }
-
-/* Semi-Transparent Background Image in Full-Screen */
-#custom-chat-container.fullscreen::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('https://i.imgur.com/ijJQA28.png');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.6; 
-    z-index: 1; 
-}
-
-#custom-chat-container.fullscreen > * {
-    position: relative;
-    z-index: 2; 
-    opacity: 1;
-}
-
-
-
-/* Chat Header */
-.header {
+  
+  /* Chat Header */
+  .header {
     display: flex;
     align-items: center;
     justify-content: space-between;
     background-color: black;
-    font-family: 'Gabarito', sans-serif; 
+    font-family: "Gabarito", sans-serif;
     font-size: 16px;
     color: white;
     padding: 10px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     position: relative;
-}
-
-/* Toggle Button */
-.toggle-button {
+  }
+  
+  /* Toggle Button */
+  .toggle-button {
     background: none;
     border: none;
     color: white;
     font-size: 18px;
     cursor: pointer;
     margin-right: 10px;
-}
-
-.toggle-button:hover {
-    color: #ECB0B0; 
-}
-
-/* Chat Header Title */
-.header span {
+  }
+  
+  .toggle-button:hover {
+    color: #ecb0b0;
+  }
+  
+  /* Chat Header Title */
+  .header span {
     flex: 1;
     text-align: center;
     font-weight: bold;
-}
-
-/* Chat Area */
-#chat-area {
+  }
+  
+  /* Chat Area */
+  #chat-area {
     flex: 1;
     padding: 10px;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    color: #FFF;
+    color: #fff;
     font-size: 16px;
     font-weight: 400;
-}
-
-/* Input Area */
-.input-area {
+  }
+  
+  /* Input Area */
+  .input-area {
     display: flex;
     align-items: center;
     padding: 10px;
     position: relative;
-}
-
-/* Input Field */
-#chat-input {
+  }
+  
+  /* Input Field */
+  #chat-input {
     flex: 1;
     padding: 12px 50px 12px 12px;
     border-radius: 25px;
-    border: 1px solid #DBDBDB;
+    border: 1px solid #dbdbdb;
     font-size: 14px;
     outline: none;
-    font-family: 'Gabarito', sans-serif; 
+    font-family: "Gabarito", sans-serif;
     font-size: 16px;
     font-weight: 400;
-}
-
-/* Send Button */
-.send-button {
+  }
+  
+  /* Send Button */
+  .send-button {
     position: absolute;
     right: 18px;
     width: 35px;
     height: 35px;
     border: none;
     border-radius: 50%;
-    background-color: #DD1313;
-    font-size: 20px; 
-    color: #FFF;
+    background-color: #dd1313;
+    font-size: 20px;
+    color: #fff;
     font-size: 16px;
     cursor: pointer;
     display: flex;
@@ -171,36 +168,35 @@
     align-items: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: background-color 0.3s ease;
-}
-
-.send-button:hover {
-    background-color: #B30F0F;
-}
-
-/* Bubbles */
-.chat-bubble {
+  }
+  
+  .send-button:hover {
+    background-color: #b30f0f;
+  }
+  
+  /* Bubbles */
+  .chat-bubble {
     padding: 10px;
     border-radius: 12px;
     margin-bottom: 10px;
     max-width: 70%;
     font-weight: 400;
-}
-
-.user-bubble {
+  }
+  
+  .user-bubble {
     align-self: flex-end;
-    background-color: #DBDBDB;
-    color: #1E1E1E;
-}
-
-.ai-bubble {
+    background-color: #dbdbdb;
+    color: #1e1e1e;
+  }
+  
+  .ai-bubble {
     align-self: flex-start;
-    background-color: #ECB0B0;
-    color: #1E1E1E;
-}
-
-
-/* Learning Mode Toggle */
-.learning-mode-switch-container {
+    background-color: #ecb0b0;
+    color: #1e1e1e;
+  }
+  
+  /* Learning Mode Toggle */
+  .learning-mode-switch-container {
     width: 36px;
     height: 18px;
     background-color: #ccc;
@@ -208,9 +204,9 @@
     position: relative;
     cursor: pointer;
     transition: background-color 0.3s;
-}
-
-.learning-mode-switch-circle {
+  }
+  
+  .learning-mode-switch-circle {
     width: 16px;
     height: 16px;
     background-color: #fff;
@@ -219,35 +215,35 @@
     top: 1px;
     left: 1px;
     transition: left 0.3s;
-}
-
-.learning-mode-switch-container:hover {
-    background-color: #bbb; 
-}
-
-#features-panel {
+  }
+  
+  .learning-mode-switch-container:hover {
+    background-color: #bbb;
+  }
+  
+  #features-panel {
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     height: 400px;
     margin: 10px 0;
-}
-
-.features-header {
+  }
+  
+  .features-header {
     display: flex;
     justify-content: center; /* Center-align text */
     align-items: center;
-    background: #DD1313;
-    font-family: 'Gabarito', sans-serif; 
+    background: #dd1313;
+    font-family: "Gabarito", sans-serif;
     font-size: 16px;
     color: white;
     padding: 10px;
     border-radius: 10px 10px 0 0;
     font-weight: bold;
     position: relative; /* Allows positioning child elements */
-}
-
-.dropdown-button {
+  }
+  
+  .dropdown-button {
     position: absolute;
     right: 10px; /* Moves button to the right of the header */
     top: 50%; /* Centers vertically */
@@ -257,63 +253,87 @@
     color: white;
     font-size: 16px;
     cursor: pointer;
-}
-
-.features-options {
+  }
+  
+  .features-options {
     list-style: none;
     margin: 0;
     padding: 0;
-    background: #DD1313;
+    background: #dd1313;
     border: 1px solid #ddd;
     border-top: none;
     border-radius: 0 0 10px 10px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    position: absolute; 
-    right: 0; 
-    width: 150px; 
-}
-
-.feature-option {
-    font-family: 'Gabarito', sans-serif; 
-    font-size: 10px; 
+    position: absolute;
+    right: 0;
+    width: 150px;
+  }
+  
+  .feature-option {
+    font-family: "Gabarito", sans-serif;
+    font-size: 10px;
     color: white;
     padding: 8px 10px;
     cursor: pointer;
-}
-
-.feature-option:hover {
-    background: #B30F0F;
-}
-
-/* Feature Content Wrapper */
-#content-wrapper {
+  }
+  
+  .feature-option:hover {
+    background: #b30f0f;
+  }
+  
+  /* Feature Content Wrapper */
+  #content-wrapper {
     display: flex;
     flex-direction: column;
     gap: 10px;
     padding: 10px;
     border-top: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-/* Feature Content Sections */
-.feature-content {
-    background: #F5F5F5;
+  }
+  
+  /* Feature Content Sections */
+  .feature-content {
+    background: #f5f5f5;
     border-radius: 8px;
     padding: 15px;
     text-align: center;
     height: 300px;
     color: #333;
-    font-family: 'Gabarito', sans-serif;
+    font-family: "Gabarito", sans-serif;
     font-size: 14px;
     font-weight: bold;
     border: 1px solid #ddd;
-}
-
-
-/* Minimal black and white theme for summary holder */
-.minimal-summary {
+  }
+  
+  /* Typing Indicator Styling */
+  .typing-indicator {
+    background-color: #e0e0e0;
+    color: #555;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 60%;
+    align-self: flex-start;
+    font-style: italic;
+    font-size: 0.9em;
+    opacity: 0.8;
+    animation: typingPulse 1.5s infinite ease-in-out;
+  }
+  
+  /* Typing Indicator Animation */
+  @keyframes typingPulse {
+    0%,
+    100% {
+      opacity: 0.8;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+  
+  /* Minimal black and white theme for summary holder */
+  .minimal-summary {
     background: #ffffff; /* Clean white background */
     color: #000000; /* Solid black text for high contrast */
-    font-family: 'Arial', sans-serif; /* Professional, simple font */
+    font-family: "Arial", sans-serif; /* Professional, simple font */
     font-size: 16px; /* Slightly larger for readability */
     line-height: 1.5; /* Balanced line spacing */
     padding: 15px; /* Padding for spacing inside the container */
@@ -323,79 +343,79 @@
     overflow-y: auto;
     height: 300px;
     margin: 10px 0;
-}
-
-/* Styling for headers within the summary */
-.minimal-summary h1 {
+  }
+  
+  /* Styling for headers within the summary */
+  .minimal-summary h1 {
     font-weight: bold;
     margin-top: 12px;
     margin-bottom: 8px;
     color: #000000;
-    font-size: 20px
-}
-.minimal-summary h2, 
-.minimal-summary h3 {
+    font-size: 20px;
+  }
+  .minimal-summary h2,
+  .minimal-summary h3 {
     font-weight: bold;
     margin-top: 12px;
     margin-bottom: 8px;
     color: #000000;
-}
-
-/* Bullet and Numbered Lists - Minimal Styling */
-.minimal-summary ul, 
-.minimal-summary ol {
+  }
+  
+  /* Bullet and Numbered Lists - Minimal Styling */
+  .minimal-summary ul,
+  .minimal-summary ol {
     padding-left: 20px; /* Add spacing between bullet and left side */
     margin-bottom: 10px;
-}
-
-.minimal-summary li {
+  }
+  
+  .minimal-summary li {
     margin-bottom: 5px; /* Space between list items */
-}
-
-/* Paragraph Styling */
-.minimal-summary p {
+  }
+  
+  /* Paragraph Styling */
+  .minimal-summary p {
     margin-bottom: 10px; /* Minimal spacing between paragraphs */
-}
-
-/* Code and Preformatted Text */
-.minimal-summary pre, 
-.minimal-summary code {
+  }
+  
+  /* Code and Preformatted Text */
+  .minimal-summary pre,
+  .minimal-summary code {
     background: #f5f5f5;
     border-radius: 5px;
     padding: 5px;
-    font-family: 'Courier New', monospace;
-}
-
-/* Blockquotes Styling */
-.minimal-summary blockquote {
+    font-family: "Courier New", monospace;
+  }
+  
+  /* Blockquotes Styling */
+  .minimal-summary blockquote {
     border-left: 3px solid #000;
     padding-left: 15px;
     margin: 10px 0;
     color: #333;
     font-style: italic;
-}
-
-/* Horizontal Rule for Section Separation */
-.minimal-summary hr {
+  }
+  
+  /* Horizontal Rule for Section Separation */
+  .minimal-summary hr {
     border: none;
     border-top: 1px solid #000;
     margin: 15px 0;
-}
-
-/* Links Styling */
-.minimal-summary a {
+  }
+  
+  /* Links Styling */
+  .minimal-summary a {
     color: #000;
     text-decoration: underline;
-}
-
-.minimal-summary a:hover {
+  }
+  
+  .minimal-summary a:hover {
     color: #555;
     text-decoration: none;
-}
-
-/* General styling for the loading indicator */
-.loading-indicator {
-    display: none; 
+  }
+  
+  /* General styling for the loading indicator */
+  .loading-indicator {
+    display: none;
     text-align: center;
     padding: 10px;
     font-size: 16px;
@@ -403,31 +423,37 @@
     font-style: italic;
     opacity: 0.8;
     animation: fadeInOut 1.5s infinite;
-}
-
-.loading-indicator[style*="display: none"] {
+  }
+  
+  .loading-indicator[style*="display: none"] {
     animation: none;
     opacity: 0;
-}
-
-/* Keyframe animation for a gentle fade effect */
-@keyframes fadeInOut {
-    0% { opacity: 0.5; }
-    50% { opacity: 1; }
-    100% { opacity: 0.5; }
-}
-
-/* Dropdown Styling */
-#optionsList {
+  }
+  
+  /* Keyframe animation for a gentle fade effect */
+  @keyframes fadeInOut {
+    0% {
+      opacity: 0.5;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.5;
+    }
+  }
+  
+  /* Dropdown Styling */
+  #optionsList {
     position: absolute;
     z-index: 2000; /* Higher z-index than summary-holder */
     background: white;
     border: 1px solid #ddd;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Centering for 'Coming Soon' features */
-#summary-holder.coming-soon {
+  }
+  
+  /* Centering for 'Coming Soon' features */
+  #summary-holder.coming-soon {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -441,82 +467,82 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     position: relative;
     z-index: 1000; /* Lower than the dropdown */
-}
-
-/* Fix for the Feature Name Display */
-.feature-title {
+  }
+  
+  /* Fix for the Feature Name Display */
+  .feature-title {
     position: absolute;
     top: 20px;
     left: 20px;
     font-size: 20px;
     font-weight: bold;
     color: #333;
-    z-index: 10;  /* Ensure it stays above other elements */
-}
-
-/* Rocket Icon Styling */
-.rocket-icon {
+    z-index: 10; /* Ensure it stays above other elements */
+  }
+  
+  /* Rocket Icon Styling */
+  .rocket-icon {
     width: 80px;
     height: 80px;
     margin-bottom: 10px;
-}
-
-/* Coming Soon Text */
-.coming-soon-text {
+  }
+  
+  /* Coming Soon Text */
+  .coming-soon-text {
     font-size: 24px;
     font-weight: bold;
     color: #333;
     margin-bottom: 10px;
-}
-
-/* Interest Question Styling */
-.interest-question {
+  }
+  
+  /* Interest Question Styling */
+  .interest-question {
     font-size: 16px;
     color: #555;
     margin-bottom: 20px;
-}
-
-/* Show Interest Button Styling */
-.show-interest-button {
+  }
+  
+  /* Show Interest Button Styling */
+  .show-interest-button {
     padding: 12px 24px;
     border: none;
     border-radius: 20px;
-    background-color: #DD1313;
+    background-color: #dd1313;
     color: white;
     font-weight: bold;
     cursor: pointer;
     font-size: 16px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     transition: background-color 0.3s ease;
-}
-
-.show-interest-button:hover {
-    background-color: #B30F0F;
-}
-
-/* Custom Scrollbar Styling for Features with Scrollbars */
-.scrollable {
+  }
+  
+  .show-interest-button:hover {
+    background-color: #b30f0f;
+  }
+  
+  /* Custom Scrollbar Styling for Features with Scrollbars */
+  .scrollable {
     overflow-y: auto;
     scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: #ECB0B0 transparent;
-}
-
-/* Webkit Browsers (Chrome, Edge, Safari) */
-.scrollable::-webkit-scrollbar {
+    scrollbar-color: #ecb0b0 transparent;
+  }
+  
+  /* Webkit Browsers (Chrome, Edge, Safari) */
+  .scrollable::-webkit-scrollbar {
     width: 8px;
-}
-
-.scrollable::-webkit-scrollbar-track {
+  }
+  
+  .scrollable::-webkit-scrollbar-track {
     background: transparent;
-}
-
-.scrollable::-webkit-scrollbar-thumb {
-    background: #ECB0B0;
+  }
+  
+  .scrollable::-webkit-scrollbar-thumb {
+    background: #ecb0b0;
     border-radius: 10px; /* Rounded edges */
     border: none;
-}
-
-/* Remove Up/Down Arrows for Webkit */
-.scrollable::-webkit-scrollbar-button {
+  }
+  
+  /* Remove Up/Down Arrows for Webkit */
+  .scrollable::-webkit-scrollbar-button {
     display: none;
-}
+  }
