@@ -61,6 +61,18 @@ services:
     networks:
       - app-network
 
+  quiz-service:
+    build:
+      context: ./Learning-Mode-AI-quiz-service
+    container_name: quiz-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+
 networks:
   app-network:
     driver: bridge
