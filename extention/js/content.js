@@ -30,6 +30,18 @@ function toggleLearningMode() {
 }
 
 function activateLearningMode() {
+    // Fetch user ID from storage or trigger authentication
+    getUserId((userId, _) => {
+        if (!userId) {
+            console.error("User not authenticated.");
+        } else {
+            console.log("Learning Mode activated for User ID:", userId);
+            initializeLearningMode();
+        }
+    });
+}
+
+function initializeLearningMode() {
     const sidebar = document.getElementById('related');
     const secondaryInner = document.getElementById('secondary-inner');
     let chatContainer = document.getElementById('custom-chat-container');
@@ -37,9 +49,9 @@ function activateLearningMode() {
 
     const videoUrl = window.location.href; // Grab the video URL
     if (sidebar && secondaryInner) {
-        sidebar.style.display = 'none'; // Hide the sidebar
+        sidebar.style.display = 'none';
 
-        sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
+        sendVideoInfoToBackend(videoUrl);
 
         if (isFullscreen) {
             if (!chatContainer) {
@@ -63,31 +75,31 @@ function activateLearningMode() {
     fetch('http://localhost:8080/api/quiz', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_id: extractVideoID(videoUrl) })
+        body: JSON.stringify({ video_id: extractVideoID(videoUrl), userId: userId })
     })
-    .then(response => response.json())
-    .then(data => {
-        const quizData = data.questions; // Array of questions with timestamps
-        const videoElement = document.querySelector('video');
-        const displayedTimestamps = new Set();
+        .then(response => response.json())
+        .then(data => {
+            const quizData = data.questions; // Array of questions with timestamps
+            const videoElement = document.querySelector('video');
+            const displayedTimestamps = new Set();
 
-        if (videoElement) {
-            setInterval(() => {
-                const currentTime = Math.floor(videoElement.currentTime);
+            if (videoElement) {
+                setInterval(() => {
+                    const currentTime = Math.floor(videoElement.currentTime);
 
-                quizData.forEach(question => {
-                    const questionTime = Math.floor(parseTimestamp(question.timestamp));
+                    quizData.forEach(question => {
+                        const questionTime = Math.floor(parseTimestamp(question.timestamp));
 
-                    if (currentTime === questionTime && !displayedTimestamps.has(questionTime)) {
-                        videoElement.pause();
-                        displayQuestionInQuizHolder(question);
-                        displayedTimestamps.add(questionTime);
-                    }
-                });
-            }, 500);
-        }
-    })
-    .catch(error => console.error('Error fetching quiz data:', error));
+                        if (currentTime === questionTime && !displayedTimestamps.has(questionTime)) {
+                            videoElement.pause();
+                            displayQuestionInQuizHolder(question);
+                            displayedTimestamps.add(questionTime);
+                        }
+                    });
+                }, 500);
+            }
+        })
+        .catch(error => console.error('Error fetching quiz data:', error));
 }
 
 function parseTimestamp(timestamp) {
@@ -104,8 +116,8 @@ function displayQuestionInQuizHolder(question) {
             <div>
                 <h3>${question.text}</h3>
                 ${question.options.map((option, idx) =>
-                    `<button class="quiz-option" data-index="${idx}">${option}</button>`
-                ).join('')}
+            `<button class="quiz-option" data-index="${idx}">${option}</button>`
+        ).join('')}
             </div>
         `;
         quizHolder.style.display = 'block';
@@ -149,62 +161,102 @@ function hideModal() {
 
 
 function sendVideoInfoToBackend(videoUrl) {
-    fetch('http://localhost:8080/processVideo', { 
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ videoUrl: videoUrl })
-    })
-    .then(response => {
-        if (response.ok === true) {
-            hideModal();
-            addAIBubble('Video Proccessed! You can now ask questions.');
-        } else{
-            addAIBubble('Transcription failed. Please try again later.');
+    getUserId((userId, email) => {
+        if (!userId || !email) {
+            console.error("User not authenticated. Unable to send video info.");
+            return;
         }
-    })
-    .catch((error) => {
-        console.error('Error:', error);
-    });
-}
 
-export function askAIQuestion(videoUrl, question) {
-    // Make sure videoUrl is properly formatted and extractVideoID is defined correctly
-    const videoId = extractVideoID(videoUrl);
-
-     // Access the video element to grab the current timestamp
-    const videoElement = document.querySelector('video');
-    const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0; // Default to 0 if video element not found
-
-    // Make a POST request to the backend API
-    return fetch('http://localhost:8080/api/question', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            video_id: videoId,
-            user_question: question,
-            timestamp: currentTimestamp,
-        }),
-    })
-        .then((response) => {
-            if (!response.ok) {
-                throw new Error('Failed to get AI response');
-            }
-            return response.json();
+        fetch('http://localhost:8080/processVideo', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ videoUrl: videoUrl, userId: userId })
         })
-        .then((data) => {
-            const aiResponse = data.response;
-            if (aiResponse) {
-                addAIBubble(aiResponse);
-                console.log('AI Response:', aiResponse);
+        .then(response => {
+            if (response.ok === true) {
+                hideModal();
+                addAIBubble('Video Proccessed! You can now ask questions.');
+            } else{
+                addAIBubble('Transcription failed. Please try again later.');
             }
         })
         .catch((error) => {
-            console.error('Error fetching AI response:', error);
+            console.error('Error:', error);
         });
+}
+
+
+export function askAIQuestion(videoUrl, question) {
+    const videoId = extractVideoID(videoUrl);
+
+    const videoElement = document.querySelector('video');
+    const currentTimestamp = videoElement ? Math.floor(videoElement.currentTime) : 0;
+
+    getUserId((userId, _) => {
+        if (!userId) {
+            console.error("User not authenticated. Unable to ask AI question.");
+            return;
+        }
+
+        fetch('http://localhost:8080/api/question', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                video_id: videoId,
+                user_question: question,
+                timestamp: currentTimestamp,
+                userId: userId
+            })
+        })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to get AI response');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const aiResponse = data.response;
+                if (aiResponse) {
+                    addAIBubble(aiResponse);
+                    console.log('AI Response:', aiResponse);
+                } else {
+                    console.error('No AI response found in the response data.');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
+}
+
+function extractVideoID(videoUrl) {
+    const videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = videoUrl.match(videoIDPattern);
+    return match ? match[1] : null;
+}
+
+function getUserId(callback) {
+    chrome.storage.local.get(["userId", "email"], (data) => {
+        if (data.userId && data.email) {
+            console.log("User ID and Email found in storage:", data.userId, data.email);
+            callback(data.userId, data.email);
+        } else {
+            console.error("User ID not found. Initiating Google OAuth...");
+            chrome.runtime.sendMessage({ type: "AUTHENTICATE_USER" }, (response) => {
+                if (response?.userId && response?.email) {
+                    console.log("Authenticated User ID and Email:", response.userId, response.email);
+                    callback(response.userId, response.email);
+                } else {
+                    console.error("Authentication failed:", response?.error || "Unknown error");
+                    callback(null, null);
+                }
+            });
+        }
+    });
 }
 
 export function generateVideoSummary(videoUrl, onSuccess, onError) {
@@ -218,7 +270,6 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     // Check if the summary is already stored in local storage
     const storedSummary = localStorage.getItem(`summary_${videoId}`);
     if (storedSummary) {
-        console.log('Using cached summary from local storage.');
         onSuccess && onSuccess(storedSummary);
         return;
     }
@@ -228,7 +279,7 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ video_id: videoId }),
+        body: JSON.stringify({ video_id: videoId, userId: userId }),
     })
         .then((response) => {
             if (!response.ok) {
@@ -252,8 +303,3 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
         });
 }
 
-function extractVideoID(videoUrl) {
-    const videoIDPattern = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const match = videoUrl.match(videoIDPattern);
-    return match ? match[1] : null;
-}
