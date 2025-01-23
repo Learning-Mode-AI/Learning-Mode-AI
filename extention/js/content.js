@@ -1,6 +1,6 @@
 import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
-import { createChatContainer, addAIBubble} from '../components/chatContainer.js';
+import { createChatContainer, addAIBubble } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
 
 function addButtonToPlayerControls(playerControls) {
@@ -174,19 +174,19 @@ function sendVideoInfoToBackend(videoUrl) {
             },
             body: JSON.stringify({ videoUrl: videoUrl, userId: userId })
         })
-        .then(response => {
-            if (response.ok === true) {
-                hideModal();
-                addAIBubble('Video Proccessed! You can now ask questions.');
-            } else{
-                addAIBubble('Transcription failed. Please try again later.');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-        });
+            .then(response => {
+                if (response.ok === true) {
+                    hideModal();
+                    addAIBubble('Video Proccessed! You can now ask questions.');
+                } else {
+                    addAIBubble('Transcription failed. Please try again later.');
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
+    });
 }
-
 
 export function askAIQuestion(videoUrl, question) {
     const videoId = extractVideoID(videoUrl);
