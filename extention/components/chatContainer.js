@@ -4,6 +4,17 @@ export function createChatContainer(parentElement) {
     const chatContainer = document.createElement('div');
     chatContainer.id = 'custom-chat-container';
 
+     // Modal Overlay
+     const modalOverlay = document.createElement('div');
+     modalOverlay.id = 'chat-modal-overlay';
+ 
+     const modalContent = document.createElement('div');
+     modalContent.id = 'chat-modal-content';
+     modalContent.innerText = 'The video is being processed. Please wait...';
+ 
+     modalOverlay.appendChild(modalContent);
+     chatContainer.appendChild(modalOverlay);
+
     // Header
     const header = document.createElement('div');
     header.className = 'header';

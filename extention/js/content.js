@@ -1,6 +1,6 @@
 import { waitForElement } from '../components/waitForElement.js';
 import { learningModeToggle } from '../components/learningModeToggle.js';
-import { createChatContainer, addAIBubble } from '../components/chatContainer.js';
+import { createChatContainer, addAIBubble} from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
 
 function addButtonToPlayerControls(playerControls) {
@@ -20,6 +20,7 @@ function toggleLearningMode() {
         switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ECB0B0';
         toggleCircle.style.left = '19px';
         activateLearningMode();
+        showModal();
     } else {
         switchButton.setAttribute('aria-checked', 'false');
         switchButton.querySelector('.learning-mode-switch-container').style.backgroundColor = '#ccc';
@@ -46,7 +47,7 @@ function initializeLearningMode() {
     let chatContainer = document.getElementById('custom-chat-container');
     const isFullscreen = !!document.fullscreenElement;
 
-    const videoUrl = window.location.href;
+    const videoUrl = window.location.href; // Grab the video URL
     if (sidebar && secondaryInner) {
         sidebar.style.display = 'none';
 
@@ -123,7 +124,6 @@ function displayQuestionInQuizHolder(question) {
     }
 }
 
-
 function deactivateLearningMode() {
     const sidebar = document.getElementById('related');
     const chatContainer = document.getElementById('custom-chat-container');
@@ -140,6 +140,26 @@ function deactivateLearningMode() {
     }
 }
 
+function showModal() {
+    const modalOverlay = document.getElementById('chat-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'flex'; // Show the modal
+        console.log('Modal shown');
+    } else {
+        console.error('Modal overlay not found');
+    }
+}
+function hideModal() {
+    const modalOverlay = document.getElementById('chat-modal-overlay');
+    if (modalOverlay) {
+        modalOverlay.style.display = 'none'; // Hide the modal
+        console.log('Modal hidden');
+    } else {
+        console.error('Modal overlay not found');
+    }
+}
+
+
 function sendVideoInfoToBackend(videoUrl) {
     getUserId((userId, email) => {
         if (!userId || !email) {
@@ -154,14 +174,17 @@ function sendVideoInfoToBackend(videoUrl) {
             },
             body: JSON.stringify({ videoUrl: videoUrl, userId: userId })
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Success:', data);
-            })
-            .catch((error) => {
-                console.error('Error:', error);
-            });
-    });
+        .then(response => {
+            if (response.ok === true) {
+                hideModal();
+                addAIBubble('Video Proccessed! You can now ask questions.');
+            } else{
+                addAIBubble('Transcription failed. Please try again later.');
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
 }
 
 
