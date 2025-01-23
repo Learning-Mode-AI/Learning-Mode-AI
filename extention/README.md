@@ -57,16 +57,15 @@ We use Webpack to bundle our JavaScript files. This process is necessary because
 
 To build the project, run:
 
-   ```bash
-   npm run build
-   ```
+```bash
+npm run build
+```
 
 Why is this required?
 
 Webpack: Webpack is a powerful tool that takes modules with dependencies and generates static assets representing those modules. In this case, it bundles your multiple JavaScript files into one content.bundle.js file. This bundled file is what gets executed in the context of the Chrome extension.
 npx: The npx command comes with npm (Node Package Manager) and allows you to run binaries (like Webpack) from the node_modules directory without globally installing them. This ensures that everyone working on the project uses the same version of the tools.
 After running this command, you should see the content.bundle.js file in the js/ directory. This is the file that the Chrome extension will load when it runs.
-
 
 3. **Load the extension in Chrome:**
 
@@ -79,6 +78,7 @@ After running this command, you should see the content.bundle.js file in the js/
 When creating new components for the frontend:
 
 1. **Create the Component File:**
+
    - Place the file in the `components/` directory.
    - Follow the naming convention: `ComponentName.js`.
 
@@ -88,9 +88,9 @@ When creating new components for the frontend:
 
    ```javascript
    export function MyComponent(props) {
-       const element = document.createElement('div');
-       // Add your component's logic and styling here
-       return element;
+     const element = document.createElement('div');
+     // Add your component's logic and styling here
+     return element;
    }
    ```
 
@@ -108,8 +108,8 @@ When creating new components for the frontend:
 
    ```javascript
    waitForElement('.target-element', (parentElement) => {
-       const myComponent = MyComponent();
-       parentElement.appendChild(myComponent);
+     const myComponent = MyComponent();
+     parentElement.appendChild(myComponent);
    });
    ```
 
