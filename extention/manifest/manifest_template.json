@@ -10,6 +10,7 @@
     "tabs",
     "identity"
   ],
+  "key": "__KEY__",
   "oauth2": {
     "client_id": "__CLIENT_ID__",
     "scopes": [
