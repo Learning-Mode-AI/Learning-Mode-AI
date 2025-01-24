@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './app.css';
 
 export function App() {
   const [quiz, setQuiz] = useState(null);
@@ -7,14 +8,12 @@ export function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Function to extract video ID from URL
     const extractVideoId = () => {
       const url = window.location.href;
       const urlParams = new URL(url);
-      const videoId = urlParams.searchParams.get('v'); // For standard YouTube URLs
+      const videoId = urlParams.searchParams.get('v');
       if (videoId) return videoId;
 
-      // For short YouTube URLs (e.g., youtu.be/VIDEO_ID)
       const path = urlParams.pathname;
       return path.startsWith('/') ? path.substring(1) : null;
     };
@@ -25,7 +24,6 @@ export function App() {
       return;
     }
 
-    // Fetch quiz data
     const fetchQuiz = async () => {
       try {
         const response = await fetch('http://localhost:8080/api/quiz', {
@@ -46,67 +44,63 @@ export function App() {
   }, []);
 
   if (error) {
-    return <div>{error}</div>;
+    return <div className="error">{error}</div>;
   }
 
   if (!quiz) {
-    return <div>Loading...</div>;
+    return <div className="loading">Loading...</div>;
   }
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
 
-  // Pre-assign colors: green for the correct answer, red for others
-  const getColor = (option) => {
-    const isCorrect =
-      option.option === currentQuestion.answer || // Matches full option text
-      option.option.startsWith(currentQuestion.answer); // Matches the first character
-    return isCorrect ? 'green' : 'red';
-  };
+  // Map the answer correctly
+  const correctAnswer =
+    ['A', 'B', 'C', 'D'].includes(currentQuestion.answer)
+      ? currentQuestion.options[['A', 'B', 'C', 'D'].indexOf(currentQuestion.answer)].option
+      : currentQuestion.answer;
+
+  const getColor = (option) =>
+    option.option === correctAnswer ? 'green' : 'red';
 
   const handleAnswer = (option) => {
     setSelectedAnswer(option);
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h1>
+    <div className="app-container">
+      <h1 className="question-count">
         Question {currentQuestionIndex + 1}/{quiz.questions.length}
       </h1>
-      <p>{currentQuestion.text}</p>
+      <p className="question-text">{currentQuestion.text}</p>
       {currentQuestion.options.map((option, idx) => (
-        <button
-          key={idx}
-          onClick={() => handleAnswer(option.option)}
-          style={{
-            display: 'block',
-            padding: '10px',
-            margin: '10px 0',
-            borderRadius: '20px',
-            backgroundColor:
-              selectedAnswer === option.option ? getColor(option) : '#ccc',
-            color: 'white',
-            border: 'none',
-            cursor: 'pointer',
-          }}
-        >
-          {option.option}
-        </button>
+        <div key={idx} className="option-container">
+          <button
+            onClick={() => handleAnswer(option.option)}
+            className={`option-button ${
+              selectedAnswer === option.option
+                ? getColor(option) === 'green'
+                  ? 'correct'
+                  : 'incorrect'
+                : ''
+            }`}
+          >
+            {option.option}
+          </button>
+          {selectedAnswer === option.option && (
+            <div className="explanation">
+              <p>{option.explanation}</p>
+            </div>
+          )}
+        </div>
       ))}
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
+      <div className="navigation-buttons">
         <button
           onClick={() => {
             setCurrentQuestionIndex((prevIndex) => Math.max(prevIndex - 1, 0));
             setSelectedAnswer(null);
           }}
           disabled={currentQuestionIndex === 0}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '10px',
-            backgroundColor: currentQuestionIndex === 0 ? '#ccc' : '#007bff',
-            color: 'white',
-            border: 'none',
-            cursor: currentQuestionIndex === 0 ? 'not-allowed' : 'pointer',
-          }}
+          className="nav-button"
         >
           Previous
         </button>
@@ -118,14 +112,7 @@ export function App() {
             setSelectedAnswer(null);
           }}
           disabled={currentQuestionIndex === quiz.questions.length - 1}
-          style={{
-            padding: '10px 20px',
-            borderRadius: '10px',
-            backgroundColor: currentQuestionIndex === quiz.questions.length - 1 ? '#ccc' : '#007bff',
-            color: 'white',
-            border: 'none',
-            cursor: currentQuestionIndex === quiz.questions.length - 1 ? 'not-allowed' : 'pointer',
-          }}
+          className="nav-button"
         >
           Next
         </button>

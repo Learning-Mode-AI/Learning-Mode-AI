@@ -42,9 +42,11 @@ function createReactRoot(parentElement) {
 }
 
 function activateLearningMode() {
+    const imgURL = chrome.runtime.getURL('images/bg.png');
     const sidebar = document.getElementById('related');
     const secondaryInner = document.getElementById('secondary-inner');
     let chatContainer = document.getElementById('custom-chat-container');
+    
     const isFullscreen = !!document.fullscreenElement;
 
     const videoUrl = window.location.href;
@@ -57,11 +59,20 @@ function activateLearningMode() {
             if (!chatContainer) {
                 createChatContainer(document.body);
                 chatContainer = document.getElementById('custom-chat-container');
+                chatContainer.style.backgroundImage = `url('${imgURL}')`;
+                chatContainer.style.backgroundSize = 'cover';
+                chatContainer.style.backgroundPosition = 'center';
+                chatContainer.style.backgroundRepeat = 'no-repeat';
                 chatContainer.classList.add('fullscreen');
             }
         } else {
             if (!chatContainer) {
                 createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+                chatContainer = document.getElementById('custom-chat-container');
+                chatContainer.style.backgroundImage = `url('${imgURL}')`;
+                chatContainer.style.backgroundSize = 'cover';
+                chatContainer.style.backgroundPosition = 'center';
+                chatContainer.style.backgroundRepeat = 'no-repeat';
             }
             createContainer2(secondaryInner, createReactRoot);
         }

@@ -1,6 +1,12 @@
 export function createContainer2(parentElement, react) {
+    const imgURL = chrome.runtime.getURL('images/bg.png');
+
     const featuresPanel = document.createElement('div');
     featuresPanel.id = 'features-panel';
+    featuresPanel.style.backgroundImage = `url('${imgURL}')`;
+    featuresPanel.style.backgroundSize = 'cover';
+    featuresPanel.style.backgroundPosition = 'center';
+    featuresPanel.style.backgroundRepeat = 'no-repeat';
 
     // Header
     const header = document.createElement('div');
