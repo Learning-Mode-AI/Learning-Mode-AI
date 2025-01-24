@@ -606,12 +606,7 @@ function App() {
     }, "Loading...");
   }
   var currentQuestion = quiz.questions[currentQuestionIndex];
-
-  // Map the answer correctly
   var correctAnswer = ['A', 'B', 'C', 'D'].includes(currentQuestion.answer) ? currentQuestion.options[['A', 'B', 'C', 'D'].indexOf(currentQuestion.answer)].option : currentQuestion.answer;
-  var getColor = function getColor(option) {
-    return option.option === correctAnswer ? 'green' : 'red';
-  };
   var handleAnswer = function handleAnswer(option) {
     setSelectedAnswer(option);
   };
@@ -629,7 +624,7 @@ function App() {
       onClick: function onClick() {
         return handleAnswer(option.option);
       },
-      className: "option-button ".concat(selectedAnswer === option.option ? getColor(option) === 'green' ? 'correct' : 'incorrect' : '')
+      className: "option-button ".concat(selectedAnswer === option.option ? option.option === correctAnswer ? 'correct' : 'incorrect' : '')
     }, option.option), selectedAnswer === option.option && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
       className: "explanation"
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, option.explanation)));
@@ -678,90 +673,93 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, `body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    color: #333;
-  }
-  
-  .app-container {
-    padding: 20px;
-    /* background: url('./bg.png') no-repeat center center fixed;
-    background-size: cover; */
-  }
-  
-  .question-count {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-  }
-  
-  .question-text {
-    font-size: 2rem; /* Increased font size for the question text */
-    margin-bottom: 20px;
-  }
-  
-  .option-container {
-    margin-bottom: 20px;
-  }
-  
-  .option-button {
-    display: block;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 20px;
-    background-color: #ccc;
-    color: white;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-  }
-  
-  .option-button.correct {
-    background-color: green;
-  }
-  
-  .option-button.incorrect {
-    background-color: red;
-  }
-  
-  .explanation {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-  }
-  
-  .navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .nav-button {
-    padding: 10px 20px;
-    border-radius: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .nav-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  .error {
-    color: red;
-    font-size: 1.2rem;
-  }
-  
-  .loading {
-    font-size: 1.5rem;
-    color: #007bff;
-  }
-  `, "",{"version":3,"sources":["webpack://./react/app.css"],"names":[],"mappings":"AAAA;IACI,8BAA8B;IAC9B,SAAS;IACT,WAAW;EACb;;EAEA;IACE,aAAa;IACb;6BACyB;EAC3B;;EAEA;IACE,iBAAiB;IACjB,mBAAmB;EACrB;;EAEA;IACE,eAAe,EAAE,8CAA8C;IAC/D,mBAAmB;EACrB;;EAEA;IACE,mBAAmB;EACrB;;EAEA;IACE,cAAc;IACd,aAAa;IACb,cAAc;IACd,mBAAmB;IACnB,sBAAsB;IACtB,YAAY;IACZ,YAAY;IACZ,eAAe;IACf,WAAW;IACX,gBAAgB;EAClB;;EAEA;IACE,uBAAuB;EACzB;;EAEA;IACE,qBAAqB;EACvB;;EAEA;IACE,gBAAgB;IAChB,aAAa;IACb,yBAAyB;IACzB,mBAAmB;IACnB,sBAAsB;EACxB;;EAEA;IACE,aAAa;IACb,8BAA8B;IAC9B,gBAAgB;EAClB;;EAEA;IACE,kBAAkB;IAClB,mBAAmB;IACnB,yBAAyB;IACzB,YAAY;IACZ,YAAY;IACZ,eAAe;EACjB;;EAEA;IACE,sBAAsB;IACtB,mBAAmB;EACrB;;EAEA;IACE,UAAU;IACV,iBAAiB;EACnB;;EAEA;IACE,iBAAiB;IACjB,cAAc;EAChB","sourcesContent":["body {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    color: #333;\n  }\n  \n  .app-container {\n    padding: 20px;\n    /* background: url('./bg.png') no-repeat center center fixed;\n    background-size: cover; */\n  }\n  \n  .question-count {\n    font-size: 1.5rem;\n    margin-bottom: 10px;\n  }\n  \n  .question-text {\n    font-size: 2rem; /* Increased font size for the question text */\n    margin-bottom: 20px;\n  }\n  \n  .option-container {\n    margin-bottom: 20px;\n  }\n  \n  .option-button {\n    display: block;\n    padding: 10px;\n    margin: 10px 0;\n    border-radius: 20px;\n    background-color: #ccc;\n    color: white;\n    border: none;\n    cursor: pointer;\n    width: 100%;\n    text-align: left;\n  }\n  \n  .option-button.correct {\n    background-color: green;\n  }\n  \n  .option-button.incorrect {\n    background-color: red;\n  }\n  \n  .explanation {\n    margin-top: 10px;\n    padding: 10px;\n    background-color: #f9f9f9;\n    border-radius: 10px;\n    border: 1px solid #ddd;\n  }\n  \n  .navigation-buttons {\n    display: flex;\n    justify-content: space-between;\n    margin-top: 20px;\n  }\n  \n  .nav-button {\n    padding: 10px 20px;\n    border-radius: 10px;\n    background-color: #007bff;\n    color: white;\n    border: none;\n    cursor: pointer;\n  }\n  \n  .nav-button:disabled {\n    background-color: #ccc;\n    cursor: not-allowed;\n  }\n  \n  .error {\n    color: red;\n    font-size: 1.2rem;\n  }\n  \n  .loading {\n    font-size: 1.5rem;\n    color: #007bff;\n  }\n  "],"sourceRoot":""}]);
+  font-family: Arial, sans-serif;
+  margin: 0;
+  color: #333;
+}
+
+.app-container {
+  padding: 20px;
+}
+
+.question-count {
+  font-size: 32px; /* Adjusted font size for Question */
+  font-weight: bold; /* Bold text */
+  margin-bottom: 10px;
+}
+
+.question-text {
+  font-size: 16px; /* Adjusted font size for question text */
+  font-weight: bold; /* Bold text */
+  margin-bottom: 20px;
+}
+
+.option-container {
+  margin-bottom: 20px;
+}
+
+.option-button {
+  display: block;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 20px;
+  background-color: #FBFBFB;
+  color: black;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-weight: bold; 
+  transition: background-color 0.3s ease;
+}
+
+.option-button.correct {
+  background-color: #a5e7c7; /* Green for correct answer */
+}
+
+.option-button.incorrect {
+  background-color: #ecb0b0; /* Red for incorrect answer */
+}
+
+.explanation {
+  margin-top: 10px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+}
+
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.nav-button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  font-size: 1.2rem;
+}
+
+.loading {
+  font-size: 1.5rem;
+  color: #007bff;
+}
+`, "",{"version":3,"sources":["webpack://./react/app.css"],"names":[],"mappings":"AAAA;EACE,8BAA8B;EAC9B,SAAS;EACT,WAAW;AACb;;AAEA;EACE,aAAa;AACf;;AAEA;EACE,eAAe,EAAE,oCAAoC;EACrD,iBAAiB,EAAE,cAAc;EACjC,mBAAmB;AACrB;;AAEA;EACE,eAAe,EAAE,yCAAyC;EAC1D,iBAAiB,EAAE,cAAc;EACjC,mBAAmB;AACrB;;AAEA;EACE,mBAAmB;AACrB;;AAEA;EACE,cAAc;EACd,aAAa;EACb,cAAc;EACd,mBAAmB;EACnB,yBAAyB;EACzB,YAAY;EACZ,YAAY;EACZ,eAAe;EACf,WAAW;EACX,gBAAgB;EAChB,iBAAiB;EACjB,sCAAsC;AACxC;;AAEA;EACE,yBAAyB,EAAE,6BAA6B;AAC1D;;AAEA;EACE,yBAAyB,EAAE,6BAA6B;AAC1D;;AAEA;EACE,gBAAgB;EAChB,aAAa;EACb,yBAAyB;EACzB,mBAAmB;EACnB,sBAAsB;EACtB,eAAe;AACjB;;AAEA;EACE,aAAa;EACb,8BAA8B;EAC9B,gBAAgB;AAClB;;AAEA;EACE,kBAAkB;EAClB,mBAAmB;EACnB,yBAAyB;EACzB,YAAY;EACZ,YAAY;EACZ,eAAe;AACjB;;AAEA;EACE,sBAAsB;EACtB,mBAAmB;AACrB;;AAEA;EACE,UAAU;EACV,iBAAiB;AACnB;;AAEA;EACE,iBAAiB;EACjB,cAAc;AAChB","sourcesContent":["body {\n  font-family: Arial, sans-serif;\n  margin: 0;\n  color: #333;\n}\n\n.app-container {\n  padding: 20px;\n}\n\n.question-count {\n  font-size: 32px; /* Adjusted font size for Question */\n  font-weight: bold; /* Bold text */\n  margin-bottom: 10px;\n}\n\n.question-text {\n  font-size: 16px; /* Adjusted font size for question text */\n  font-weight: bold; /* Bold text */\n  margin-bottom: 20px;\n}\n\n.option-container {\n  margin-bottom: 20px;\n}\n\n.option-button {\n  display: block;\n  padding: 10px;\n  margin: 10px 0;\n  border-radius: 20px;\n  background-color: #FBFBFB;\n  color: black;\n  border: none;\n  cursor: pointer;\n  width: 100%;\n  text-align: left;\n  font-weight: bold; \n  transition: background-color 0.3s ease;\n}\n\n.option-button.correct {\n  background-color: #a5e7c7; /* Green for correct answer */\n}\n\n.option-button.incorrect {\n  background-color: #ecb0b0; /* Red for incorrect answer */\n}\n\n.explanation {\n  margin-top: 10px;\n  padding: 10px;\n  background-color: #f9f9f9;\n  border-radius: 10px;\n  border: 1px solid #ddd;\n  font-size: 14px;\n}\n\n.navigation-buttons {\n  display: flex;\n  justify-content: space-between;\n  margin-top: 20px;\n}\n\n.nav-button {\n  padding: 10px 20px;\n  border-radius: 10px;\n  background-color: #007bff;\n  color: white;\n  border: none;\n  cursor: pointer;\n}\n\n.nav-button:disabled {\n  background-color: #ccc;\n  cursor: not-allowed;\n}\n\n.error {\n  color: red;\n  font-size: 1.2rem;\n}\n\n.loading {\n  font-size: 1.5rem;\n  color: #007bff;\n}\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 

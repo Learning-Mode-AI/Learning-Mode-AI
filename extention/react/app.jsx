@@ -53,14 +53,10 @@ export function App() {
 
   const currentQuestion = quiz.questions[currentQuestionIndex];
 
-  // Map the answer correctly
   const correctAnswer =
     ['A', 'B', 'C', 'D'].includes(currentQuestion.answer)
       ? currentQuestion.options[['A', 'B', 'C', 'D'].indexOf(currentQuestion.answer)].option
       : currentQuestion.answer;
-
-  const getColor = (option) =>
-    option.option === correctAnswer ? 'green' : 'red';
 
   const handleAnswer = (option) => {
     setSelectedAnswer(option);
@@ -78,7 +74,7 @@ export function App() {
             onClick={() => handleAnswer(option.option)}
             className={`option-button ${
               selectedAnswer === option.option
-                ? getColor(option) === 'green'
+                ? option.option === correctAnswer
                   ? 'correct'
                   : 'incorrect'
                 : ''
