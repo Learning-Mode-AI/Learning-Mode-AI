@@ -3,7 +3,7 @@ name: Build and Transfer Docker Image
 on:
   push:
     branches:
-      - production
+      - production-pr
 
 jobs:
   build-and-transfer:
@@ -15,26 +15,48 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t ${GITHUB_REPOSITORY##*/}:latest .
+          REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}" | tr '[:upper:]' '[:lower:]')
+          docker build -t ${REPO_NAME}:latest .
 
       - name: Save Docker Image as Tar
         run: |
-          docker save -o ${GITHUB_REPOSITORY##*/}.tar ${GITHUB_REPOSITORY##*/}:latest
-
-      - name: Transfer Docker Image to EC2
-        uses: appleboy/scp-action@v0.2.4
+          REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}" | tr '[:upper:]' '[:lower:]')
+          docker save -o ${REPO_NAME}.tar ${REPO_NAME}:latest
+          
+      - name: Update File Permissions
+        run: chmod 644 learning-mode-ai.tar
+      
+      - name: Ensure Target Directory Exists
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: "${GITHUB_REPOSITORY##*/}.tar"
+          script: bash --noprofile --norc -c "mkdir -p /home/${{ secrets.EC2_USER }}/images/"
+      
+      - name: Transfer Docker Image to EC2
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: "learning-mode-ai.tar"
           target: "/home/${{ secrets.EC2_USER }}/images/"
 
       - name: Load Docker Image on EC2
-        uses: appleboy/ssh-action@v0.1.11
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            docker load < /home/${{ secrets.EC2_USER }}/images/${GITHUB_REPOSITORY##*/}.tar
+            REPO_NAME="learning-mode-ai" # Hardcoded for now
+            echo "Loading Docker image: /home/${{ secrets.EC2_USER }}/images/${REPO_NAME}.tar"
+            docker load < /home/${{ secrets.EC2_USER }}/images/${REPO_NAME}.tar
+
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPLOYMENT_PAT }}
+          repository: learning-mode-ai/learning-mode-ai
+          event-type: deploy
