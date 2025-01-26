@@ -10,22 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the repository code
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      # Build the Docker image for the backend
       - name: Build Docker Image
         run: |
           REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}" | tr '[:upper:]' '[:lower:]')
           docker build -t ${REPO_NAME}:latest ./backend
 
+      # Save the Docker image as a tar file
       - name: Save Docker Image as Tar
         run: |
           REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}" | tr '[:upper:]' '[:lower:]')
           docker save -o ${REPO_NAME}.tar ${REPO_NAME}:latest
           
+      # Update file permissions for the tar file
       - name: Update File Permissions
         run: chmod 644 learning-mode-ai.tar
       
+      # Ensure the target directory exists on the EC2 instance
       - name: Ensure Target Directory Exists
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -33,7 +38,8 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: bash --noprofile --norc -c "mkdir -p /home/${{ secrets.EC2_USER }}/images/"
-      
+
+      # Transfer the Docker image tar file to the EC2 instance
       - name: Transfer Docker Image to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -43,6 +49,7 @@ jobs:
           source: "learning-mode-ai.tar"
           target: "/home/${{ secrets.EC2_USER }}/images/"
 
+      # Load the Docker image on the EC2 instance and ensure the .env file is in place
       - name: Load Docker Image on EC2
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -50,13 +57,21 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_PRIVATE_KEY }}
           script: |
-            REPO_NAME="learning-mode-ai" # Hardcoded for now
+            REPO_NAME="learning-mode-ai"
             echo "Loading Docker image: /home/${{ secrets.EC2_USER }}/images/${REPO_NAME}.tar"
             docker load < /home/${{ secrets.EC2_USER }}/images/${REPO_NAME}.tar
+            
+            # Ensure the .env file exists in the backend folder
+            BACKEND_ENV="/home/${{ secrets.EC2_USER }}/Learning-Mode-AI/backend/.env"
+            if [ ! -f "$BACKEND_ENV" ]; then
+              echo "ERROR: .env file is missing in the backend folder. Please create it manually."
+              exit 1
+            fi
 
+      # Trigger the deployment workflow
       - name: Repository Dispatch
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.DEPLOYMENT_PAT }}
-          repository: learning-mode-ai/learning-mode-ai
+          repository: learning-mode-ai/learning-mode-ai-deployment
           event-type: deploy
