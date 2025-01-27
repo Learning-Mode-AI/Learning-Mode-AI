@@ -133,11 +133,11 @@ function displayQuestionInQuizHolder(question) {
             <div>
                 <h3>${question.text}</h3>
                 ${question.options
-                  .map(
-                    (option, idx) =>
-                      `<button class="quiz-option" data-index="${idx}">${option}</button>`
-                  )
-                  .join('')}
+        .map(
+          (option, idx) =>
+            `<button class="quiz-option" data-index="${idx}">${option}</button>`
+        )
+        .join('')}
             </div>
         `;
     quizHolder.style.display = 'block';
