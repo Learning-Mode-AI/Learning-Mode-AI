@@ -24,7 +24,7 @@ func FetchVideoInfo(videoID string) (*VideoInfo, error) {
 	pythonServiceURL := fmt.Sprintf("%s/video-info/%s", config.YoutubeInfoServiceURL, videoID)
 
 	// Create an HTTP GET request to the Python service
-	client := &http.Client{Timeout: 10 * time.Second}
+	client := &http.Client{Timeout: 1000 * time.Second}
 	req, err := http.NewRequest("GET", pythonServiceURL, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %v", err)

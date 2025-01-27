@@ -5,7 +5,7 @@ module.exports = {
   entry: './js/content.js',
   output: {
     filename: 'content.bundle.js',
-    path: path.resolve(__dirname, 'js')
+    path: path.resolve(__dirname, 'js'),
   },
   devtool: 'cheap-module-source-map',
   module: {
@@ -16,10 +16,10 @@ module.exports = {
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env']
-          }
-        }
-      }
-    ]
-  }
+            presets: ['@babel/preset-env'],
+          },
+        },
+      },
+    ],
+  },
 };

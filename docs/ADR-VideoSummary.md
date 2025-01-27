@@ -29,7 +29,7 @@ Develop a Video Summary feature for Learning Mode, enabling users to generate an
     
     - Processes AI-specific tasks such as question answering and contextual understanding.
         
-    - Leverages OpenAI's GPT models to generate responses.
+    - Leverages OpenAIs GPT models to generate responses.
         
 - **Key Components:**
     
