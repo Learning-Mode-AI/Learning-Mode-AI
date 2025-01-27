@@ -16,7 +16,7 @@ jobs:
       - name: Build Docker Image
         run: |
           REPO_NAME=$(echo "${GITHUB_REPOSITORY##*/}" | tr '[:upper:]' '[:lower:]')
-          docker build -t ${REPO_NAME}:latest .
+          docker build -t ${REPO_NAME}:latest ./backend
 
       - name: Save Docker Image as Tar
         run: |
