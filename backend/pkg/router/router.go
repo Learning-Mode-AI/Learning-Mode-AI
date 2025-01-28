@@ -6,16 +6,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter() *mux.Router {
+func NewRouter(stripeSecret string) *mux.Router {
 	r := mux.NewRouter()
 
 	// Define your routes here
+	r.HandleFunc("/webhook", handlers.StripeWebhookHandler(stripeSecret)).Methods("POST")
 	r.HandleFunc("/processVideo", handlers.ProcessVideo).Methods("POST")
 	r.HandleFunc("/api/question", handlers.AskGPTQuestion).Methods("POST")
 	r.HandleFunc("/api/quiz", handlers.GenerateQuiz).Methods("POST")
 	r.HandleFunc("/video-summary", handlers.VideoSummaryHandler).Methods("POST")
 	r.HandleFunc("/api/show-interest", handlers.ShowInterestHandler).Methods("POST")
-    r.HandleFunc("/api/interest-count/{feature}", handlers.GetInterestCountHandler).Methods("GET")
+	r.HandleFunc("/api/interest-count/{feature}", handlers.GetInterestCountHandler).Methods("GET")
 
 	return r
 }
