@@ -374,36 +374,6 @@ function activateLearningMode() {
       (0,_components_container2_js__WEBPACK_IMPORTED_MODULE_3__.createContainer2)(secondaryInner, createReactRoot);
     }
   }
-  fetch('http://localhost:8080/api/quiz', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      video_id: extractVideoID(videoUrl)
-    })
-  }).then(function (response) {
-    return response.json();
-  }).then(function (data) {
-    var quizData = data.questions; // Array of questions with timestamps
-    var videoElement = document.querySelector('video');
-    var displayedTimestamps = new Set();
-    if (videoElement) {
-      setInterval(function () {
-        var currentTime = Math.floor(videoElement.currentTime);
-        quizData.forEach(function (question) {
-          var questionTime = Math.floor(parseTimestamp(question.timestamp));
-          if (currentTime === questionTime && !displayedTimestamps.has(questionTime)) {
-            videoElement.pause();
-            displayQuestionInQuizHolder(question);
-            displayedTimestamps.add(questionTime);
-          }
-        });
-      }, 500);
-    }
-  })["catch"](function (error) {
-    return console.error('Error fetching quiz data:', error);
-  });
 }
 function parseTimestamp(timestamp) {
   var parts = timestamp.split(':');
@@ -539,6 +509,24 @@ function App() {
     _useState8 = _slicedToArray(_useState7, 2),
     error = _useState8[0],
     setError = _useState8[1];
+  var _useState9 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(null),
+    _useState10 = _slicedToArray(_useState9, 2),
+    videoElement = _useState10[0],
+    setVideoElement = _useState10[1];
+  var _useState11 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState12 = _slicedToArray(_useState11, 2),
+    timestamps = _useState12[0],
+    setTimestamps = _useState12[1];
+  var _useState13 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)([]),
+    _useState14 = _slicedToArray(_useState13, 2),
+    questionsAtTimestamp = _useState14[0],
+    setQuestionsAtTimestamp = _useState14[1];
+  var _useState15 = (0,react__WEBPACK_IMPORTED_MODULE_0__.useState)(new Set()),
+    _useState16 = _slicedToArray(_useState15, 2),
+    displayedTimestamps = _useState16[0],
+    setDisplayedTimestamps = _useState16[1];
+  var TOLERANCE = 0.5; // Tolerance for matching timestamps
+
   (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
     var extractVideoId = function extractVideoId() {
       var url = window.location.href;
@@ -555,7 +543,7 @@ function App() {
     }
     var fetchQuiz = /*#__PURE__*/function () {
       var _ref = _asyncToGenerator(/*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
-        var response, data;
+        var response, data, quizTimestamps;
         return _regeneratorRuntime().wrap(function _callee$(_context) {
           while (1) switch (_context.prev = _context.next) {
             case 0:
@@ -577,24 +565,71 @@ function App() {
             case 6:
               data = _context.sent;
               setQuiz(data);
-              _context.next = 13;
+              quizTimestamps = data.questions.map(function (question, index) {
+                return {
+                  timestamp: parseTimestamp(question.timestamp),
+                  index: index
+                };
+              });
+              setTimestamps(quizTimestamps);
+              _context.next = 15;
               break;
-            case 10:
-              _context.prev = 10;
+            case 12:
+              _context.prev = 12;
               _context.t0 = _context["catch"](0);
               setError('Failed to fetch quiz data.');
-            case 13:
+            case 15:
             case "end":
               return _context.stop();
           }
-        }, _callee, null, [[0, 10]]);
+        }, _callee, null, [[0, 12]]);
       }));
       return function fetchQuiz() {
         return _ref.apply(this, arguments);
       };
     }();
     fetchQuiz();
+    var video = document.querySelector('video');
+    if (video) {
+      setVideoElement(video);
+    }
   }, []);
+  (0,react__WEBPACK_IMPORTED_MODULE_0__.useEffect)(function () {
+    if (timestamps.length > 0 && videoElement) {
+      var interval = setInterval(function () {
+        var currentTime = videoElement.currentTime;
+        timestamps.forEach(function (_ref2) {
+          var timestamp = _ref2.timestamp;
+          if (Math.abs(currentTime - timestamp) <= TOLERANCE && !displayedTimestamps.has(timestamp)) {
+            videoElement.pause();
+            var matchingQuestions = timestamps.filter(function (t) {
+              return Math.abs(t.timestamp - timestamp) <= TOLERANCE;
+            }).map(function (t) {
+              return t.index;
+            });
+            console.log('Matching questions:', matchingQuestions); // Debugging log
+            setQuestionsAtTimestamp(matchingQuestions);
+            setDisplayedTimestamps(function (prev) {
+              return new Set(prev).add(timestamp);
+            });
+            setCurrentQuestionIndex(0); // Always start with the first question for the current timestamp
+          }
+        });
+      }, 500);
+      return function () {
+        return clearInterval(interval);
+      }; // Cleanup interval on component unmount
+    }
+  }, [timestamps, videoElement, displayedTimestamps]);
+  var parseTimestamp = function parseTimestamp(timestamp) {
+    var parts = timestamp.split(':');
+    return parts.length === 2 ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1]) : parseFloat(parts[0]);
+  };
+  var currentQuestion = quiz && questionsAtTimestamp.length > 0 ? quiz.questions[questionsAtTimestamp[currentQuestionIndex]] : null;
+  var correctAnswer = currentQuestion && ['A', 'B', 'C', 'D'].includes(currentQuestion.answer) ? currentQuestion.options[['A', 'B', 'C', 'D'].indexOf(currentQuestion.answer)].option : currentQuestion === null || currentQuestion === void 0 ? void 0 : currentQuestion.answer;
+  var handleAnswer = function handleAnswer(option) {
+    setSelectedAnswer(option);
+  };
   if (error) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
       className: "error"
@@ -605,16 +640,11 @@ function App() {
       className: "loading"
     }, "Loading...");
   }
-  var currentQuestion = quiz.questions[currentQuestionIndex];
-  var correctAnswer = ['A', 'B', 'C', 'D'].includes(currentQuestion.answer) ? currentQuestion.options[['A', 'B', 'C', 'D'].indexOf(currentQuestion.answer)].option : currentQuestion.answer;
-  var handleAnswer = function handleAnswer(option) {
-    setSelectedAnswer(option);
-  };
   return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "app-container"
-  }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", {
+  }, currentQuestion ? /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement((react__WEBPACK_IMPORTED_MODULE_0___default().Fragment), null, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("h1", {
     className: "question-count"
-  }, "Question ", currentQuestionIndex + 1, "/", quiz.questions.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
+  }, "Question ", currentQuestionIndex + 1, "/", questionsAtTimestamp.length), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", {
     className: "question-text"
   }, currentQuestion.text), currentQuestion.options.map(function (option, idx) {
     return /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
@@ -628,7 +658,7 @@ function App() {
     }, option.option), selectedAnswer === option.option && /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
       className: "explanation"
     }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, option.explanation)));
-  }), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
+  })) : /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("p", null, "No questions available for the current timestamp."), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("div", {
     className: "navigation-buttons"
   }, /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: function onClick() {
@@ -642,11 +672,11 @@ function App() {
   }, "Previous"), /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_0___default().createElement("button", {
     onClick: function onClick() {
       setCurrentQuestionIndex(function (prevIndex) {
-        return Math.min(prevIndex + 1, quiz.questions.length - 1);
+        return Math.min(prevIndex + 1, questionsAtTimestamp.length - 1);
       });
       setSelectedAnswer(null);
     },
-    disabled: currentQuestionIndex === quiz.questions.length - 1,
+    disabled: currentQuestionIndex === questionsAtTimestamp.length - 1,
     className: "nav-button"
   }, "Next")));
 }

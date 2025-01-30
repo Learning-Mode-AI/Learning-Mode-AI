@@ -78,34 +78,7 @@ function activateLearningMode() {
         }
     }
 
-    fetch('http://localhost:8080/api/quiz', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ video_id: extractVideoID(videoUrl) })
-    })
-    .then(response => response.json())
-    .then(data => {
-        const quizData = data.questions; // Array of questions with timestamps
-        const videoElement = document.querySelector('video');
-        const displayedTimestamps = new Set();
-
-        if (videoElement) {
-            setInterval(() => {
-                const currentTime = Math.floor(videoElement.currentTime);
-
-                quizData.forEach(question => {
-                    const questionTime = Math.floor(parseTimestamp(question.timestamp));
-
-                    if (currentTime === questionTime && !displayedTimestamps.has(questionTime)) {
-                        videoElement.pause();
-                        displayQuestionInQuizHolder(question);
-                        displayedTimestamps.add(questionTime);
-                    }
-                });
-            }, 500);
-        }
-    })
-    .catch(error => console.error('Error fetching quiz data:', error));
+    
 }
 
 function parseTimestamp(timestamp) {
