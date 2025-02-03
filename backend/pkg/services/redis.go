@@ -41,6 +41,20 @@ func StoreVideoInfoInRedis(videoID string, videoInfo *VideoInfo) error {
 	return nil
 }
 
+func StoreSubscriptioninfoInRedis(email string, subscription *Subscription) error {
+	data, err := json.Marshal(subscription)
+	if err != nil {
+		return fmt.Errorf("failed to marshal subscriptiom: %v", err)
+	}
+
+	err = rdb.Set(ctx, email, data, 0).Err()
+	if err != nil {
+		return fmt.Errorf("failed to store subscription in Redis: %v", err)
+	}
+
+	return nil
+}
+
 // Retrieve video info from Redis
 func GetVideoInfoFromRedis(videoID string) (*VideoInfo, error) {
 	val, err := rdb.Get(ctx, videoID).Result()
@@ -73,21 +87,21 @@ func GetVideoSummaryFromRedis(videoID string) (string, error) {
 }
 
 func StoreInterestClick(feature string) error {
-    sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Replace spaces with underscores
-    key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
-    err := rdb.Incr(ctx, key).Err()
-    if err != nil {
-        return fmt.Errorf("failed to increment interest count for feature %s: %v", feature, err)
-    }
-    return nil
+	sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Replace spaces with underscores
+	key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
+	err := rdb.Incr(ctx, key).Err()
+	if err != nil {
+		return fmt.Errorf("failed to increment interest count for feature %s: %v", feature, err)
+	}
+	return nil
 }
 
 func GetInterestCount(feature string) (int64, error) {
-    sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Consistent sanitization
-    key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
-    count, err := rdb.Get(ctx, key).Int64()
-    if err != nil {
-        return 0, fmt.Errorf("failed to get interest count for feature %s: %v", feature, err)
-    }
-    return count, nil
+	sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Consistent sanitization
+	key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
+	count, err := rdb.Get(ctx, key).Int64()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get interest count for feature %s: %v", feature, err)
+	}
+	return count, nil
 }

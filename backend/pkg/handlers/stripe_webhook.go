@@ -57,6 +57,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
+			log.Printf("RAW DATA: %s", event.Data.Raw)
 			log.Printf("Checkout session completed for customer: %s", session.Customer.Email)
 			// TODO: Add logic to provision services or update the database.
 
