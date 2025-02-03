@@ -35,6 +35,12 @@
       "run_at": "document_idle"
     }
   ],
+  "web_accessible_resources": [
+    {
+      "resources": ["images/*"],
+      "matches": ["<all_urls>"]
+    }
+  ], 
   "background": {
     "service_worker": "js/background.js"
   }

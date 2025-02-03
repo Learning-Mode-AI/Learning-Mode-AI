@@ -54,6 +54,9 @@ function initializeLearningMode() {
   let chatContainer = document.getElementById('custom-chat-container');
   const isFullscreen = !!document.fullscreenElement;
 
+  const imgURL = chrome.runtime.getURL('images/bg.png');
+  console.log(imgURL)
+
   const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none';
@@ -64,6 +67,10 @@ function initializeLearningMode() {
       if (!chatContainer) {
         createChatContainer(document.body);
         chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.style.backgroundImage = `url('${imgURL}')`;
+        chatContainer.style.backgroundSize = 'cover';
+        chatContainer.style.backgroundPosition = 'center';
+        chatContainer.style.backgroundRepeat = 'no-repeat';
         chatContainer.classList.add('fullscreen');
       }
       if (!document.getElementById('features-panel')) {
@@ -76,6 +83,11 @@ function initializeLearningMode() {
           sidebar.offsetWidth,
           sidebar.offsetHeight
         );
+        chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.style.backgroundImage = `url('${imgURL}')`;
+        chatContainer.style.backgroundSize = 'cover';
+        chatContainer.style.backgroundPosition = 'center';
+        chatContainer.style.backgroundRepeat = 'no-repeat';
       }
       if (!document.getElementById('features-panel')) {
         createContainer2(secondaryInner); // Append container2 to the secondary-inner element
