@@ -29,6 +29,18 @@ function toggleLearningMode() {
     }
 }
 
+async function getUserInfo() {
+    try {
+        console.log("Attempting to fetch user info...");
+        const user = await chrome.identity.getAuthToken({ interactive: true });
+        console.log("User info retrieved successfully:", user);
+        return user;
+    } catch (error) {
+        console.error("User authentication failed:", error);
+        return null;
+    }
+}
+
 function activateLearningMode() {
     const sidebar = document.getElementById('related');
     const secondaryInner = document.getElementById('secondary-inner');
@@ -36,29 +48,39 @@ function activateLearningMode() {
     const isFullscreen = !!document.fullscreenElement;
 
     const videoUrl = window.location.href; // Grab the video URL
-    if (sidebar && secondaryInner) {
-        sidebar.style.display = 'none'; // Hide the sidebar
 
-        sendVideoInfoToBackend(videoUrl); // Send the video URL to the backend
+    getUserInfo((user) => {
+        if (!user) {
+            console.error("User authentication failed. Cannot send video info.");
+            return;
+        }
 
-        if (isFullscreen) {
-            if (!chatContainer) {
-                createChatContainer(document.body);
-                chatContainer = document.getElementById('custom-chat-container');
-                chatContainer.classList.add('fullscreen');
-            }
-            if (!document.getElementById('features-panel')) {
-                createContainer2(document.body); // Append container2 to body in full-screen
-            }
-        } else {
-            if (!chatContainer) {
-                createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
-            }
-            if (!document.getElementById('features-panel')) {
-                createContainer2(secondaryInner); // Append container2 to the secondary-inner element
+        console.log("Authenticated User:", user);
+
+        if (sidebar && secondaryInner) {
+            sidebar.style.display = 'none'; // Hide the sidebar
+
+            sendVideoInfoToBackend(videoUrl, userId, userEmail); // Send the video URL userID and email to the backend
+
+            if (isFullscreen) {
+                if (!chatContainer) {
+                    createChatContainer(document.body);
+                    chatContainer = document.getElementById('custom-chat-container');
+                    chatContainer.classList.add('fullscreen');
+                }
+                if (!document.getElementById('features-panel')) {
+                    createContainer2(document.body); // Append container2 to body in full-screen
+                }
+            } else {
+                if (!chatContainer) {
+                    createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+                }
+                if (!document.getElementById('features-panel')) {
+                    createContainer2(secondaryInner); // Append container2 to the secondary-inner element
+                }
             }
         }
-    }
+    })
 
     fetch('http://localhost:8080/api/quiz', {
         method: 'POST',
@@ -148,24 +170,61 @@ function hideModal() {
 }
 
 
-function sendVideoInfoToBackend(videoUrl) {
+function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     fetch('http://localhost:8080/processVideo', { 
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'User-ID': userId // Send userID in headers
         },
         body: JSON.stringify({ videoUrl: videoUrl })
     })
     .then(response => {
-        if (response.ok === true) {
+        if (response.status === 404) { // User Not Found
+            console.log("User not found, creating user...");
+
+            // Create the user first
+            createUser(userId, userEmail)
+                .then(() => {
+                    console.log("User created. Retrying video request...");
+                    
+                    // Now retry the video processing request
+                    sendVideoInfoToBackend(videoUrl, userId, userEmail);
+                })
+                .catch(error => console.error("Error creating user:", error));
+        } else if (response.ok) {
+            console.log("Video processed successfully!");
             hideModal();
-            addAIBubble('Video Proccessed! You can now ask questions.');
-        } else{
+            addAIBubble('Video Processed! You can now ask questions.');
+        } else {
+            console.error("Error processing video:", response.statusText);
             addAIBubble('Transcription failed. Please try again later.');
         }
     })
-    .catch((error) => {
-        console.error('Error:', error);
+    .catch(error => console.error("Error:", error));
+}
+
+// Modify createUser to Register the User in the Backend
+function createUser(userId, userEmail) {
+    return fetch('http://localhost:8080/createUser', { 
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ userId: userId, email: userEmail }) //  Send user ID & email
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error("Failed to create user");
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log("User created successfully:", data);
+        sendVideoInfoToBackend(window.location.href, userId); // Retry sending the original request
+    })
+    .catch(error => {
+        console.error("Error creating user:", error);
     });
 }
 
