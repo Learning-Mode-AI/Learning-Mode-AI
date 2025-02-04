@@ -55,7 +55,6 @@ function initializeLearningMode() {
   const isFullscreen = !!document.fullscreenElement;
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
-  console.log(imgURL)
 
   const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
