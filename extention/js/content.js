@@ -72,9 +72,7 @@ function initializeLearningMode() {
         chatContainer.style.backgroundRepeat = 'no-repeat';
         chatContainer.classList.add('fullscreen');
       }
-      if (!document.getElementById('features-panel')) {
-        createContainer2(document.body); // Append container2 to body in full-screen
-      }
+      
     } else {
       if (!chatContainer) {
         createChatContainer(
