@@ -52,9 +52,11 @@ function initializeLearningMode() {
   const sidebar = document.getElementById('related');
   const secondaryInner = document.getElementById('secondary-inner');
   let chatContainer = document.getElementById('custom-chat-container');
+  let featuresPanel = document.getElementById('features-panel'); 
   const isFullscreen = !!document.fullscreenElement;
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
+  const imgURL2 = chrome.runtime.getURL('images/bg2.png');
 
   const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
@@ -66,13 +68,18 @@ function initializeLearningMode() {
       if (!chatContainer) {
         createChatContainer(document.body);
         chatContainer = document.getElementById('custom-chat-container');
-        chatContainer.style.backgroundImage = `url('${imgURL}')`;
+        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
         chatContainer.style.backgroundSize = 'cover';
         chatContainer.style.backgroundPosition = 'center';
         chatContainer.style.backgroundRepeat = 'no-repeat';
         chatContainer.classList.add('fullscreen');
       }
-      
+      if (!featuresPanel) {
+        createContainer2(document.body); // Append container2 to body in full-screen
+        featuresPanel = document.getElementById('features-panel');
+        
+      }
+      featuresPanel.classList.add('fullscreen');
     } else {
       if (!chatContainer) {
         createChatContainer(
@@ -86,9 +93,11 @@ function initializeLearningMode() {
         chatContainer.style.backgroundPosition = 'center';
         chatContainer.style.backgroundRepeat = 'no-repeat';
       }
-      if (!document.getElementById('features-panel')) {
+      if (!featuresPanel) {
         createContainer2(secondaryInner); // Append container2 to the secondary-inner element
+        featuresPanel = document.getElementById('features-panel');
       }
+      featuresPanel.classList.remove('fullscreen');
     }
   }
 

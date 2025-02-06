@@ -114,8 +114,11 @@ export function createChatContainer(parentElement) {
     }
   });
 
+  const imgURL = chrome.runtime.getURL('images/bg.png');
+
   document.addEventListener('fullscreenchange', () => {
     const chatContainer = document.getElementById('custom-chat-container');
+    const featuresPanel = document.getElementById('features-panel');
     const isFullscreen = !!document.fullscreenElement;
     const secondaryInner = document.getElementById('secondary-inner');
 
@@ -124,11 +127,18 @@ export function createChatContainer(parentElement) {
         document.body.appendChild(chatContainer);
         chatContainer.classList.add('fullscreen');
         chatContainer.style.position = 'fixed';
+        document.body.appendChild(featuresPanel);
+        featuresPanel.classList.add('fullscreen');
+        featuresPanel.style.position = 'fixed';
       } else {
         if (secondaryInner) {
           secondaryInner.appendChild(chatContainer);
+          chatContainer.style.backgroundImage = `url('${imgURL}')`;
           chatContainer.classList.remove('fullscreen');
           chatContainer.style.position = 'relative';
+          secondaryInner.appendChild(featuresPanel);
+          featuresPanel.classList.remove('fullscreen');
+          featuresPanel.style.position = 'relative';
         }
       }
     }
