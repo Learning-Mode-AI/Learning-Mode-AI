@@ -1,6 +1,8 @@
 import { generateVideoSummary } from '../js/content.js';
 import { marked } from 'marked'; // Ensure this import exists at the top
 
+
+
 export function createContainer2(parentElement) {
   
   const featuresPanel = document.createElement('div');
@@ -175,25 +177,4 @@ export function createContainer2(parentElement) {
       loadingIndicator.style.display = 'none';
     }
   });
-
-
-  // document.addEventListener('fullscreenchange', () => {
-  //   featuresPanel = document.getElementById('features-panel');
-  //   const isFullscreen = !!document.fullscreenElement;
-  //   const secondaryInner = document.getElementById('secondary-inner');
-
-  //   if (featuresPanel) {
-  //     if (isFullscreen) {
-  //       document.body.appendChild(featuresPanel);
-  //       featuresPanel.classList.add('fullscreen');
-  //       featuresPanel.style.position = 'fixed';
-  //     } else {
-  //       if (secondaryInner) {
-  //         secondaryInner.appendChild(featuresPanel);
-  //         featuresPanel.classList.remove('fullscreen');
-  //         featuresPanel.style.position = 'relative';
-  //       }
-  //     }
-  //   }
-  // });
 }

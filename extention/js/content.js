@@ -101,66 +101,11 @@ function initializeLearningMode() {
     }
   }
 
-  fetch('http://localhost:8080/api/quiz', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      video_id: extractVideoID(videoUrl),
-      userId: userId,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const quizData = data.questions; // Array of questions with timestamps
-      const videoElement = document.querySelector('video');
-      const displayedTimestamps = new Set();
-
-      if (videoElement) {
-        setInterval(() => {
-          const currentTime = Math.floor(videoElement.currentTime);
-
-          quizData.forEach((question) => {
-            const questionTime = Math.floor(parseTimestamp(question.timestamp));
-
-            if (
-              currentTime === questionTime &&
-              !displayedTimestamps.has(questionTime)
-            ) {
-              videoElement.pause();
-              displayQuestionInQuizHolder(question);
-              displayedTimestamps.add(questionTime);
-            }
-          });
-        }, 500);
-      }
-    })
-    .catch((error) => console.error('Error fetching quiz data:', error));
 }
 
-function parseTimestamp(timestamp) {
-  const parts = timestamp.split(':');
-  return parts.length === 2
-    ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1])
-    : parseFloat(parts[0]);
-}
 
-function displayQuestionInQuizHolder(question) {
-  const quizHolder = document.getElementById('quiz-holder');
-  if (quizHolder) {
-    quizHolder.innerHTML = `
-            <div>
-                <h3>${question.text}</h3>
-                ${question.options
-        .map(
-          (option, idx) =>
-            `<button class="quiz-option" data-index="${idx}">${option}</button>`
-        )
-        .join('')}
-            </div>
-        `;
-    quizHolder.style.display = 'block';
-  }
-}
+
+
 
 function deactivateLearningMode() {
   const sidebar = document.getElementById('related');

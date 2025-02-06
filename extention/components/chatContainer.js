@@ -115,6 +115,7 @@ export function createChatContainer(parentElement) {
   });
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
+  const imgURL2 = chrome.runtime.getURL('images/bg2.png');
 
   document.addEventListener('fullscreenchange', () => {
     const chatContainer = document.getElementById('custom-chat-container');
@@ -125,6 +126,7 @@ export function createChatContainer(parentElement) {
     if (chatContainer) {
       if (isFullscreen) {
         document.body.appendChild(chatContainer);
+        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
         chatContainer.classList.add('fullscreen');
         chatContainer.style.position = 'fixed';
         document.body.appendChild(featuresPanel);
