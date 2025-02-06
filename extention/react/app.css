@@ -1,0 +1,87 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    color: #333;
+  }
+  
+  .app-container {
+    padding: 20px;
+  }
+  
+  .question-count {
+    font-size: 32px; /* Adjusted font size for Question */
+    font-weight: bold; /* Bold text */
+    margin-bottom: 10px;
+  }
+  
+  .question-text {
+    font-size: 16px; /* Adjusted font size for question text */
+    font-weight: bold; /* Bold text */
+    margin-bottom: 20px;
+  }
+  
+  .option-container {
+    margin-bottom: 20px;
+  }
+  
+  .option-button {
+    display: block;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 20px;
+    background-color: #FBFBFB;
+    color: black;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    font-weight: bold; 
+    transition: background-color 0.3s ease;
+  }
+  
+  .option-button.correct {
+    background-color: #a5e7c7; /* Green for correct answer */
+  }
+  
+  .option-button.incorrect {
+    background-color: #ecb0b0; /* Red for incorrect answer */
+  }
+  
+  .explanation {
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+  }
+  
+  .navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+  }
+  
+  .nav-button {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .nav-button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .error {
+    color: red;
+    font-size: 1.2rem;
+  }
+  
+  .loading {
+    font-size: 1.5rem;
+    color: #007bff;
+  }
