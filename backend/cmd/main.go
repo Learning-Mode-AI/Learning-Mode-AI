@@ -6,35 +6,30 @@ import (
 	"Learning-Mode-AI/pkg/services"
 	"log"
 	"net/http"
-	"os"
 
 	//"Learning-Mode-AI/pkg/handlers"
 
 	"github.com/gorilla/handlers"
-	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go"
 )
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(err)
-		// log.Fatal("Error loading .env file")
-	}
-	// Set the Stripe secret key globally
-	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
-
+	// Initialize configuration (loads environment variables)
 	config.InitConfig()
+
+	// Set the Stripe secret key globally
+	stripe.Key = config.StripeSecretKey
+
+	// Initialize Redis
 	services.InitRedis()
 }
 
 func main() {
-	stripeSecret := os.Getenv("STRIPE_WEBHOOK_SECRET")
-	if stripeSecret == "" {
+	if config.StripeWebhookSecret == "" {
 		log.Fatal("STRIPE_WEBHOOK_SECRET environment variable is not set")
 	}
 
-	r := router.NewRouter(stripeSecret) // Initialize your router
+	r := router.NewRouter(config.StripeWebhookSecret) // Initialize your router
 
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
 	originsOk := handlers.AllowedOrigins([]string{"https://www.youtube.com"})

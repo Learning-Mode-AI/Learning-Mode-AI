@@ -55,6 +55,15 @@ func StoreSubscriptioninfoInRedis(email string, subscription *Subscription) erro
 	return nil
 }
 
+// DeleteSubscriptionFromRedis removes the subscription data for the given email
+func DeleteSubscriptionFromRedis(email string) error {
+	err := rdb.Del(ctx, email).Err()
+	if err != nil {
+		return fmt.Errorf("failed to delete subscription from Redis: %v", err)
+	}
+	return nil
+}
+
 // Retrieve video info from Redis
 func GetVideoInfoFromRedis(videoID string) (*VideoInfo, error) {
 	val, err := rdb.Get(ctx, videoID).Result()

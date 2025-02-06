@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"Learning-Mode-AI/pkg/config"
+	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
 	"io/ioutil"
 	"log"
 	"net/http"
 
+	"github.com/stripe/stripe-go/customer"
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/webhook"
 )
@@ -14,6 +17,10 @@ const MaxBodyBytes = int64(65536)
 
 func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
+
+		var productTierMap = map[string]string{
+			config.ProductIdPro: "Pro", // Our product id in stripe account test mode
+		}
 		// Limit request body size for safety
 		req.Body = http.MaxBytesReader(w, req.Body, MaxBodyBytes)
 		payload, err := ioutil.ReadAll(req.Body)
@@ -31,75 +38,18 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 			return
 		}
 
-		// Debugging: log payload and headers (only for testing, remove in production)
-		log.Printf("Payload received: %s\n", string(payload))
-		log.Printf("Stripe-Signature header: %s\n", signatureHeader)
-		log.Printf("Endpoint secret: %s\n", endpointSecret)
-
 		// Verify the webhook signature
 		event, err := webhook.ConstructEvent(payload, signatureHeader, endpointSecret)
 		if err != nil {
 			log.Printf("⚠️ Webhook signature verification failed: %v\n", err)
-			log.Printf("Payload: %s\n", string(payload))
 			log.Printf("Signature Header: %s\n", signatureHeader)
 			log.Printf("Endpoint Secret: %s\n", endpointSecret)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		log.Printf("Successfully constructed event: %s", event.Type)
-
-		// Handle the event based on its type
+		// Handle the webhook events
 		switch event.Type {
-		case "checkout.session.completed":
-			var session stripe.CheckoutSession
-			if err := json.Unmarshal(event.Data.Raw, &session); err != nil {
-				log.Printf("Error parsing checkout session: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			log.Printf("RAW DATA: %s", event.Data.Raw)
-			log.Printf("Checkout session completed for customer: %s", session.Customer.Email)
-			// TODO: Add logic to provision services or update the database.
-
-		case "customer.subscription.created":
-			var subscription stripe.Subscription
-			if err := json.Unmarshal(event.Data.Raw, &subscription); err != nil {
-				log.Printf("Error parsing subscription created: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			log.Printf("Subscription created: %s for customer: %s", subscription.ID, subscription.Customer)
-			// TODO: Add logic to activate access for the user.
-
-		case "customer.subscription.deleted":
-			var subscription stripe.Subscription
-			if err := json.Unmarshal(event.Data.Raw, &subscription); err != nil {
-				log.Printf("Error parsing subscription deletion: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			log.Printf("Subscription deleted: %s for customer: %s", subscription.ID, subscription.Customer)
-			// TODO: Add logic to revoke access for the user.
-
-		case "customer.subscription.updated":
-			var subscription stripe.Subscription
-			if err := json.Unmarshal(event.Data.Raw, &subscription); err != nil {
-				log.Printf("Error parsing subscription update: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			log.Printf("Subscription updated: %s for customer: %s", subscription.ID, subscription.Customer)
-			// TODO: Add logic to update the user's plan in your system.
-
-		case "invoice.payment_failed":
-			var invoice stripe.Invoice
-			if err := json.Unmarshal(event.Data.Raw, &invoice); err != nil {
-				log.Printf("Error parsing payment failure: %v\n", err)
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
-			log.Printf("Invoice payment failed: %s for customer: %s", invoice.ID, invoice.CustomerEmail)
-			// TODO: Add logic to notify the user or retry payment.
 
 		case "invoice.payment_succeeded":
 			var invoice stripe.Invoice
@@ -108,12 +58,69 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			log.Printf("Invoice payment succeeded: %s for customer: %s", invoice.ID, invoice.CustomerEmail)
-			// TODO: Add logic to mark invoices as paid in your database.
+
+			customerEmail := invoice.CustomerEmail
+			if customerEmail == "" {
+				log.Println("⚠️ No customer email found in invoice event")
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			productID := invoice.Lines.Data[0].Plan.Product.ID // Get product ID
+			tier, exists := productTierMap[productID]
+			if !exists {
+				log.Printf("⚠️ No matching tier found for product ID: %s", productID)
+				tier = "Unknown" // Default fallback
+			}
+
+			// Create Subscription struct
+			subscription := &services.Subscription{
+				Tier: tier,
+			}
+
+			// Store in Redis
+			err := services.StoreSubscriptioninfoInRedis(customerEmail, subscription)
+			if err != nil {
+				log.Printf("⚠️ Error storing subscription in Redis: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			log.Printf("Stored subscription for %s - Tier: %s", customerEmail, tier)
+
+		case "customer.subscription.deleted":
+			var subscription stripe.Subscription
+			if err := json.Unmarshal(event.Data.Raw, &subscription); err != nil {
+				log.Printf("Error parsing subscription deletion: %v\n", err)
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			//Fetch customer details if email is missing
+			customerDetails, err := customer.Get(subscription.Customer.ID, nil)
+			if err != nil {
+				log.Printf("Error fetching customer details: %v\n", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			customerEmail := customerDetails.Email
+			if customerEmail == "" {
+				log.Println("⚠️ No customer email found")
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+
+			//Remove subscription from Redis
+			err = services.DeleteSubscriptionFromRedis(customerEmail)
+			if err != nil {
+				log.Printf("⚠️ Error deleting subscription from Redis: %v", err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+			log.Printf("Subscription deleted for %s - Access revoked", customerEmail)
 
 		default:
 			log.Printf("Unhandled event type: %s", event.Type)
-			// Optionally log or handle untracked events for debugging.
 		}
 
 		// Acknowledge receipt of the event
