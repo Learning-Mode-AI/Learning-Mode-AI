@@ -73,21 +73,50 @@ func GetVideoSummaryFromRedis(videoID string) (string, error) {
 }
 
 func StoreInterestClick(feature string) error {
-    sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Replace spaces with underscores
-    key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
-    err := rdb.Incr(ctx, key).Err()
-    if err != nil {
-        return fmt.Errorf("failed to increment interest count for feature %s: %v", feature, err)
-    }
-    return nil
+	sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Replace spaces with underscores
+	key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
+	err := rdb.Incr(ctx, key).Err()
+	if err != nil {
+		return fmt.Errorf("failed to increment interest count for feature %s: %v", feature, err)
+	}
+	return nil
 }
 
 func GetInterestCount(feature string) (int64, error) {
-    sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Consistent sanitization
-    key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
-    count, err := rdb.Get(ctx, key).Int64()
-    if err != nil {
-        return 0, fmt.Errorf("failed to get interest count for feature %s: %v", feature, err)
-    }
-    return count, nil
+	sanitizedFeature := strings.ReplaceAll(feature, " ", "_") // Consistent sanitization
+	key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
+	count, err := rdb.Get(ctx, key).Int64()
+	if err != nil {
+		return 0, fmt.Errorf("failed to get interest count for feature %s: %v", feature, err)
+	}
+	return count, nil
+}
+
+// To check if user ID exists in Redis
+func CheckUserExistsInRedis(userID string) (bool, error) {
+	_, err := rdb.Get(ctx, "user:"+userID).Result()
+	if err == redis.Nil {
+		return false, nil // User does not exist
+	} else if err != nil {
+		return false, fmt.Errorf("failed to check user in Redis: %v", err)
+	}
+	return true, nil // User exists
+}
+
+// StoreUserInRedis stores a new user in Redis
+func StoreUserInRedis(userID, email string) error {
+	key := fmt.Sprintf("user:%s", userID)
+
+	// Store user as JSON (userID + email)
+	userData := map[string]string{"userID": userID, "email": email}
+	data, err := json.Marshal(userData)
+	if err != nil {
+		return fmt.Errorf("failed to marshal user data: %v", err)
+	}
+
+	err = rdb.Set(ctx, key, data, 0).Err()
+	if err != nil {
+		return fmt.Errorf("failed to store user in Redis: %v", err)
+	}
+	return nil
 }

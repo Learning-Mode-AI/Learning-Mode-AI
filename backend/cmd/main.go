@@ -25,7 +25,7 @@ func main() {
 	r := router.NewRouter() // Initialize your router
 
 	// Set CORS options
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "User-ID"})
 	originsOk := handlers.AllowedOrigins([]string{"https://www.youtube.com"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 
