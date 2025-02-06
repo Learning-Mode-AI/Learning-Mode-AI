@@ -1,7 +1,10 @@
 import { generateVideoSummary } from '../js/content.js';
 import { marked } from 'marked'; // Ensure this import exists at the top
 
+
+
 export function createContainer2(parentElement) {
+  
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
 

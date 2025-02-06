@@ -52,7 +52,11 @@ function initializeLearningMode() {
   const sidebar = document.getElementById('related');
   const secondaryInner = document.getElementById('secondary-inner');
   let chatContainer = document.getElementById('custom-chat-container');
+  let featuresPanel = document.getElementById('features-panel'); 
   const isFullscreen = !!document.fullscreenElement;
+
+  const imgURL = chrome.runtime.getURL('images/bg.png');
+  const imgURL2 = chrome.runtime.getURL('images/bg2.png');
 
   const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
@@ -64,11 +68,18 @@ function initializeLearningMode() {
       if (!chatContainer) {
         createChatContainer(document.body);
         chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
+        chatContainer.style.backgroundSize = 'cover';
+        chatContainer.style.backgroundPosition = 'center';
+        chatContainer.style.backgroundRepeat = 'no-repeat';
         chatContainer.classList.add('fullscreen');
       }
-      if (!document.getElementById('features-panel')) {
+      if (!featuresPanel) {
         createContainer2(document.body); // Append container2 to body in full-screen
+        featuresPanel = document.getElementById('features-panel');
+        
       }
+      featuresPanel.classList.add('fullscreen');
     } else {
       if (!chatContainer) {
         createChatContainer(
@@ -76,73 +87,25 @@ function initializeLearningMode() {
           sidebar.offsetWidth,
           sidebar.offsetHeight
         );
+        chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.style.backgroundImage = `url('${imgURL}')`;
+        chatContainer.style.backgroundSize = 'cover';
+        chatContainer.style.backgroundPosition = 'center';
+        chatContainer.style.backgroundRepeat = 'no-repeat';
       }
-      if (!document.getElementById('features-panel')) {
+      if (!featuresPanel) {
         createContainer2(secondaryInner); // Append container2 to the secondary-inner element
+        featuresPanel = document.getElementById('features-panel');
       }
+      featuresPanel.classList.remove('fullscreen');
     }
   }
 
-  fetch('http://localhost:8080/api/quiz', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      video_id: extractVideoID(videoUrl),
-      userId: userId,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      const quizData = data.questions; // Array of questions with timestamps
-      const videoElement = document.querySelector('video');
-      const displayedTimestamps = new Set();
-
-      if (videoElement) {
-        setInterval(() => {
-          const currentTime = Math.floor(videoElement.currentTime);
-
-          quizData.forEach((question) => {
-            const questionTime = Math.floor(parseTimestamp(question.timestamp));
-
-            if (
-              currentTime === questionTime &&
-              !displayedTimestamps.has(questionTime)
-            ) {
-              videoElement.pause();
-              displayQuestionInQuizHolder(question);
-              displayedTimestamps.add(questionTime);
-            }
-          });
-        }, 500);
-      }
-    })
-    .catch((error) => console.error('Error fetching quiz data:', error));
 }
 
-function parseTimestamp(timestamp) {
-  const parts = timestamp.split(':');
-  return parts.length === 2
-    ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1])
-    : parseFloat(parts[0]);
-}
 
-function displayQuestionInQuizHolder(question) {
-  const quizHolder = document.getElementById('quiz-holder');
-  if (quizHolder) {
-    quizHolder.innerHTML = `
-            <div>
-                <h3>${question.text}</h3>
-                ${question.options
-        .map(
-          (option, idx) =>
-            `<button class="quiz-option" data-index="${idx}">${option}</button>`
-        )
-        .join('')}
-            </div>
-        `;
-    quizHolder.style.display = 'block';
-  }
-}
+
+
 
 function deactivateLearningMode() {
   const sidebar = document.getElementById('related');

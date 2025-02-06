@@ -114,21 +114,33 @@ export function createChatContainer(parentElement) {
     }
   });
 
+  const imgURL = chrome.runtime.getURL('images/bg.png');
+  const imgURL2 = chrome.runtime.getURL('images/bg2.png');
+
   document.addEventListener('fullscreenchange', () => {
     const chatContainer = document.getElementById('custom-chat-container');
+    const featuresPanel = document.getElementById('features-panel');
     const isFullscreen = !!document.fullscreenElement;
     const secondaryInner = document.getElementById('secondary-inner');
 
     if (chatContainer) {
       if (isFullscreen) {
         document.body.appendChild(chatContainer);
+        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
         chatContainer.classList.add('fullscreen');
         chatContainer.style.position = 'fixed';
+        document.body.appendChild(featuresPanel);
+        featuresPanel.classList.add('fullscreen');
+        featuresPanel.style.position = 'fixed';
       } else {
         if (secondaryInner) {
           secondaryInner.appendChild(chatContainer);
+          chatContainer.style.backgroundImage = `url('${imgURL}')`;
           chatContainer.classList.remove('fullscreen');
           chatContainer.style.position = 'relative';
+          secondaryInner.appendChild(featuresPanel);
+          featuresPanel.classList.remove('fullscreen');
+          featuresPanel.style.position = 'relative';
         }
       }
     }
