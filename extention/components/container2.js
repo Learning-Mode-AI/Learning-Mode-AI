@@ -1,6 +1,8 @@
 import { generateVideoSummary } from '../js/content.js';
 import { marked } from 'marked'; // Ensure this import exists at the top
-
+import { createRoot } from 'react-dom/client';
+import { App } from '../react/app.jsx'; 
+import React from 'react';
 
 
 export function createContainer2(parentElement) {
@@ -81,7 +83,7 @@ export function createContainer2(parentElement) {
     'Get Resources',
     'Generate Quiz*',
   ];
-  const activeFeatures = ['Short Summary*'];
+  const activeFeatures = ['Short Summary*', 'Generate Quiz*'];
   const featuresWithLoading = ['Short Summary*'];
 
   // Toggle options visibility
@@ -133,9 +135,13 @@ export function createContainer2(parentElement) {
             }
           );
         } else if (selectedOption === 'Generate Quiz*') {
-          quizHolder.innerText = 'Generating your quiz...';
+          // quizHolder.innerText = 'Generating your quiz...';
+          quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
-          loadingIndicator.style.display = 'none';
+          const root = createRoot(quizHolder);
+          root.render(<App />);
+
+          return;
         }
         summaryHolder.classList.add('scrollable');
         summaryHolder.style.overflowY = 'auto';
