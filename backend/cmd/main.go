@@ -7,8 +7,6 @@ import (
 	"log"
 	"net/http"
 
-	//"Learning-Mode-AI/pkg/handlers"
-
 	"github.com/gorilla/handlers"
 	"github.com/stripe/stripe-go"
 )

@@ -19,7 +19,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
 
 		var productTierMap = map[string]string{
-			config.ProductIdPro: "Pro", // Our product id in stripe account test mode
+			config.ProductIdPro: "Pro",
 		}
 		// Limit request body size for safety
 		req.Body = http.MaxBytesReader(w, req.Body, MaxBodyBytes)
@@ -42,8 +42,6 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 		event, err := webhook.ConstructEvent(payload, signatureHeader, endpointSecret)
 		if err != nil {
 			log.Printf("⚠️ Webhook signature verification failed: %v\n", err)
-			log.Printf("Signature Header: %s\n", signatureHeader)
-			log.Printf("Endpoint Secret: %s\n", endpointSecret)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
