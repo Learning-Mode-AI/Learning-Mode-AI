@@ -70,10 +70,13 @@ function initializeLearningMode() {
   const sidebar = document.getElementById('related');
   const secondaryInner = document.getElementById('secondary-inner');
   let chatContainer = document.getElementById('custom-chat-container');
+  let featuresPanel = document.getElementById('features-panel');
   const isFullscreen = !!document.fullscreenElement;
 
-  const videoUrl = window.location.href;
+  const imgURL = chrome.runtime.getURL('images/bg.png');
+  const imgURL2 = chrome.runtime.getURL('images/bg2.png');
 
+  const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none';
 
@@ -81,18 +84,36 @@ function initializeLearningMode() {
       if (!chatContainer) {
         createChatContainer(document.body);
         chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
+        chatContainer.style.backgroundSize = 'cover';
+        chatContainer.style.backgroundPosition = 'center';
+        chatContainer.style.backgroundRepeat = 'no-repeat';
         chatContainer.classList.add('fullscreen');
       }
-      if (!document.getElementById('features-panel')) {
-        createContainer2(document.body);
+      if (!featuresPanel) {
+        createContainer2(document.body); // Append container2 to body in full-screen
+        featuresPanel = document.getElementById('features-panel');
+
       }
+      featuresPanel.classList.add('fullscreen');
     } else {
       if (!chatContainer) {
-        createChatContainer(secondaryInner, sidebar.offsetWidth, sidebar.offsetHeight);
+        createChatContainer(
+          secondaryInner,
+          sidebar.offsetWidth,
+          sidebar.offsetHeight
+        );
+        chatContainer = document.getElementById('custom-chat-container');
+        chatContainer.style.backgroundImage = `url('${imgURL}')`;
+        chatContainer.style.backgroundSize = 'cover';
+        chatContainer.style.backgroundPosition = 'center';
+        chatContainer.style.backgroundRepeat = 'no-repeat';
       }
-      if (!document.getElementById('features-panel')) {
-        createContainer2(secondaryInner);
+      if (!featuresPanel) {
+        createContainer2(secondaryInner); // Append container2 to the secondary-inner element
+        featuresPanel = document.getElementById('features-panel');
       }
+      featuresPanel.classList.remove('fullscreen');
     }
   }
 
@@ -149,23 +170,8 @@ function parseTimestamp(timestamp) {
     : parseFloat(parts[0]);
 }
 
-function displayQuestionInQuizHolder(question) {
-  const quizHolder = document.getElementById('quiz-holder');
-  if (quizHolder) {
-    quizHolder.innerHTML = `
-            <div>
-                <h3>${question.text}</h3>
-                ${question.options
-        .map(
-          (option, idx) =>
-            `<button class="quiz-option" data-index="${idx}">${option}</button>`
-        )
-        .join('')}
-            </div>
-        `;
-    quizHolder.style.display = 'block';
-  }
-}
+
+
 
 function deactivateLearningMode() {
   const sidebar = document.getElementById('related');
