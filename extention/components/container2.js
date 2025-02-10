@@ -1,7 +1,7 @@
 import { generateVideoSummary } from '../js/content.js';
 import { marked } from 'marked'; // Ensure this import exists at the top
 import { createRoot } from 'react-dom/client';
-import { App } from '../react/app.jsx'; 
+import { QuizFetcher } from '../react/QuizFetcher.jsx'; 
 import React from 'react';
 
 
@@ -139,7 +139,7 @@ export function createContainer2(parentElement) {
           quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
           const root = createRoot(quizHolder);
-          root.render(<App />);
+          root.render(<QuizFetcher />);
 
           return;
         }
