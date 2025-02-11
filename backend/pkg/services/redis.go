@@ -41,6 +41,29 @@ func StoreVideoInfoInRedis(videoID string, videoInfo *VideoInfo) error {
 	return nil
 }
 
+func StoreSubscriptioninfoInRedis(email string, subscription *Subscription) error {
+	data, err := json.Marshal(subscription)
+	if err != nil {
+		return fmt.Errorf("failed to marshal subscriptiom: %v", err)
+	}
+
+	err = rdb.Set(ctx, email, data, 0).Err()
+	if err != nil {
+		return fmt.Errorf("failed to store subscription in Redis: %v", err)
+	}
+
+	return nil
+}
+
+// DeleteSubscriptionFromRedis removes the subscription data for the given email
+func DeleteSubscriptionFromRedis(email string) error {
+	err := rdb.Del(ctx, email).Err()
+	if err != nil {
+		return fmt.Errorf("failed to delete subscription from Redis: %v", err)
+	}
+	return nil
+}
+
 // Retrieve video info from Redis
 func GetVideoInfoFromRedis(videoID string) (*VideoInfo, error) {
 	val, err := rdb.Get(ctx, videoID).Result()
