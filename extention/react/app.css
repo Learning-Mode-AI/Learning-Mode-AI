@@ -1,114 +1,119 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    color: #333;
-  }
-  
-  .app-container {
-    padding: 20px;
-  }
-  
-  .question-count {
-    font-size: 32px; /* Adjusted font size for Question */
-    font-weight: bold; /* Bold text */
-    margin-bottom: 10px;
-  }
-  
-  .question-text {
-    font-size: 16px; /* Adjusted font size for question text */
-    font-weight: bold; /* Bold text */
-    margin-bottom: 20px;
-  }
-  
-  .option-container {
-    margin-bottom: 20px;
-  }
-  
-  .option-button {
-    display: block;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 20px;
-    background-color: #FBFBFB;
-    color: black;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    text-align: left;
-    font-weight: bold; 
-    transition: background-color 0.3s ease;
-  }
-  
-  .option-button.correct {
-    background-color: #a5e7c7; /* Green for correct answer */
-  }
-  
-  .option-button.incorrect {
-    background-color: #ecb0b0; /* Red for incorrect answer */
-  }
-  
-  .explanation {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 10px;
-    border: 1px solid #ddd;
-    font-size: 14px;
-  }
-  
-  .navigation-buttons {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-  }
-  
-  .nav-button {
-    padding: 10px 20px;
-    border-radius: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    cursor: pointer;
-  }
-  
-  .nav-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-  }
-  
-  .error {
-    color: red;
-    font-size: 1.2rem;
-  }
-  
-  .loading {
-    font-size: 1.5rem;
-    color: #007bff;
-  }
-
-  .question-count.left-aligned {
-    text-align: left;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  color: #333;
 }
 
-.option-button.selected {
-  background-color: #d1e7fd; /* Light blue for selection */
-  font-weight: bold;
+.app-container {
+  padding: 20px;
+}
+
+.question-count {
+  font-size: 32px; /* Adjusted font size for Question */
+  font-weight: bold; /* Bold text */
+  margin-bottom: 10px;
+  text-align: left; /* Left align question title */
+}
+
+.question-text {
+  font-size: 16px; /* Adjusted font size for question text */
+  font-weight: bold; /* Bold text */
+  margin-bottom: 20px;
+  text-align: left; /* Left align question text */
+  display: block;
+  width: 100%;
+}
+
+.option-container {
+  margin-bottom: 20px;
+}
+
+.option-button {
+  display: block;
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 20px;
+  background-color: #FBFBFB;
+  color: black;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-weight: bold; 
+  transition: background-color 0.3s ease;
+}
+
+.option-button.correct {
+  background-color: #a5e7c7; /* Green for correct answer */
+}
+
+.option-button.incorrect {
+  background-color: #ecb0b0; /* Red for incorrect answer */
 }
 
 .explanation {
   margin-top: 10px;
-  padding: 15px;
+  padding: 10px;
   background-color: #f9f9f9;
   border-radius: 10px;
   border: 1px solid #ddd;
   font-size: 14px;
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-.quiz-container {
-  background-image: url('../images/bg.png'); /* Replace with correct path */
+.navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.nav-button {
+  padding: 10px 20px;
+  border-radius: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.nav-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.error {
+  color: red;
+  font-size: 1.2rem;
+}
+
+.loading {
+  font-size: 1.5rem;
+  color: #007bff;
+}
+
+.question-count.left-aligned {
+  text-align: left;
+  display: block;
+  width: 100%;
+}
+
+.explanation {
+margin-top: 10px;
+padding: 15px;
+background-color: #f9f9f9;
+border-radius: 10px;
+border: 1px solid #ddd;
+font-size: 14px;
+box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+#quiz-container {
+  background-image: url("../images/bg.png");
   background-size: cover;
   background-position: center;
   padding: 20px;
   border-radius: 10px;
 }
+
+/* #quiz-holder {
+  background-image: url("chrome-extension://__MSG_@@extension_id__/images/bg.png");
+} */
