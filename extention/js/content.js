@@ -52,7 +52,7 @@ function initializeLearningMode() {
   const sidebar = document.getElementById('related');
   const secondaryInner = document.getElementById('secondary-inner');
   let chatContainer = document.getElementById('custom-chat-container');
-  let featuresPanel = document.getElementById('features-panel'); 
+  let featuresPanel = document.getElementById('features-panel');
   const isFullscreen = !!document.fullscreenElement;
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
@@ -77,7 +77,7 @@ function initializeLearningMode() {
       if (!featuresPanel) {
         createContainer2(document.body); // Append container2 to body in full-screen
         featuresPanel = document.getElementById('features-panel');
-        
+
       }
       featuresPanel.classList.add('fullscreen');
     } else {
@@ -275,7 +275,7 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ video_id: videoId, userId: userId }),
+    body: JSON.stringify({ video_id: videoId }),
   })
     .then((response) => {
       if (!response.ok) {
