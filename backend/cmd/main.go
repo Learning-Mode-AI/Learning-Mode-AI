@@ -22,10 +22,10 @@ func init() {
 }
 
 func main() {
-	r := router.NewRouter() // Initialize your router
+	r := router.NewRouter() // Initialize router
 
 	// Set CORS options
-	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization"})
+	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "User-ID", "User-Email"})
 	originsOk := handlers.AllowedOrigins([]string{"https://www.youtube.com"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 
