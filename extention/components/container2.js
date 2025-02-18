@@ -135,7 +135,6 @@ export function createContainer2(parentElement) {
             }
           );
         } else if (selectedOption === 'Generate Quiz') {
-          // quizHolder.innerText = 'Generating your quiz...';
           quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
           const root = createRoot(quizHolder);
