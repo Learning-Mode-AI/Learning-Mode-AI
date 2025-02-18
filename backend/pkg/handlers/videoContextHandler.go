@@ -16,9 +16,26 @@ type VideoRequest struct {
 func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 	// Handle CORS preflight requests (skipping for brevity)
 
+	// Extract User-ID and Email from request headers
+	userID := r.Header.Get("User-ID")
+	userEmail := r.Header.Get("User-Email")
+	if userID == "" || userEmail == "" {
+		http.Error(w, "Missing User-ID or User-Email in request headers", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Processing video for User: %s, Email: %s\n", userID, userEmail)
+
+	// Ensure user exists in Redis (Create if not)
+	err := services.CheckAndCreateUser(userID, userEmail)
+	if err != nil {
+		http.Error(w, "Error ensuring user exists", http.StatusInternalServerError)
+		return
+	}
+
 	// Log the request and decode payload
 	var videoRequest VideoRequest
-	err := json.NewDecoder(r.Body).Decode(&videoRequest)
+	err = json.NewDecoder(r.Body).Decode(&videoRequest)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return

@@ -36,15 +36,33 @@ function toggleLearningMode() {
   }
 }
 
+async function getUserInfo() {
+  try {
+    console.log("Attempting to fetch user info...");
+    const user = await chrome.identity.getAuthToken({ interactive: true });
+    console.log("User info retrieved successfully:", user);
+    return user;
+  } catch (error) {
+    console.error("User authentication failed:", error);
+    return null;
+  }
+}
+
 function activateLearningMode() {
   // Fetch user ID from storage or trigger authentication
-  getUserId((userId, _) => {
-    if (!userId) {
+  getUserId((userId, userEmail) => {
+    if (!userId || !userEmail) {
       console.error('User not authenticated.');
-    } else {
-      console.log('Learning Mode activated for User ID:', userId);
-      initializeLearningMode();
+      return;
     }
+
+    console.log('Learning Mode activated for User ID:', userId);
+
+    // Ensure the backend receives userId and email
+    const videoUrl = window.location.href;
+    sendVideoInfoToBackend(videoUrl, userId, userEmail);
+
+    initializeLearningMode();
   });
 }
 
@@ -52,7 +70,7 @@ function initializeLearningMode() {
   const sidebar = document.getElementById('related');
   const secondaryInner = document.getElementById('secondary-inner');
   let chatContainer = document.getElementById('custom-chat-container');
-  let featuresPanel = document.getElementById('features-panel'); 
+  let featuresPanel = document.getElementById('features-panel');
   const isFullscreen = !!document.fullscreenElement;
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
@@ -61,8 +79,6 @@ function initializeLearningMode() {
   const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none';
-
-    sendVideoInfoToBackend(videoUrl);
 
     if (isFullscreen) {
       if (!chatContainer) {
@@ -77,7 +93,7 @@ function initializeLearningMode() {
       if (!featuresPanel) {
         createContainer2(document.body); // Append container2 to body in full-screen
         featuresPanel = document.getElementById('features-panel');
-        
+
       }
       featuresPanel.classList.add('fullscreen');
     } else {
@@ -101,8 +117,58 @@ function initializeLearningMode() {
     }
   }
 
+  getUserId((userId, userEmail) => {
+    if (!userId) {
+      console.error('User not authenticated.');
+      return;
+    }
+    fetch('http://localhost:8080/api/quiz', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-ID': userId,
+        'User-Email': userEmail  // Send user email in headers
+      },
+      body: JSON.stringify({
+        video_id: extractVideoID(videoUrl),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const quizData = data.questions; // Array of questions with timestamps
+        const videoElement = document.querySelector('video');
+        const displayedTimestamps = new Set();
+
+        if (videoElement) {
+          setInterval(() => {
+            const currentTime = Math.floor(videoElement.currentTime);
+
+            quizData.forEach((question) => {
+              const questionTime = Math.floor(parseTimestamp(question.timestamp));
+
+              if (
+                currentTime === questionTime &&
+                !displayedTimestamps.has(questionTime)
+              ) {
+                videoElement.pause();
+                displayQuestionInQuizHolder(question);
+                displayedTimestamps.add(questionTime);
+              }
+            });
+          }, 500);
+        }
+      })
+      .catch((error) => console.error('Error fetching quiz data:', error));
+  });
 }
 
+
+function parseTimestamp(timestamp) {
+  const parts = timestamp.split(':');
+  return parts.length === 2
+    ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1])
+    : parseFloat(parts[0]);
+}
 
 
 
@@ -142,33 +208,34 @@ function hideModal() {
   }
 }
 
-function sendVideoInfoToBackend(videoUrl) {
-  getUserId((userId, email) => {
-    if (!userId || !email) {
-      console.error('User not authenticated. Unable to send video info.');
-      return;
-    }
 
-    fetch('http://localhost:8080/processVideo', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ videoUrl: videoUrl, userId: userId }),
+function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
+  console.log(` Sending processVideo request for User: ${userId}, Email: ${userEmail}`);
+
+  fetch('http://localhost:8080/processVideo', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-ID': userId, // Send userID in headers
+      'User-Email': userEmail  // Send user email in headers
+    },
+    body: JSON.stringify({ videoUrl: videoUrl })
+  })
+    .then(response => {
+      console.log(`Received response: ${response.status}`);
+
+      if (response.ok) {
+        console.log("Video processed successfully!");
+        hideModal();
+        addAIBubble('Video Processed! You can now ask questions.');
+      } else {
+        console.error("Error processing video:", response.statusText);
+        addAIBubble('Transcription failed. Please try again later.');
+      }
     })
-      .then((response) => {
-        if (response.ok === true) {
-          hideModal();
-          addAIBubble('Video Proccessed! You can now ask questions.');
-        } else {
-          addAIBubble('Transcription failed. Please try again later.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  });
+    .catch(error => console.error("Error:", error));
 }
+
 
 export function askAIQuestion(videoUrl, question) {
   const videoId = extractVideoID(videoUrl);
@@ -178,7 +245,7 @@ export function askAIQuestion(videoUrl, question) {
     ? Math.floor(videoElement.currentTime)
     : 0;
 
-  getUserId((userId, _) => {
+  getUserId((userId, userEmail) => {
     if (!userId) {
       console.error('User not authenticated. Unable to ask AI question.');
       return;
@@ -188,6 +255,8 @@ export function askAIQuestion(videoUrl, question) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'User-ID': userId,
+        'User-Email': userEmail
       },
       body: JSON.stringify({
         video_id: videoId,
@@ -270,33 +339,41 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  fetch('http://localhost:8080/video-summary', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ video_id: videoId, userId: userId }),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(
-            `Server responded with error: ${response.status} - ${text}`
-          );
-        });
-      }
-      return response.json();
-    })
-    .then((data) => {
-      if (data.summary) {
-        localStorage.setItem(`summary_${videoId}`, data.summary);
-        onSuccess && onSuccess(data.summary);
-      } else {
-        onError && onError();
-      }
-    })
-    .catch((error) => {
-      console.error('Error fetching video summary:', error.message); // Use 'error.message' for clarity
+  getUserId((userId, userEmail) => {
+    if (!userId || !userEmail) {
+      console.error('User not authenticated. Unable to generate video summary.');
       onError && onError();
-    });
+      return;
+    }
+
+    fetch('http://localhost:8080/video-summary', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-ID': userId,
+        'User-Email': userEmail
+      },
+      body: JSON.stringify({ video_id: videoId }),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(`Server responded with error: ${response.status} - ${text}`);
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data.summary) {
+          localStorage.setItem(`summary_${videoId}`, data.summary);
+          onSuccess && onSuccess(data.summary);
+        } else {
+          onError && onError();
+        }
+      })
+      .catch((error) => {
+        console.error('Error fetching video summary:', error.message);
+        onError && onError();
+      });
+  });
 }

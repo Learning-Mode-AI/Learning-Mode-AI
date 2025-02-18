@@ -21,6 +21,7 @@ type GPTQuestionRequest struct {
 	VideoID      string `json:"video_id"`
 	UserQuestion string `json:"user_question"`
 	Timestamp    int    `json:"timestamp"`
+	UserID       string `json:"userId"`
 }
 
 // AskGPTQuestion handles user questions for the GPT session
