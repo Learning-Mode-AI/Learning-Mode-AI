@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import QuizRenderer from './QuizRenderer.jsx';
+import React, { useState, useEffect } from "react";
+import QuizRenderer from "./QuizRenderer.jsx";
+// Updated import path: this file now exists
+import { getUserId } from "../utils/getUserId";
 
 export const QuizFetcher = () => {
   const [quiz, setQuiz] = useState(null);
@@ -20,28 +22,52 @@ export const QuizFetcher = () => {
       return;
     }
 
-    const fetchQuiz = async () => {
-      try {
-        const response = await fetch('http://localhost:8080/api/quiz', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ video_id: videoId }),
-        });
-        const data = await response.json();
-        setQuiz(data);
-        setTimestamps(data.questions.map((q, i) => ({ timestamp: parseTimestamp(q.timestamp), index: i })));
-      } catch {
-        setError('Failed to fetch quiz data.');
+    // Retrieve the current user's ID and email.
+    getUserId((userId, userEmail) => {
+      if (!userId) {
+        setError("User not authenticated.");
+        return;
       }
-    };
 
-    fetchQuiz();
-    setVideoElement(document.querySelector('video'));
+      // Now include the headers when calling the quiz endpoint.
+      fetch("http://localhost:8080/api/quiz", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "User-ID": userId,
+          "User-Email": userEmail,
+        },
+        body: JSON.stringify({ video_id: videoId }),
+      })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          setQuiz(data);
+          setTimestamps(
+            data.questions.map((q, i) => ({
+              timestamp: parseTimestamp(q.timestamp),
+              index: i,
+            }))
+          );
+        })
+        .catch((err) => {
+          console.error("Error fetching quiz data:", err);
+          setError("Failed to fetch quiz data.");
+        });
+    });
+
+    setVideoElement(document.querySelector("video"));
   }, []);
 
   const parseTimestamp = (timestamp) => {
-    const parts = timestamp.split(':');
-    return parts.length === 2 ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1]) : parseFloat(parts[0]);
+    const parts = timestamp.split(":");
+    return parts.length === 2
+      ? parseInt(parts[0], 10) * 60 + parseFloat(parts[1])
+      : parseFloat(parts[0]);
   };
 
   if (error) return <div className="error">{error}</div>;

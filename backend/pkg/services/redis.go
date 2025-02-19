@@ -126,17 +126,21 @@ func CheckUserExistsInRedis(userID string) (bool, error) {
 	return true, nil // User exists
 }
 
-// StoreUserInRedis stores a new user in Redis
+// StoreUserInRedis stores a new user in Redis with default tier "free".
 func StoreUserInRedis(userID, email string) error {
 	key := fmt.Sprintf("user:%s", userID)
-
-	// Store user as JSON (userID + email)
-	userData := map[string]string{"userID": userID, "email": email}
+	// Include default tier as "free" (modify as needed if you wish to support tier upgrades).
+	userData := map[string]string{
+		"userID": userID,
+		"email":  email,
+		"tier":   "free",
+	}
 	data, err := json.Marshal(userData)
 	if err != nil {
 		return fmt.Errorf("failed to marshal user data: %v", err)
 	}
 
+	// No expiration for user records.
 	err = rdb.Set(ctx, key, data, 0).Err()
 	if err != nil {
 		return fmt.Errorf("failed to store user in Redis: %v", err)
