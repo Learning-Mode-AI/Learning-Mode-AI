@@ -34,8 +34,8 @@ body {
   margin: 10px 0;
   border-radius: 20px;
   background-color: #fbfbfb;
+  border: rgb(219, 219, 219) 1px solid;
   color: black;
-  border: none;
   cursor: pointer;
   width: 100%;
   text-align: left;
@@ -116,9 +116,8 @@ body {
 }
 
 #quiz-holder {
-  flex-grow: 1;
-  height: 100%;
-  max-height: none;
+  min-height: 300px;
+  height: auto;
   overflow-y: auto;
   font-size: 14px;
 }

@@ -27,7 +27,7 @@ export function createChatContainer(parentElement) {
 
   // Header Title
   const headerTitle = document.createElement('span');
-  headerTitle.innerText = 'Chat-Bot';
+  headerTitle.innerText = 'Ask a Question';
 
   // Append buttons and title to header
   header.appendChild(toggleButton);
