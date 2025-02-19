@@ -1,7 +1,7 @@
 import { generateVideoSummary } from '../js/content.js';
 import { marked } from 'marked'; // Ensure this import exists at the top
 import { createRoot } from 'react-dom/client';
-import { QuizFetcher } from '../react/QuizFetcher.jsx';
+import { QuizFetcher } from '../react/QuizFetcher.jsx'; 
 import React from 'react';
 
 
@@ -67,6 +67,28 @@ export function createContainer2(parentElement) {
   quizHolder.className = 'feature-content';
   quizHolder.style.display = 'none';
 
+  // Fetch the same background image used in the chatbot
+  const quizBgURL = chrome.runtime.getURL('images/bg.png');
+
+  // Apply background styles to the quiz container
+  quizHolder.style.backgroundImage = `url('${quizBgURL}')`;
+  quizHolder.style.backgroundSize = 'cover';
+  quizHolder.style.backgroundPosition = 'center';
+  quizHolder.style.backgroundRepeat = 'no-repeat';
+
+  // Apply the same background styles to the summary container
+  summaryHolder.style.backgroundImage = `url('${quizBgURL}')`;  
+  summaryHolder.style.backgroundSize = 'cover';
+  summaryHolder.style.backgroundPosition = 'center';
+  summaryHolder.style.backgroundRepeat = 'no-repeat';
+
+  // Apply the same background styles to contentWrapper
+  contentWrapper.style.backgroundImage = `url('${quizBgURL}')`;  
+  contentWrapper.style.backgroundSize = 'cover';
+  contentWrapper.style.backgroundPosition = 'center';
+  contentWrapper.style.backgroundRepeat = 'no-repeat';
+
+
   contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(quizHolder);
   contentWrapper.appendChild(loadingIndicator);
@@ -83,8 +105,8 @@ export function createContainer2(parentElement) {
     'Get Resources',
     'Generate Quiz',
   ];
-  const activeFeatures = ['Short Summary', 'Generate Quiz'];
-  const featuresWithLoading = ['Short Summary'];
+  const activeFeatures = ['Short Summary*', 'Generate Quiz*'];
+  const featuresWithLoading = ['Short Summary*'];
 
   // Toggle options visibility
   // Ensure dropdown has a higher z-index
@@ -134,7 +156,8 @@ export function createContainer2(parentElement) {
               loadingIndicator.style.display = 'none'; // Hide loading indicator
             }
           );
-        } else if (selectedOption === 'Generate Quiz') {
+        } else if (selectedOption === 'Generate Quiz*') {
+          // quizHolder.innerText = 'Generating your quiz...';
           quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
           const root = createRoot(quizHolder);

@@ -238,51 +238,54 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
 
 
 export function askAIQuestion(videoUrl, question) {
-  const videoId = extractVideoID(videoUrl);
+  return new Promise((resolve, reject) => {
+    const videoId = extractVideoID(videoUrl);
+    const videoElement = document.querySelector('video');
+    const currentTimestamp = videoElement
+      ? Math.floor(videoElement.currentTime)
+      : 0;
 
-  const videoElement = document.querySelector('video');
-  const currentTimestamp = videoElement
-    ? Math.floor(videoElement.currentTime)
-    : 0;
+    getUserId((userId, userEmail) => {
+      if (!userId) {
+        console.error('User not authenticated. Unable to ask AI question.');
+        return;
+      }
 
-  getUserId((userId, userEmail) => {
-    if (!userId) {
-      console.error('User not authenticated. Unable to ask AI question.');
-      return;
-    }
-
-    fetch('http://localhost:8080/api/question', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-ID': userId,
-        'User-Email': userEmail
-      },
-      body: JSON.stringify({
-        video_id: videoId,
-        user_question: question,
-        timestamp: currentTimestamp,
-        userId: userId,
-      }),
-    })
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to get AI response');
-        }
-        return response.json();
+      fetch('http://localhost:8080/api/question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'User-ID': userId,
+          'User-Email': userEmail
+        },
+        body: JSON.stringify({
+          video_id: videoId,
+          user_question: question,
+          timestamp: currentTimestamp,
+          userId: userId,
+        }),
       })
-      .then((data) => {
-        const aiResponse = data.response;
-        if (aiResponse) {
-          addAIBubble(aiResponse);
-          console.log('AI Response:', aiResponse);
-        } else {
-          console.error('No AI response found in the response data.');
-        }
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Failed to get AI response');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const aiResponse = data.response;
+          if (aiResponse) {
+            addAIBubble(aiResponse);
+            console.log('AI Response:', aiResponse);
+            resolve(aiResponse);  
+          } else {
+            console.error('No AI response found in the response data.');
+            reject('No AI response received');
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
   });
 }
 
@@ -339,23 +342,13 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  getUserId((userId, userEmail) => {
-    if (!userId || !userEmail) {
-      console.error('User not authenticated. Unable to generate video summary.');
-      onError && onError();
-      return;
-    }
-
-    fetch('http://localhost:8080/video-summary', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'User-ID': userId,
-        'User-Email': userEmail
-      },
-      body: JSON.stringify({ video_id: videoId }),
-    })
-      .then((response) => {
+  fetch('http://localhost:8080/video-summary', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ video_id: videoId }),
+  }).then((response) => {
         if (!response.ok) {
           return response.text().then((text) => {
             throw new Error(`Server responded with error: ${response.status} - ${text}`);
@@ -375,5 +368,4 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
         console.error('Error fetching video summary:', error.message);
         onError && onError();
       });
-  });
-}
+  };

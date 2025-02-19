@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './app.css';
 
 const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
@@ -36,33 +36,53 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
       ? currentQuestion.options[['A', 'B', 'C', 'D'].indexOf(currentQuestion.answer)].option
       : currentQuestion?.answer;
 
-  const handleAnswer = (option) => setSelectedAnswer(option);
+  const handleAnswer = (option) => {
+    setSelectedAnswer(option);
+  };
+
+  // Move selected answer to the top, then color all answers correctly
+  const sortedOptions = useMemo(() => {
+    if (!selectedAnswer || !currentQuestion) return currentQuestion?.options || [];
+    
+    const selectedOption = currentQuestion.options.find(option => option.option === selectedAnswer);
+    const otherOptions = currentQuestion.options.filter(option => option.option !== selectedAnswer);
+
+    return selectedOption ? [selectedOption, ...otherOptions] : otherOptions;
+  }, [selectedAnswer, currentQuestion]);
 
   return (
-    <div className="app-container">
+    <div className="quiz-container">
       {currentQuestion ? (
         <>
-          <h1 className="question-count">Question {currentQuestionIndex + 1}/{questionsAtTimestamp.length}</h1>
+          <h1 className="question-count left-aligned">Question {currentQuestionIndex + 1}</h1>
           <p className="question-text">{currentQuestion.text}</p>
-          {currentQuestion.options.map((option, idx) => (
-            <div key={idx} className="option-container">
-              <button
-                onClick={() => handleAnswer(option.option)}
-                className={`option-button ${selectedAnswer === option.option ? (option.option === correctAnswer ? 'correct' : 'incorrect') : ''}`}
-              >
-                {option.option}
-              </button>
-              {selectedAnswer === option.option && <div className="explanation"><p>{option.explanation}</p></div>}
-            </div>
-          ))}
+
+          <div className="quiz-options">
+            {sortedOptions.map((option, idx) => (
+              <div key={idx} className="option-container">
+                <button
+                  onClick={() => handleAnswer(option.option)}
+                  className={`option-button ${
+                    selectedAnswer ? (option.option === correctAnswer ? 'correct' : 'incorrect') : ''
+                  }`}
+                >
+                  {['A)', 'B)', 'C)', 'D)'][idx]} {option.option}
+                </button>
+                {/* Show explanation only below the selected answer */}
+                {selectedAnswer === option.option && (
+                  <div className="explanation">
+                    <p>{option.explanation}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
         </>
       ) : (
         <p>No questions available for the current timestamp.</p>
       )}
-      <div className="navigation-buttons">
-        <button onClick={() => setCurrentQuestionIndex((prev) => Math.max(prev - 1, 0))} disabled={currentQuestionIndex === 0} className="nav-button">Previous</button>
-        <button onClick={() => setCurrentQuestionIndex((prev) => Math.min(prev + 1, questionsAtTimestamp.length - 1))} disabled={currentQuestionIndex === questionsAtTimestamp.length - 1} className="nav-button">Next</button>
-      </div>
+
+
     </div>
   );
 };

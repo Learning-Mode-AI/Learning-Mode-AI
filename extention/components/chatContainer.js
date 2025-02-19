@@ -27,7 +27,7 @@ export function createChatContainer(parentElement) {
 
   // Header Title
   const headerTitle = document.createElement('span');
-  headerTitle.innerText = 'Chat-Bot';
+  headerTitle.innerText = 'Ask a Question';
 
   // Append buttons and title to header
   header.appendChild(toggleButton);
@@ -85,18 +85,25 @@ export function createChatContainer(parentElement) {
       inputField.value = '';
       const videoUrl = window.location.href;
       typingIndicator.style.display = 'block'; // Show typing indicator
+      console.log("Typing indicator shown");
+
       askAIQuestion(videoUrl, userQuestion)
         .then((response) => {
+          console.log("AI Response received:", response);
+
           typingIndicator.style.display = 'none';
+          console.log("Typing indicator hidden");
+
           if (response) {
-            addAIBubble(response);
           } else {
             console.error('Received undefined AI response');
           }
+
         })
         .catch((error) => {
           typingIndicator.style.display = 'none';
           console.error('Error in askAIQuestion:', error);
+          console.log("Typing indicator hidden due to error");
         });
     }
   };
