@@ -14,21 +14,6 @@
   font-weight: 400;
 }
 
-#custom-chat-container.fullscreen {
-  position: fixed;
-  width: 400px;
-  height: 600px;
-  bottom: 80px;
-  right: 20px;
-  z-index: 10000;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: none;
-}
-
 /* Semi-Transparent Background Image in Full-Screen */
 #custom-chat-container.fullscreen::before {
   content: '';
@@ -73,213 +58,12 @@
   color: #333;
 }
 
-/* Chat Header */
-.header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background-color: black;
-  font-family: 'Gabarito', sans-serif;
-  font-size: 16px;
-  color: white;
-  padding: 10px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  position: relative;
-}
-
-/* Toggle Button */
-.toggle-button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 18px;
-  cursor: pointer;
-  margin-right: 10px;
-}
-
-.toggle-button:hover {
-  color: #ecb0b0;
-}
-
-/* Chat Header Title */
-.header span {
-  flex: 1;
-  text-align: center;
-  font-weight: bold;
-}
-
-/* Chat Area */
-#chat-area {
-  flex: 1;
-  padding: 10px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-/* Input Area */
-.input-area {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  position: relative;
-}
-
-/* Input Field */
-#chat-input {
-  flex: 1;
-  padding: 12px 50px 12px 12px;
-  border-radius: 25px;
-  border: 1px solid #dbdbdb;
-  font-size: 14px;
-  outline: none;
-  font-family: 'Gabarito', sans-serif;
-  font-size: 16px;
-  font-weight: 400;
-}
-
-/* Send Button */
-.send-button {
-  position: absolute;
-  right: 18px;
-  width: 35px;
-  height: 35px;
-  border: none;
-  border-radius: 50%;
-  background-color: #dd1313;
-  font-size: 20px;
-  color: #fff;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
-}
-
-.send-button:hover {
-  background-color: #b30f0f;
-}
-
-/* Bubbles */
-.chat-bubble {
-  padding: 10px;
-  border-radius: 12px;
-  margin-bottom: 10px;
-  max-width: 70%;
-  font-weight: 400;
-}
-
-.user-bubble {
-  align-self: flex-end;
-  background-color: #dbdbdb;
-  color: #1e1e1e;
-}
-
-.ai-bubble {
-  align-self: flex-start;
-  background-color: #ecb0b0;
-  color: #1e1e1e;
-}
-
-/* Learning Mode Toggle */
-.learning-mode-switch-container {
-  width: 36px;
-  height: 18px;
-  background-color: #ccc;
-  border-radius: 9px;
-  position: relative;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-
-.learning-mode-switch-circle {
-  width: 16px;
-  height: 16px;
-  background-color: #fff;
-  border-radius: 50%;
-  position: absolute;
-  top: 1px;
-  left: 1px;
-  transition: left 0.3s;
-}
-
-.learning-mode-switch-container:hover {
-  background-color: #bbb;
-}
-
 #features-panel {
   background: white;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   height: 400px;
   margin: 10px 0;
-}
-
-.features-header {
-  display: flex;
-  justify-content: center; /* Center-align text */
-  align-items: center;
-  background: #dd1313;
-  font-family: 'Gabarito', sans-serif;
-  font-size: 16px;
-  color: white;
-  padding: 10px;
-  border-radius: 10px 10px 0 0;
-  font-weight: bold;
-  position: relative; /* Allows positioning child elements */
-}
-
-.dropdown-button {
-  position: absolute;
-  right: 10px; /* Moves button to the right of the header */
-  top: 50%; /* Centers vertically */
-  transform: translateY(-50%); /* Aligns vertically */
-  background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-}
-
-.features-options {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  background: #dd1313;
-  border: 1px solid #ddd;
-  border-top: none;
-  border-radius: 0 0 10px 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: absolute;
-  right: 0;
-  width: 150px;
-}
-
-.feature-option {
-  font-family: 'Gabarito', sans-serif;
-  font-size: 10px;
-  color: white;
-  padding: 8px 10px;
-  cursor: pointer;
-}
-
-.feature-option:hover {
-  background: #b30f0f;
-}
-
-/* Feature Content Wrapper */
-#content-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* Feature Content Sections */
@@ -310,7 +94,6 @@
   background: none;
 }
 
-
 /* Minimal black and white theme for summary holder */
 .minimal-summary {
   background: #ffffff; /* Clean white background */
@@ -327,208 +110,6 @@
   margin: 10px 0;
 }
 
-/* Styling for headers within the summary */
-.minimal-summary h1 {
-  font-weight: bold;
-  margin-top: 12px;
-  margin-bottom: 8px;
-  color: #000000;
-  font-size: 20px;
-}
-.minimal-summary h2,
-.minimal-summary h3 {
-  font-weight: bold;
-  margin-top: 12px;
-  margin-bottom: 8px;
-  color: #000000;
-}
-
-/* Bullet and Numbered Lists - Minimal Styling */
-.minimal-summary ul,
-.minimal-summary ol {
-  padding-left: 20px; /* Add spacing between bullet and left side */
-  margin-bottom: 10px;
-}
-
-.minimal-summary li {
-  margin-bottom: 5px; /* Space between list items */
-}
-
-/* Paragraph Styling */
-.minimal-summary p {
-  margin-bottom: 10px; /* Minimal spacing between paragraphs */
-}
-
-/* Code and Preformatted Text */
-.minimal-summary pre,
-.minimal-summary code {
-  background: #f5f5f5;
-  border-radius: 5px;
-  padding: 5px;
-  font-family: 'Courier New', monospace;
-}
-
-/* Blockquotes Styling */
-.minimal-summary blockquote {
-  border-left: 3px solid #000;
-  padding-left: 15px;
-  margin: 10px 0;
-  color: #333;
-  font-style: italic;
-}
-
-/* Horizontal Rule for Section Separation */
-.minimal-summary hr {
-  border: none;
-  border-top: 1px solid #000;
-  margin: 15px 0;
-}
-
-/* Links Styling */
-.minimal-summary a {
-  color: #000;
-  text-decoration: underline;
-}
-
-.minimal-summary a:hover {
-  color: #555;
-  text-decoration: none;
-}
-
-/* General styling for the loading indicator */
-.loading-indicator {
-  display: none;
-  text-align: center;
-  padding: 10px;
-  font-size: 16px;
-  color: #333;
-  font-style: italic;
-  opacity: 0.8;
-  animation: fadeInOut 1.5s infinite;
-}
-
-.loading-indicator[style*='display: none'] {
-  animation: none;
-  opacity: 0;
-}
-
-/* Keyframe animation for a gentle fade effect */
-@keyframes fadeInOut {
-  0% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.5;
-  }
-}
-
-/* Dropdown Styling */
-#optionsList {
-  position: absolute;
-  z-index: 2000; /* Higher z-index than summary-holder */
-  background: white;
-  border: 1px solid #ddd;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Centering for 'Coming Soon' features */
-#summary-holder.coming-soon {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  text-align: center;
-  padding: 40px;
-  box-sizing: border-box;
-  height: 320px;
-  border-radius: 20px;
-  background: linear-gradient(135deg, #ffefef, #ffffff);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  position: relative;
-  z-index: 1000; /* Lower than the dropdown */
-}
-
-/* Fix for the Feature Name Display */
-.feature-title {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #333;
-  z-index: 10; /* Ensure it stays above other elements */
-}
-
-/* Rocket Icon Styling */
-.rocket-icon {
-  width: 80px;
-  height: 80px;
-  margin-bottom: 10px;
-}
-
-/* Coming Soon Text */
-.coming-soon-text {
-  font-size: 24px;
-  font-weight: bold;
-  color: #333;
-  margin-bottom: 10px;
-}
-
-/* Interest Question Styling */
-.interest-question {
-  font-size: 16px;
-  color: #555;
-  margin-bottom: 20px;
-}
-
-/* Show Interest Button Styling */
-.show-interest-button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 20px;
-  background-color: #dd1313;
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 16px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s ease;
-}
-
-.show-interest-button:hover {
-  background-color: #b30f0f;
-}
-
-/* Custom Scrollbar Styling for Features with Scrollbars */
-.scrollable {
-  overflow-y: auto;
-  scrollbar-width: thin; /* For Firefox */
-  scrollbar-color: #ecb0b0 transparent;
-}
-
-/* Webkit Browsers (Chrome, Edge, Safari) */
-.scrollable::-webkit-scrollbar {
-  width: 8px;
-}
-
-.scrollable::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.scrollable::-webkit-scrollbar-thumb {
-  background: #ecb0b0;
-  border-radius: 10px; /* Rounded edges */
-  border: none;
-}
-
-/* Remove Up/Down Arrows for Webkit */
-.scrollable::-webkit-scrollbar-button {
-  display: none;
-}
-
 #custom-chat-container.fullscreen {
   position: fixed;
   width: 400px;
@@ -543,8 +124,6 @@
   overflow: hidden;
   background: none;
 }
-
-
 
 /* Chat Header */
 .header {
@@ -686,14 +265,6 @@
   background-color: #bbb;
 }
 
-#features-panel {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  height: 600px;
-  margin: 10px 0;
-}
-
 .features-header {
   display: flex;
   justify-content: center; /* Center-align text */
@@ -755,11 +326,9 @@
   border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
-
-
 /* Typing Indicator Styling */
 .typing-indicator {
-  display: none; 
+  display: none;
   background-color: #e0e0e0;
   color: #555;
   padding: 8px 12px;
@@ -781,22 +350,6 @@
   50% {
     opacity: 1;
   }
-}
-
-/* Minimal black and white theme for summary holder */
-.minimal-summary {
-  background: #ffffff; /* Clean white background */
-  color: #000000; /* Solid black text for high contrast */
-  font-family: 'Arial', sans-serif; /* Professional, simple font */
-  font-size: 16px; /* Slightly larger for readability */
-  line-height: 1.5; /* Balanced line spacing */
-  padding: 15px; /* Padding for spacing inside the container */
-  border-radius: 10px;
-  border: 1px solid #ddd;
-  box-shadow: none; /* Remove any unnecessary shadows */
-  overflow-y: auto;
-  height: 300px;
-  margin: 10px 0;
 }
 
 /* Styling for headers within the summary */
