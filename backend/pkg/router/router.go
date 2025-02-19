@@ -6,9 +6,11 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func NewRouter() *mux.Router {
+func NewRouter(stripeSecret string) *mux.Router {
 	r := mux.NewRouter()
 
+	// Define your routes here
+	r.HandleFunc("/webhook", handlers.StripeWebhookHandler(stripeSecret)).Methods("POST")
 	// Define routes with user validation middleware
 	r.HandleFunc("/processVideo", handlers.ProcessVideo).Methods("POST")
 	r.HandleFunc("/api/question", handlers.AskGPTQuestion).Methods("POST")

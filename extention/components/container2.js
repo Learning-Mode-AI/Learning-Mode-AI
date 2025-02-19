@@ -6,7 +6,7 @@ import React from 'react';
 
 
 export function createContainer2(parentElement) {
-  
+
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
 
@@ -33,8 +33,8 @@ export function createContainer2(parentElement) {
 
   const options = [
     'Fact Check',
-    'Generate Quiz*',
-    'Short Summary*',
+    'Generate Quiz',
+    'Short Summary',
     'Long Summary',
     'Get Resources',
   ];
@@ -103,7 +103,7 @@ export function createContainer2(parentElement) {
     'Fact Check',
     'Long Summary',
     'Get Resources',
-    'Generate Quiz*',
+    'Generate Quiz',
   ];
   const activeFeatures = ['Short Summary*', 'Generate Quiz*'];
   const featuresWithLoading = ['Short Summary*'];
@@ -140,7 +140,7 @@ export function createContainer2(parentElement) {
 
       // Check if the selected feature is an active feature
       if (activeFeatures.includes(selectedOption)) {
-        if (selectedOption === 'Short Summary*') {
+        if (selectedOption === 'Short Summary') {
           const videoUrl = window.location.href;
           generateVideoSummary(
             videoUrl,

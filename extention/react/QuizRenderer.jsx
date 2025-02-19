@@ -82,6 +82,7 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
         <p>No questions available for the current timestamp.</p>
       )}
 
+
     </div>
   );
 };

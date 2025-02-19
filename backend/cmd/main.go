@@ -8,23 +8,27 @@ import (
 	"net/http"
 
 	"github.com/gorilla/handlers"
-	"github.com/joho/godotenv"
+	"github.com/stripe/stripe-go"
 )
 
 func init() {
-	err := godotenv.Load(".env")
-	if err != nil {
-		log.Fatal(err)
-		// log.Fatal("Error loading .env file")
-	}
+	// Initialize configuration (loads environment variables)
 	config.InitConfig()
+
+	// Set the Stripe secret key globally
+	stripe.Key = config.StripeSecretKey
+
+	// Initialize Redis
 	services.InitRedis()
 }
 
 func main() {
-	r := router.NewRouter() // Initialize router
+	if config.StripeWebhookSecret == "" {
+		log.Fatal("STRIPE_WEBHOOK_SECRET environment variable is not set")
+	}
 
-	// Set CORS options
+	r := router.NewRouter(config.StripeWebhookSecret) // Initialize your router
+
 	headersOk := handlers.AllowedHeaders([]string{"X-Requested-With", "Content-Type", "Authorization", "User-ID", "User-Email"})
 	originsOk := handlers.AllowedOrigins([]string{"https://www.youtube.com"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
