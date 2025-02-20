@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -19,10 +20,19 @@ var rdb *redis.Client
 
 func InitRedis() {
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     config.RedisHost, // Replace with Redis server address
-		Password: "",               // If no password set
-		DB:       0,                // Use default DB
+		Addr: config.RedisHost, // Replace with Redis server address
+
+		TLSConfig: &tls.Config{
+			// Depending on your certificate setup,
+			// you might need to customize this further.
+			InsecureSkipVerify: true, // Use caution: this bypasses certificate verification.
+		},
 	})
+
+	err := rdb.Ping(ctx).Err()
+	if err != nil {
+		panic(err)
+	}
 }
 
 // Store video info in Redis
