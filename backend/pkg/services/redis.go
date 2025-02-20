@@ -147,3 +147,46 @@ func StoreUserInRedis(userID, email string) error {
 	}
 	return nil
 }
+
+// UpdateUserTier updates a user's tier in Redis
+func UpdateUserTier(email string, productID string) error {
+    // Default to free tier if no product ID is provided
+    tierName := config.TierFree
+    if productID != "" {
+        if tierConfig, exists := config.ProductTierMap[productID]; exists {
+            tierName = tierConfig.TierName
+        } else {
+            return fmt.Errorf("unknown product ID: %s", productID)
+        }
+    }
+
+    // Get user data by email
+    key := fmt.Sprintf("user:%s", email)
+    userData, err := rdb.Get(ctx, key).Result()
+    if err == redis.Nil {
+        return fmt.Errorf("user not found: %s", email)
+    } else if err != nil {
+        return fmt.Errorf("failed to get user data: %v", err)
+    }
+
+    // Parse existing user data
+    var user User
+    if err := json.Unmarshal([]byte(userData), &user); err != nil {
+        return fmt.Errorf("failed to unmarshal user data: %v", err)
+    }
+
+    // Update tier
+    user.Tier = tierName
+
+    // Save updated user data
+    data, err := json.Marshal(user)
+    if err != nil {
+        return fmt.Errorf("failed to marshal user data: %v", err)
+    }
+
+    if err := rdb.Set(ctx, key, data, 0).Err(); err != nil {
+        return fmt.Errorf("failed to update user tier: %v", err)
+    }
+
+    return nil
+}

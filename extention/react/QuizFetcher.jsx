@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import QuizRenderer from "./QuizRenderer.jsx";
 // Updated import path: this file now exists
-import { getUserId } from "../utils/getUserId";
+import { getUserId } from "../js/content.js";
 
 export const QuizFetcher = () => {
   const [quiz, setQuiz] = useState(null);

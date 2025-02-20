@@ -293,7 +293,7 @@ function extractVideoID(videoUrl) {
   return match ? match[1] : null;
 }
 
-function getUserId(callback) {
+export function getUserId(callback) {
   chrome.storage.local.get(['userId', 'email'], (data) => {
     if (data.userId && data.email) {
       console.log(

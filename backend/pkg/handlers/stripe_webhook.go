@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"Learning-Mode-AI/pkg/config"
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
 	"io/ioutil"
@@ -17,10 +16,6 @@ const MaxBodyBytes = int64(65536)
 
 func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 	return func(w http.ResponseWriter, req *http.Request) {
-
-		var productTierMap = map[string]string{
-			config.ProductIdPro: "Pro",
-		}
 		// Limit request body size for safety
 		req.Body = http.MaxBytesReader(w, req.Body, MaxBodyBytes)
 		payload, err := ioutil.ReadAll(req.Body)
@@ -46,9 +41,9 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 			return
 		}
 		log.Printf("Successfully constructed event: %s", event.Type)
+
 		// Handle the webhook events
 		switch event.Type {
-
 		case "invoice.payment_succeeded":
 			var invoice stripe.Invoice
 			if err := json.Unmarshal(event.Data.Raw, &invoice); err != nil {
@@ -64,27 +59,17 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 				return
 			}
 
-			productID := invoice.Lines.Data[0].Plan.Product.ID // Get product ID
-			tier, exists := productTierMap[productID]
-			if !exists {
-				log.Printf("⚠️ No matching tier found for product ID: %s", productID)
-				tier = "Unknown" // Default fallback
-			}
-
-			// Create Subscription struct
-			subscription := &services.Subscription{
-				Tier: tier,
-			}
-
-			// Store in Redis
-			err := services.StoreSubscriptioninfoInRedis(customerEmail, subscription)
+			productID := invoice.Lines.Data[0].Plan.Product.ID
+			
+			// Update user tier based on the product they purchased
+			err := services.UpdateUserTier(customerEmail, productID)
 			if err != nil {
-				log.Printf("⚠️ Error storing subscription in Redis: %v", err)
+				log.Printf("⚠️ Error updating user tier: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
-			log.Printf("Stored subscription for %s - Tier: %s", customerEmail, tier)
+			log.Printf("Successfully updated tier for user %s with product %s", customerEmail, productID)
 
 		case "customer.subscription.deleted":
 			var subscription stripe.Subscription
@@ -93,6 +78,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
+
 			//Fetch customer details if email is missing
 			customerDetails, err := customer.Get(subscription.Customer.ID, nil)
 			if err != nil {
@@ -108,14 +94,16 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 				return
 			}
 
-			//Remove subscription from Redis
-			err = services.DeleteSubscriptionFromRedis(customerEmail)
+			// Reset to free tier when subscription is cancelled
+			// Passing empty string as productID will default to free tier
+			err = services.UpdateUserTier(customerEmail, "")
 			if err != nil {
-				log.Printf("⚠️ Error deleting subscription from Redis: %v", err)
+				log.Printf("⚠️ Error resetting user tier: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			log.Printf("Subscription deleted for %s - Access revoked", customerEmail)
+
+			log.Printf("Successfully reset tier to free for user %s", customerEmail)
 
 		default:
 			log.Printf("Unhandled event type: %s", event.Type)
