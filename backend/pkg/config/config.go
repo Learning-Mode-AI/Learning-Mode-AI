@@ -47,7 +47,12 @@ func InitConfig() {
 		VideoProcessingServiceURL = "http://video-processing-service:8081"
 		AiServiceURL = "http://ai-service:8082"
 		QuizServiceURL = "http://quiz-service:8084"
-		RedisHost = "redis:6379"
+		redisEnvHost := os.Getenv("REDIS_HOST")
+		if redisEnvHost != "" {
+			RedisHost = redisEnvHost
+		} else {
+			RedisHost = "redis:6379"
+		}
 		fmt.Println("Running in Docker mode")
 	}
 }
