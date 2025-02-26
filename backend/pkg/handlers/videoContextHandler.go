@@ -64,7 +64,8 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Initialize Assistant session with video info
-	assistantID, err := services.InitGPTSession(videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
+	assistantID, err := services.InitGPTSession(userID, videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
+
 	if err != nil {
 		log.Println("Failed to initialize assistant session:", err)
 		http.Error(w, "Failed to initialize assistant session", http.StatusInternalServerError)

@@ -143,3 +143,30 @@ func StoreUserInRedis(userID, email string) error {
 	}
 	return nil
 }
+
+// GetAssistantFromRedis checks if an assistant ID already exists for the given UserID and VideoID
+func GetAssistantFromRedis(userID, videoID string) (string, error) {
+	redisKey := fmt.Sprintf("assistant:%s:%s", userID, videoID)
+
+	assistantID, err := rdb.Get(ctx, redisKey).Result()
+	if err == redis.Nil {
+		// No existing assistant found
+		return "", nil
+	} else if err != nil {
+		return "", fmt.Errorf("failed to check assistant ID in Redis: %v", err)
+	}
+
+	return assistantID, nil
+}
+
+// StoreAssistantInRedis saves an assistant ID for a specific UserID and VideoID
+func StoreAssistantInRedis(userID, videoID, assistantID string) error {
+	redisKey := fmt.Sprintf("assistant:%s:%s", userID, videoID)
+
+	err := rdb.Set(ctx, redisKey, assistantID, 24*time.Hour).Err()
+	if err != nil {
+		return fmt.Errorf("failed to store assistant ID in Redis: %v", err)
+	}
+
+	return nil
+}

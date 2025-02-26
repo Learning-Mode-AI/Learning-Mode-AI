@@ -22,8 +22,20 @@ type AIRequest struct {
 }
 
 // InitGPTSession initializes a GPT session for the given video information.
-func InitGPTSession(videoID, title, channel string, transcript []string) (string, error) {
-	// Join the transcript array into a single string
+func InitGPTSession(userID, videoID, title, channel string, transcript []string) (string, error) {
+	// 1️⃣ **Check Redis for an existing assistant**
+	existingID, err := GetAssistantFromRedis(userID, videoID)
+	if err == nil && existingID != "" {
+		log.Printf("✅ Reusing existing assistant ID: %s for User: %s, Video: %s", existingID, userID, videoID)
+		return existingID, nil
+	} else if err != nil {
+		log.Printf("⚠️ Error checking Redis for assistant ID: %v", err)
+	}
+
+	// 2️⃣ **No assistant found – create a new one**
+	log.Printf("❌ No existing assistant found. Creating a new one for User: %s, Video: %s", userID, videoID)
+
+	// Convert transcript array to a string
 	transcriptStr := strings.Join(transcript, " ")
 
 	// Create the AIRequest payload
@@ -39,9 +51,8 @@ func InitGPTSession(videoID, title, channel string, transcript []string) (string
 	if err != nil {
 		return "", fmt.Errorf("failed to marshal AIRequest: %v", err)
 	}
-	log.Println("this is the req body::", string(payloadBytes))
 
-	// Create an HTTP POST request to initialize the session
+	// Call the AI Service to initialize the session
 	aiServiceURL := fmt.Sprintf("%s/ai/init-session", config.AiServiceURL)
 	client := &http.Client{Timeout: 10 * time.Second}
 	req, err := http.NewRequest("POST", aiServiceURL, bytes.NewBuffer(payloadBytes))
@@ -49,17 +60,17 @@ func InitGPTSession(videoID, title, channel string, transcript []string) (string
 		return "", fmt.Errorf("failed to create request: %v", err)
 	}
 
-	// Set the content-type header to application/json
+	// Set headers
 	req.Header.Set("Content-Type", "application/json")
 
-	// Make the HTTP request
+	// Send request to AI service
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("failed to initialize GPT session: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Read response body for debugging purposes
+	// Read response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("failed to read response body: %v", err)
@@ -82,7 +93,13 @@ func InitGPTSession(videoID, title, channel string, transcript []string) (string
 		return "", fmt.Errorf("assistant_id not found in response: %v", responseData)
 	}
 
-	// Return the assistant ID for future use
+	// 3️⃣ **Store the new assistant ID in Redis for future reuse**
+	err = StoreAssistantInRedis(userID, videoID, assistantID)
+	if err != nil {
+		log.Printf("⚠️ Failed to store assistant ID in Redis: %v", err)
+	}
+
+	log.Printf("✅ Successfully created and stored assistant ID: %s for User: %s, Video: %s", assistantID, userID, videoID)
 	return assistantID, nil
 }
 
