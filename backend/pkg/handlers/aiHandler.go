@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"Learning-Mode-AI/pkg/context"
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
 	"log"
@@ -19,9 +18,9 @@ type InitializeGPTRequest struct {
 // GPTQuestionRequest struct for asking questions
 type GPTQuestionRequest struct {
 	VideoID      string `json:"video_id"`
-	UserQuestion string `json:"user_question"`
+	UserQuestion string `json:"question"`
 	Timestamp    int    `json:"timestamp"`
-	UserID       string `json:"userId"`
+	AssistantID  string `json:"assistant_id"`
 }
 
 // AskGPTQuestion handles user questions for the GPT session
@@ -36,12 +35,11 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Retrieve the assistantID from context using videoID
-	assistantIDValue, ok := context.Instance.AssistantIDs.Load(questionReq.VideoID)
-	if !ok {
-		http.Error(w, "Assistant session not found for this video", http.StatusBadRequest)
+	assistantID := questionReq.AssistantID
+	if assistantID == "" {
+		http.Error(w, "Assistant ID is missing", http.StatusBadRequest)
 		return
 	}
-	assistantID, _ := assistantIDValue.(string)
 
 	// Log timestamp for debugging
 	log.Printf("Received question at timestamp: %d seconds", questionReq.Timestamp)
