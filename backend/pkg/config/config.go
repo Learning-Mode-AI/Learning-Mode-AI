@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 )
@@ -15,6 +16,7 @@ var (
 	AiServiceURL              string
 	QuizServiceURL            string
 	RedisHost                 string
+	TLSEnabled                bool
 	StripeSecretKey           string
 	StripeWebhookSecret       string
 	ProductIdPro              string
@@ -33,6 +35,11 @@ func InitConfig() {
 	// Retrieve and store environment variables
 	StripeSecretKey = os.Getenv("STRIPE_SECRET_KEY")
 	StripeWebhookSecret = os.Getenv("STRIPE_WEBHOOK_SECRET")
+	tlsEnv := os.Getenv("TLS_ENABLED")
+	TLSEnabled, err = strconv.ParseBool(tlsEnv)
+	if err != nil {
+		TLSEnabled = false
+	}
 
 	env := os.Getenv("ENVIRONMENT")
 	if env == "local" {
@@ -41,6 +48,7 @@ func InitConfig() {
 		AiServiceURL = "http://localhost:8082"
 		QuizServiceURL = "http://localhost:8084"
 		RedisHost = "localhost:6379"
+		TLSEnabled = false
 		fmt.Println("Running in local mode")
 	} else {
 		YoutubeInfoServiceURL = "http://youtube-info-service:8000"
