@@ -19,14 +19,18 @@ var ctx = context.Background()
 var rdb *redis.Client
 
 func InitRedis() {
-	rdb = redis.NewClient(&redis.Options{
-		Addr: config.RedisHost, // Replace with Redis server address
+	var tlsConfig *tls.Config
+	if config.TLSEnabled {
+		tlsConfig = &tls.Config{
+			InsecureSkipVerify: true,
+		}
+	} else {
+		tlsConfig = nil
+	}
 
-		TLSConfig: &tls.Config{
-			// Depending on your certificate setup,
-			// you might need to customize this further.
-			InsecureSkipVerify: true, // Use caution: this bypasses certificate verification.
-		},
+	rdb = redis.NewClient(&redis.Options{
+		Addr:      config.RedisHost, // Replace with Redis server address
+		TLSConfig: tlsConfig,
 	})
 
 	err := rdb.Ping(ctx).Err()
