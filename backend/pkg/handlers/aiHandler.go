@@ -35,6 +35,18 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Validate that the request includes a UserID.
+	if questionReq.UserID == "" {
+		http.Error(w, "Missing User-ID in request payload", http.StatusBadRequest)
+		return
+	}
+
+	// Enforce user tier limits for the chat service.
+	if err := services.ValidateUserTierRequest(questionReq.UserID, "chat"); err != nil {
+		http.Error(w, err.Error(), http.StatusTooManyRequests)
+		return
+	}
+	
 	// Retrieve the assistantID from context using videoID
 	assistantIDValue, ok := context.Instance.AssistantIDs.Load(questionReq.VideoID)
 	if !ok {

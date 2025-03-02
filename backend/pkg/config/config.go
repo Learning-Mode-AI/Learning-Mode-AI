@@ -9,6 +9,11 @@ import (
 	"github.com/joho/godotenv"
 )
 
+const (
+    TierFree = "free"
+    TierPro  = "pro"
+)
+
 // Global variables for services and secrets
 var (
 	YoutubeInfoServiceURL     string
@@ -22,6 +27,21 @@ var (
 	ProductIdPro              string
 )
 
+type TierConfig struct {
+    ProductID string
+    TierName  string
+}
+
+
+// ProductTierMap maps Stripe product IDs to their corresponding tiers
+var ProductTierMap = map[string]TierConfig{
+    // Pro tier mapping
+    "STRIPE_PRODUCT_ID_PRO": {
+        ProductID: ProductIdPro,
+        TierName:  TierPro,
+    },
+}
+
 // InitConfig initializes the environment variables
 func InitConfig() {
 	// Load .env file
@@ -32,6 +52,12 @@ func InitConfig() {
 
 	ProductIdPro = os.Getenv("PRODUCT_ID_PRO")
 
+    // Validate Stripe configuration
+    ProductTierMap[ProductIdPro] = TierConfig{
+        ProductID: ProductIdPro,
+        TierName:  TierPro,
+    }
+	
 	// Retrieve and store environment variables
 	StripeSecretKey = os.Getenv("STRIPE_SECRET_KEY")
 	StripeWebhookSecret = os.Getenv("STRIPE_WEBHOOK_SECRET")
