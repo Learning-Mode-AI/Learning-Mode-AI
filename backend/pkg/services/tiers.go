@@ -20,18 +20,15 @@ type User struct {
 var serviceTierLimits = map[string]map[string]int{
 	"chat": {
 		"free":    10,
-		"pro":     100,
-		"premium": 0,
+		"pro":     10,
 	},
 	"quiz": {
 		"free":    3,
-		"pro":     20,
-		"premium": 0,
+		"pro":     10,
 	},
 	"summary": {
 		"free":    5,
-		"pro":     50,
-		"premium": 0,
+		"pro":     10,
 	},
 }
 
