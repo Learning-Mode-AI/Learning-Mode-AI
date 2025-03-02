@@ -289,12 +289,51 @@ export function askAIQuestion(videoUrl, question) {
   });
 }
 
+function monitorVideoChange() {
+  let lastVideoId = extractVideoID(window.location.href);
+
+  const observer = new MutationObserver(() => {
+    const currentVideoId = extractVideoID(window.location.href);
+    
+    // If the video ID has changed, toggle off Learning Mode
+    if (currentVideoId && currentVideoId !== lastVideoId) {
+      console.log("Next video detected via MutationObserver, turning off Learning Mode...");
+      lastVideoId = currentVideoId;
+      const switchButton = document.querySelector('.learning-mode-switch');
+      if (switchButton && switchButton.getAttribute('aria-checked') === 'true') {
+        toggleLearningMode(); // Turn off Learning Mode
+      }
+    }
+  });
+
+  // Observe changes in the URL bar and YouTube's dynamic content updates
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  const videoElement = document.querySelector('video');
+  if (!videoElement) return;
+
+  videoElement.addEventListener('loadeddata', () => {
+    const currentVideoId = extractVideoID(window.location.href);
+    
+    if (currentVideoId && currentVideoId !== lastVideoId) {
+      console.log("New video detected via loadeddata event, turning off Learning Mode...");
+      lastVideoId = currentVideoId;
+      const switchButton = document.querySelector('.learning-mode-switch');
+      if (switchButton && switchButton.getAttribute('aria-checked') === 'true') {
+        toggleLearningMode();
+      }
+    }
+  });
+}
+
 function extractVideoID(videoUrl) {
   const videoIDPattern =
     /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
   const match = videoUrl.match(videoIDPattern);
   return match ? match[1] : null;
 }
+
+monitorVideoChange();
 
 function getUserId(callback) {
   chrome.storage.local.get(['userId', 'email'], (data) => {
