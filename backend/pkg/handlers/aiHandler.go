@@ -20,7 +20,7 @@ type GPTQuestionRequest struct {
 	VideoID      string `json:"video_id"`
 	UserQuestion string `json:"question"`
 	Timestamp    int    `json:"timestamp"`
-	AssistantID  string `json:"assistant_id"`
+	UserID       string `json:"userId"`
 }
 
 // AskGPTQuestion handles user questions for the GPT session
@@ -34,18 +34,11 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve the assistantID from context using videoID
-	assistantID := questionReq.AssistantID
-	if assistantID == "" {
-		http.Error(w, "Assistant ID is missing", http.StatusBadRequest)
-		return
-	}
-
 	// Log timestamp for debugging
 	log.Printf("Received question at timestamp: %d seconds", questionReq.Timestamp)
 
 	// Ask GPT the question
-	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, assistantID, questionReq.UserQuestion, questionReq.Timestamp)
+	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, questionReq.UserID, questionReq.UserQuestion, questionReq.Timestamp)
 	if err != nil {
 		log.Printf("Failed to get AI response: %v", err)
 		http.Error(w, "Failed to get AI response", http.StatusInternalServerError)
