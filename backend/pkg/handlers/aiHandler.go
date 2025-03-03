@@ -18,7 +18,7 @@ type InitializeGPTRequest struct {
 // GPTQuestionRequest struct for asking questions
 type GPTQuestionRequest struct {
 	VideoID      string `json:"video_id"`
-	UserQuestion string `json:"question"`
+	UserQuestion string `json:"user_question"`
 	Timestamp    int    `json:"timestamp"`
 	UserID       string `json:"userId"`
 }
