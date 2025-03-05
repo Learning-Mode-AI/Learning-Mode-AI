@@ -14,6 +14,7 @@ services:
       - app-network
     volumes:
       - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
 
   main-backend:
     build:
@@ -71,6 +72,7 @@ services:
       - redis
     networks:
       - app-network
+
 
 networks:
   app-network:

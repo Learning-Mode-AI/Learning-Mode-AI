@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"Learning-Mode-AI/pkg/context"
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
 	"log"
@@ -35,19 +34,11 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Retrieve the assistantID from context using videoID
-	assistantIDValue, ok := context.Instance.AssistantIDs.Load(questionReq.VideoID)
-	if !ok {
-		http.Error(w, "Assistant session not found for this video", http.StatusBadRequest)
-		return
-	}
-	assistantID, _ := assistantIDValue.(string)
-
 	// Log timestamp for debugging
 	log.Printf("Received question at timestamp: %d seconds", questionReq.Timestamp)
 
 	// Ask GPT the question
-	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, assistantID, questionReq.UserQuestion, questionReq.Timestamp)
+	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, questionReq.UserID, questionReq.UserQuestion, questionReq.Timestamp)
 	if err != nil {
 		log.Printf("Failed to get AI response: %v", err)
 		http.Error(w, "Failed to get AI response", http.StatusInternalServerError)
