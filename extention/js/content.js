@@ -25,7 +25,7 @@ function toggleLearningMode() {
     ).style.backgroundColor = '#ECB0B0';
     toggleCircle.style.left = '19px';
     activateLearningMode();
-    showModal();
+    setTimeout(() => {showModal();}, 500); 
   } else {
     switchButton.setAttribute('aria-checked', 'false');
     switchButton.querySelector(
@@ -198,6 +198,14 @@ function showModal() {
     console.error('Modal overlay not found');
   }
 }
+
+function updateModalMessage(message) {
+  const modalContent = document.getElementById('chat-modal-content');
+  if (modalContent) {
+    modalContent.innerText = message; // Change only the text
+  }
+}
+
 function hideModal() {
   const modalOverlay = document.getElementById('chat-modal-overlay');
   if (modalOverlay) {
@@ -210,31 +218,42 @@ function hideModal() {
 
 
 function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
-  console.log(` Sending processVideo request for User: ${userId}, Email: ${userEmail}`);
+  console.log(`Sending processVideo request for User: ${userId}, Email: ${userEmail}`);
 
   fetch('http://localhost:8080/processVideo', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/json',
-      'User-ID': userId, // Send userID in headers
-      'User-Email': userEmail  // Send user email in headers
+        'Content-Type': 'application/json',
+        'User-ID': userId,
+        'User-Email': userEmail  
     },
     body: JSON.stringify({ videoUrl: videoUrl })
-  })
-    .then(response => {
-      console.log(`Received response: ${response.status}`);
+})
+.then(async response => {
+    const data = await response.json();
 
-      if (response.ok) {
+    if (response.status === 400 && data.error.includes("This video is too long")) {
+        console.error("Video exceeds token limit.");
+        updateModalMessage("⚠️ This video is too long. Try a shorter one.");
+        return;
+    }
+
+    if (data.success) {
         console.log("Video processed successfully!");
         hideModal();
         addAIBubble('Video Processed! You can now ask questions.');
-      } else {
-        console.error("Error processing video:", response.statusText);
-        addAIBubble('Transcription failed. Please try again later.');
-      }
-    })
-    .catch(error => console.error("Error:", error));
+    } else {
+        console.error("Unexpected response:", data);
+        updateModalMessage("❌ Error processing video. Please try again.");
+    }
+})
+.catch(error => {
+    console.error("Fetch request failed:", error);
+    updateModalMessage("⚠️ Server error. Please try again later.");
+});
 }
+
+
 
 
 export function askAIQuestion(videoUrl, question) {

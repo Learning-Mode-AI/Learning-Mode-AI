@@ -57,6 +57,15 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Define the max allowed transcript length
+	const maxTranscriptTokens = 256000 // OpenAI limit
+
+	if len(strings.Join(videoInfo.Transcript, " ")) > maxTranscriptTokens {
+		log.Println("⚠️ Transcript too long, rejecting request.")
+		http.Error(w, `{"error": "This video is too long. Try a shorter one."}`, http.StatusBadRequest)
+		return
+	}
+
 	// Store video info in Redis (without snapshots for now)
 	err = services.StoreVideoInfoInRedis(videoID, videoInfo)
 	if err != nil {
