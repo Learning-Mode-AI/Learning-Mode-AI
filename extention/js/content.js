@@ -49,7 +49,6 @@ async function getUserInfo() {
 }
 
 function activateLearningMode() {
-  // Fetch user ID from storage or trigger authentication
   getUserId((userId, userEmail) => {
     if (!userId || !userEmail) {
       console.error('User not authenticated.');
@@ -57,14 +56,28 @@ function activateLearningMode() {
     }
 
     console.log('Learning Mode activated for User ID:', userId);
+    localStorage.setItem('userId', userId);
+    localStorage.setItem('userEmail', userEmail);
 
-    // Ensure the backend receives userId and email
-    const videoUrl = window.location.href;
-    sendVideoInfoToBackend(videoUrl, userId, userEmail);
+    const videoId = extractVideoID(window.location.href);
+
+    // Retrieve processed videos from localStorage
+    const processedVideos = JSON.parse(localStorage.getItem('processedVideos')) || {};
+
+    if (!processedVideos[videoId]) {
+      sendVideoInfoToBackend(window.location.href, userId, userEmail);
+      
+      // Mark video as processed in local storage
+      processedVideos[videoId] = true;
+      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
+    } else {
+      console.log(`Skipping processVideo: Video ${videoId} was already processed.`);
+    }
 
     initializeLearningMode();
   });
 }
+
 
 function initializeLearningMode() {
   const sidebar = document.getElementById('related');
