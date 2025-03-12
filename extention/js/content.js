@@ -230,30 +230,38 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     body: JSON.stringify({ videoUrl: videoUrl })
 })
 .then(async response => {
-    const data = await response.json();
+  console.log(`Received response: ${response.status}`);
 
-    if (response.status === 400 && data.error.includes("This video is too long")) {
-        console.error("Video exceeds token limit.");
+    let responseText;
+    try {
+        responseText = await response.text(); // Read response as text
+    } catch (error) {
+        console.error("❌ Failed to read response:", error);
+        updateModalMessage("⚠️ Server error. Please try again later.");
+        return;
+    }
+    
+    if (response.status === 400 && responseText.includes("This video is too long")) {
+        console.error("🚨 Video exceeds token limit.");
         updateModalMessage("⚠️ This video is too long. Try a shorter one.");
         return;
     }
 
-    if (data.success) {
-        console.log("Video processed successfully!");
+    if (response.status === 200) {
+        console.log("✅ Video processed successfully!");
         hideModal();
         addAIBubble('Video Processed! You can now ask questions.');
-    } else {
-        console.error("Unexpected response:", data);
-        updateModalMessage("❌ Error processing video. Please try again.");
+        return;
     }
+
+    console.error("❌ Unknown issue detected - Unexpected Response:", responseText);
+    updateModalMessage("❌ An unexpected error occurred. Please try again.");
 })
 .catch(error => {
-    console.error("Fetch request failed:", error);
+    console.error("❌ Fetch request failed:", error);
     updateModalMessage("⚠️ Server error. Please try again later.");
 });
 }
-
-
 
 
 export function askAIQuestion(videoUrl, question) {
