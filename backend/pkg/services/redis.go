@@ -160,11 +160,39 @@ func UpdateUserTier(email string, productID string) error {
         }
     }
 
-    // Get user data by email
-    key := fmt.Sprintf("user:%s", email)
+    // First, find the user ID associated with this email
+    userKey := fmt.Sprintf("email:%s", email)
+    userID, err := rdb.Get(ctx, userKey).Result()
+    if err == redis.Nil {
+        // Create a mapping if it doesn't exist yet
+        // This is a fallback - ideally users should be created properly via CheckAndCreateUser
+        userID = fmt.Sprintf("user_%s", email) // Generate a simple userID from email
+        err = rdb.Set(ctx, userKey, userID, 0).Err()
+        if err != nil {
+            return fmt.Errorf("failed to create user mapping: %v", err)
+        }
+    } else if err != nil {
+        return fmt.Errorf("failed to get user ID for email %s: %v", email, err)
+    }
+
+    // Get user data by userID
+    key := fmt.Sprintf("user:%s", userID)
     userData, err := rdb.Get(ctx, key).Result()
     if err == redis.Nil {
-        return fmt.Errorf("user not found: %s", email)
+        // Create a new user if not found
+        user := User{
+            UserID: userID,
+            Email:  email,
+            Tier:   tierName,
+        }
+        data, err := json.Marshal(user)
+        if err != nil {
+            return fmt.Errorf("failed to marshal new user data: %v", err)
+        }
+        if err := rdb.Set(ctx, key, data, 0).Err(); err != nil {
+            return fmt.Errorf("failed to create new user: %v", err)
+        }
+        return nil
     } else if err != nil {
         return fmt.Errorf("failed to get user data: %v", err)
     }

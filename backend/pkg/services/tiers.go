@@ -23,12 +23,12 @@ var serviceTierLimits = map[string]map[string]int{
 		"pro":     10,
 	},
 	"quiz": {
-		"free":    3,
-		"pro":     10,
+		"free":    0,
+		"pro":     0,
 	},
 	"summary": {
-		"free":    5,
-		"pro":     10,
+		"free":    0,
+		"pro":     0,
 	},
 }
 
@@ -96,4 +96,83 @@ func ValidateUserTierRequest(userID, service string) error {
 	}
 
 	return nil
+}
+
+// GetServiceLimit returns the limit for a specific service and tier
+func GetServiceLimit(service, tier string) int {
+	if limits, ok := serviceTierLimits[service]; ok {
+		if limit, ok := limits[tier]; ok {
+			return limit
+		}
+	}
+	return 0 // Default to unlimited if not found
+}
+
+// GetRemainingRequests returns the remaining requests for each service for a user
+func GetRemainingRequests(userID string) (int, int, int, error) {
+	tier, err := GetUserTier(userID)
+	if err != nil {
+		return 0, 0, 0, err
+	}
+
+	// Get the limits for each service
+	chatLimit := GetServiceLimit("chat", tier)
+	quizLimit := GetServiceLimit("quiz", tier)
+	summaryLimit := GetServiceLimit("summary", tier)
+
+	// If the limit is 0 (unlimited), return -1 to indicate unlimited
+	chatRemaining := -1
+	quizRemaining := -1
+	summaryRemaining := -1
+
+	// Only check Redis for remaining requests if there's a limit
+	if chatLimit > 0 {
+		chatKey := fmt.Sprintf("limit:%s:%s", "chat", userID)
+		chatUsed, err := rdb.Get(ctx, chatKey).Int()
+		if err != nil && err != redis.Nil {
+			return 0, 0, 0, err
+		}
+		if err == nil {
+			chatRemaining = chatLimit - chatUsed
+			if chatRemaining < 0 {
+				chatRemaining = 0
+			}
+		} else {
+			chatRemaining = chatLimit // No usage yet
+		}
+	}
+
+	if quizLimit > 0 {
+		quizKey := fmt.Sprintf("limit:%s:%s", "quiz", userID)
+		quizUsed, err := rdb.Get(ctx, quizKey).Int()
+		if err != nil && err != redis.Nil {
+			return 0, 0, 0, err
+		}
+		if err == nil {
+			quizRemaining = quizLimit - quizUsed
+			if quizRemaining < 0 {
+				quizRemaining = 0
+			}
+		} else {
+			quizRemaining = quizLimit // No usage yet
+		}
+	}
+
+	if summaryLimit > 0 {
+		summaryKey := fmt.Sprintf("limit:%s:%s", "summary", userID)
+		summaryUsed, err := rdb.Get(ctx, summaryKey).Int()
+		if err != nil && err != redis.Nil {
+			return 0, 0, 0, err
+		}
+		if err == nil {
+			summaryRemaining = summaryLimit - summaryUsed
+			if summaryRemaining < 0 {
+				summaryRemaining = 0
+			}
+		} else {
+			summaryRemaining = summaryLimit // No usage yet
+		}
+	}
+
+	return chatRemaining, quizRemaining, summaryRemaining, nil
 }

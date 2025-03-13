@@ -32,13 +32,7 @@ type TierConfig struct {
 
 
 // ProductTierMap maps Stripe product IDs to their corresponding tiers
-var ProductTierMap = map[string]TierConfig{
-    // Pro tier mapping
-    "STRIPE_PRODUCT_ID_PRO": {
-        ProductID: ProductIdPro,
-        TierName:  TierPro,
-    },
-}
+var ProductTierMap map[string]TierConfig
 
 // InitConfig initializes the environment variables
 func InitConfig() {
@@ -49,11 +43,16 @@ func InitConfig() {
 	}
 
 	ProductIdPro = os.Getenv("PRODUCT_ID_PRO")
+	if ProductIdPro == "" {
+		log.Fatal("PRODUCT_ID_PRO environment variable is not set")
+	}
 
     // Validate Stripe configuration
-    ProductTierMap[ProductIdPro] = TierConfig{
-        ProductID: ProductIdPro,
-        TierName:  TierPro,
+    ProductTierMap = map[string]TierConfig{
+        ProductIdPro: {
+            ProductID: ProductIdPro,
+            TierName:  TierPro,
+        },
     }
 	
 	// Retrieve and store environment variables
