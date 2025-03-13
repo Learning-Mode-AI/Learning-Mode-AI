@@ -13,13 +13,30 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     if (timestamps.length > 0 && videoElement) {
       const interval = setInterval(() => {
         const currentTime = videoElement.currentTime;
-        timestamps.forEach(({ timestamp }) => {
+        
+        // handling rewind to display previous questions incase user rewinds
+        setDisplayedTimestamps(prev => {
+          const newDisplayedTimestamps = new Set();
+          for (const t of prev) {
+            if (t <= currentTime) {
+              newDisplayedTimestamps.add(t);
+            }
+          }
+          return newDisplayedTimestamps;
+        });
+
+        timestamps.forEach(({ timestamp, index }) => {
           if (Math.abs(currentTime - timestamp) <= TOLERANCE && !displayedTimestamps.has(timestamp)) {
             videoElement.pause();
             const matchingQuestions = timestamps.filter((t) => Math.abs(t.timestamp - timestamp) <= TOLERANCE).map((t) => t.index);
-            setQuestionsAtTimestamp(matchingQuestions);
-            setDisplayedTimestamps((prev) => new Set([...prev, timestamp]));
-            setCurrentQuestionIndex(0);
+            
+            if (matchingQuestions.length > 0) {
+              setQuestionsAtTimestamp(matchingQuestions);
+              setDisplayedTimestamps((prev) => new Set([...prev, timestamp]));
+              setCurrentQuestionIndex((prev) => 
+                prev < matchingQuestions.length - 1 ? prev + 1 : prev
+              );
+            }
           }
         });
       }, 500);
@@ -54,7 +71,7 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     <div className="quiz-container">
       {currentQuestion ? (
         <>
-          <h1 className="question-count left-aligned">Question {currentQuestionIndex + 1}</h1>
+          <h1 className="question-count left-aligned">Question {questionsAtTimestamp[currentQuestionIndex] + 1}</h1>
           <p className="question-text">{currentQuestion.text}</p>
 
           <div className="quiz-options">
