@@ -16,9 +16,26 @@ type VideoRequest struct {
 func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 	// Handle CORS preflight requests (skipping for brevity)
 
+	// Extract User-ID and Email from request headers
+	userID := r.Header.Get("User-ID")
+	userEmail := r.Header.Get("User-Email")
+	if userID == "" || userEmail == "" {
+		http.Error(w, "Missing User-ID or User-Email in request headers", http.StatusBadRequest)
+		return
+	}
+
+	log.Printf("Processing video for User: %s, Email: %s\n", userID, userEmail)
+
+	// Ensure user exists in Redis (Create if not)
+	err := services.CheckAndCreateUser(userID, userEmail)
+	if err != nil {
+		http.Error(w, "Error ensuring user exists", http.StatusInternalServerError)
+		return
+	}
+
 	// Log the request and decode payload
 	var videoRequest VideoRequest
-	err := json.NewDecoder(r.Body).Decode(&videoRequest)
+	err = json.NewDecoder(r.Body).Decode(&videoRequest)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
 		return
@@ -40,6 +57,15 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Define the max allowed transcript length
+	const maxTranscriptTokens = 256000 // OpenAI limit
+
+	if len(strings.Join(videoInfo.Transcript, " ")) > maxTranscriptTokens {
+		log.Println("⚠️ Transcript too long, rejecting request.")
+		http.Error(w, `{"error": "This video is too long. Try a shorter one."}`, http.StatusBadRequest)
+		return
+	}
+
 	// Store video info in Redis (without snapshots for now)
 	err = services.StoreVideoInfoInRedis(videoID, videoInfo)
 	if err != nil {
@@ -47,7 +73,8 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Initialize Assistant session with video info
-	assistantID, err := services.InitGPTSession(videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
+	assistantID, err := services.InitGPTSession(userID, videoID, videoInfo.Title, videoInfo.Channel, videoInfo.Transcript)
+
 	if err != nil {
 		log.Println("Failed to initialize assistant session:", err)
 		http.Error(w, "Failed to initialize assistant session", http.StatusInternalServerError)

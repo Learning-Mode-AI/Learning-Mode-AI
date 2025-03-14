@@ -27,7 +27,7 @@ export function createChatContainer(parentElement) {
 
   // Header Title
   const headerTitle = document.createElement('span');
-  headerTitle.innerText = 'Chat-Bot';
+  headerTitle.innerText = 'Ask a Question';
 
   // Append buttons and title to header
   header.appendChild(toggleButton);
@@ -85,18 +85,25 @@ export function createChatContainer(parentElement) {
       inputField.value = '';
       const videoUrl = window.location.href;
       typingIndicator.style.display = 'block'; // Show typing indicator
+      console.log("Typing indicator shown");
+
       askAIQuestion(videoUrl, userQuestion)
         .then((response) => {
+          console.log("AI Response received:", response);
+
           typingIndicator.style.display = 'none';
+          console.log("Typing indicator hidden");
+
           if (response) {
-            addAIBubble(response);
           } else {
             console.error('Received undefined AI response');
           }
+
         })
         .catch((error) => {
           typingIndicator.style.display = 'none';
           console.error('Error in askAIQuestion:', error);
+          console.log("Typing indicator hidden due to error");
         });
     }
   };
@@ -114,21 +121,33 @@ export function createChatContainer(parentElement) {
     }
   });
 
+  const imgURL = chrome.runtime.getURL('images/bg.png');
+  const imgURL2 = chrome.runtime.getURL('images/bg2.png');
+
   document.addEventListener('fullscreenchange', () => {
     const chatContainer = document.getElementById('custom-chat-container');
+    const featuresPanel = document.getElementById('features-panel');
     const isFullscreen = !!document.fullscreenElement;
     const secondaryInner = document.getElementById('secondary-inner');
 
     if (chatContainer) {
       if (isFullscreen) {
         document.body.appendChild(chatContainer);
+        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
         chatContainer.classList.add('fullscreen');
         chatContainer.style.position = 'fixed';
+        document.body.appendChild(featuresPanel);
+        featuresPanel.classList.add('fullscreen');
+        featuresPanel.style.position = 'fixed';
       } else {
         if (secondaryInner) {
           secondaryInner.appendChild(chatContainer);
+          chatContainer.style.backgroundImage = `url('${imgURL}')`;
           chatContainer.classList.remove('fullscreen');
           chatContainer.style.position = 'relative';
+          secondaryInner.appendChild(featuresPanel);
+          featuresPanel.classList.remove('fullscreen');
+          featuresPanel.style.position = 'relative';
         }
       }
     }

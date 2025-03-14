@@ -14,6 +14,7 @@ services:
       - app-network
     volumes:
       - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
 
   main-backend:
     build:
@@ -60,6 +61,18 @@ services:
       - redis
     networks:
       - app-network
+
+  quiz-service:
+    build:
+      context: ./Learning-Mode-AI-quiz-service
+    container_name: quiz-service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
 
 networks:
   app-network:
