@@ -56,8 +56,6 @@ function activateLearningMode() {
     }
 
     console.log('Learning Mode activated for User ID:', userId);
-    localStorage.setItem('userId', userId);
-    localStorage.setItem('userEmail', userEmail);
 
     const videoId = extractVideoID(window.location.href);
 
