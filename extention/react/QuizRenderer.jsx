@@ -4,48 +4,40 @@ import './app.css';
 const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [questionsAtTimestamp, setQuestionsAtTimestamp] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(null);
   const [displayedTimestamps, setDisplayedTimestamps] = useState(new Set());
+  
+  const sortedTimestamps = useMemo(() => // sorting timestamps chronologically
+    [...timestamps].sort((a, b) => a.timestamp - b.timestamp), 
+    [timestamps]
+  );
 
+  console.log(sortedTimestamps);
   const TOLERANCE = 0.5;
 
   useEffect(() => {
-    if (timestamps.length > 0 && videoElement) {
+    if (sortedTimestamps.length > 0 && videoElement) {
       const interval = setInterval(() => {
         const currentTime = videoElement.currentTime;
         
-        // handling rewind to display previous questions incase user rewinds
-        setDisplayedTimestamps(prev => {
-          const newDisplayedTimestamps = new Set();
-          for (const t of prev) {
-            if (t <= currentTime) {
-              newDisplayedTimestamps.add(t);
-            }
-          }
-          return newDisplayedTimestamps;
-        });
-
-        timestamps.forEach(({ timestamp, index }) => {
+        for (const { timestamp, index } of sortedTimestamps) {
           if (Math.abs(currentTime - timestamp) <= TOLERANCE && !displayedTimestamps.has(timestamp)) {
             videoElement.pause();
-            const matchingQuestions = timestamps.filter((t) => Math.abs(t.timestamp - timestamp) <= TOLERANCE).map((t) => t.index);
-            
-            if (matchingQuestions.length > 0) {
-              setQuestionsAtTimestamp(matchingQuestions);
-              setDisplayedTimestamps((prev) => new Set([...prev, timestamp]));
-              setCurrentQuestionIndex((prev) => 
-                prev < matchingQuestions.length - 1 ? prev + 1 : prev
-              );
-            }
+            setCurrentQuestion(quiz?.questions[index] || null);
+            setCurrentQuestionIndex(sortedTimestamps.findIndex(t => t.timestamp === timestamp) + 1);
+            setDisplayedTimestamps(prev => new Set([...prev, timestamp]));
+            break; // Only handle one question at a time
           }
-        });
+        }
       }, 500);
 
       return () => clearInterval(interval);
     }
-  }, [timestamps, videoElement, displayedTimestamps]);
+  }, [sortedTimestamps, videoElement, displayedTimestamps, quiz]);
 
-  const currentQuestion = quiz?.questions[questionsAtTimestamp[currentQuestionIndex]] || null;
+  useEffect(() => {
+    setSelectedAnswer(null); // resetting the selected answer when question changes
+  }, [currentQuestion]);
 
   const correctAnswer =
     currentQuestion &&
@@ -71,7 +63,7 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     <div className="quiz-container">
       {currentQuestion ? (
         <>
-          <h1 className="question-count left-aligned">Question {questionsAtTimestamp[currentQuestionIndex] + 1}</h1>
+          <h1 className="question-count left-aligned">Question {currentQuestionIndex}</h1>
           <p className="question-text">{currentQuestion.text}</p>
 
           <div className="quiz-options">
@@ -98,9 +90,9 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
       ) : (
         <p>No questions available for the current timestamp.</p>
       )}
-
-
-    </div>
+      
+      
+      </div>
   );
 };
 
