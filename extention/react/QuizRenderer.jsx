@@ -12,7 +12,6 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     [timestamps]
   );
 
-  console.log(sortedTimestamps);
   const TOLERANCE = 0.5;
 
   useEffect(() => {
@@ -26,7 +25,6 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
             setCurrentQuestion(quiz?.questions[index] || null);
             setCurrentQuestionIndex(sortedTimestamps.findIndex(t => t.timestamp === timestamp) + 1);
             setDisplayedTimestamps(prev => new Set([...prev, timestamp]));
-            break; // Only handle one question at a time
           }
         }
       }, 500);
@@ -90,8 +88,6 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
       ) : (
         <p>No questions available for the current timestamp.</p>
       )}
-      
-      
       </div>
   );
 };
