@@ -34,8 +34,10 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
   }, [sortedTimestamps, videoElement, displayedTimestamps, quiz]);
 
   useEffect(() => {
+    
     setSelectedAnswer(null); // resetting the selected answer when question changes
   }, [currentQuestion]);
+
 
   const correctAnswer =
     currentQuestion &&
