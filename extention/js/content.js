@@ -162,7 +162,7 @@ function initializeLearningMode() {
                 !displayedTimestamps.has(questionTime)
               ) {
                 videoElement.pause();
-                displayQuestionInQuizHolder(question);
+                //displayQuestionInQuizHolder(question); //this function is not defined?
                 displayedTimestamps.add(questionTime);
               }
             });
