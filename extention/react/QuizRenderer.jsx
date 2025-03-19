@@ -11,7 +11,6 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     [timestamps]
   );
 
-  console.log(sortedTimestamps);
   useEffect(() => {
     if (sortedTimestamps.length > 0 && videoElement) {
       const interval = setInterval(() => {
