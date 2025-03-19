@@ -5,6 +5,8 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [currentQuestion, setCurrentQuestion] = useState(null);
+  const [pausedTimestamps, setPausedTimestamps] = useState(new Set());
+  const TOLERANCE = 0.5;
   
   const sortedTimestamps = useMemo(() => // sorting timestamps chronologically
     [...timestamps].sort((a, b) => a.timestamp - b.timestamp), 
@@ -18,10 +20,15 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
         
         let currentIndex = -1;
         for (let i = 0; i < sortedTimestamps.length; i++) {
-          if (currentTime >= sortedTimestamps[i].timestamp) {
-            if (currentTime === sortedTimestamps[i].timestamp) {
+          const timestamp = sortedTimestamps[i].timestamp;
+          if (currentTime >= timestamp) {
+            if (Math.abs(currentTime - timestamp) <= TOLERANCE && !pausedTimestamps.has(timestamp)) {
+              const questionIndex = sortedTimestamps[i].index;
+              setCurrentQuestion(quiz?.questions[questionIndex] || null);
+              setCurrentQuestionIndex(i + 1);
+              setPausedTimestamps(prev => new Set([...prev, timestamp]));
               videoElement.pause();
-              
+              break;
             }
             currentIndex = i;
           } else {
@@ -38,7 +45,7 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
 
       return () => clearInterval(interval);
     }
-  }, [sortedTimestamps, videoElement, quiz]);
+  }, [sortedTimestamps, videoElement, quiz, pausedTimestamps]);
 
   useEffect(() => {
     
