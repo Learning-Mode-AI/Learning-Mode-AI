@@ -37,5 +37,5 @@ func main() {
 	if err := http.ListenAndServe(":8080", handlers.CORS(originsOk, headersOk, methodsOk)(r)); err != nil {
 		log.Fatalf("Could not start server: %s\n", err.Error())
 	}
-	//hello
+	
 }
