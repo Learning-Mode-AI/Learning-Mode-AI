@@ -11,19 +11,29 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     [timestamps]
   );
 
-  const TOLERANCE = 0.5;
   console.log(sortedTimestamps);
   useEffect(() => {
     if (sortedTimestamps.length > 0 && videoElement) {
       const interval = setInterval(() => {
         const currentTime = videoElement.currentTime;
         
-        for (const { timestamp, index } of sortedTimestamps) {
-          if (Math.abs(currentTime - timestamp) <= TOLERANCE) {
-            videoElement.pause();
-            setCurrentQuestion(quiz?.questions[index] || null);
-            setCurrentQuestionIndex(sortedTimestamps.findIndex(t => t.timestamp === timestamp) + 1);
+        let currentIndex = -1;
+        for (let i = 0; i < sortedTimestamps.length; i++) {
+          if (currentTime >= sortedTimestamps[i].timestamp) {
+            if (currentTime === sortedTimestamps[i].timestamp) {
+              videoElement.pause();
+              
+            }
+            currentIndex = i;
+          } else {
+            break;
           }
+        }
+
+        if (currentIndex >= 0) {
+          const questionIndex = sortedTimestamps[currentIndex].index;
+          setCurrentQuestion(quiz?.questions[questionIndex] || null);
+          setCurrentQuestionIndex(currentIndex + 1);
         }
       }, 500);
 
