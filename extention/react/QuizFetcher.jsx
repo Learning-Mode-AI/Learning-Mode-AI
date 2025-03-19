@@ -8,7 +8,6 @@ export const QuizFetcher = () => {
   const [videoElement, setVideoElement] = useState(null);
 
   useEffect(() => {
-    console.log("QuizFetcher mounted");
     const extractVideoId = () => {
       const urlParams = new URL(window.location.href);
       const videoId = urlParams.searchParams.get('v');
