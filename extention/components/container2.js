@@ -106,7 +106,6 @@ export function createContainer2(parentElement) {
     quizHolder.style.display = 'block';
     quizRoot = createRoot(quizHolder);
   }
-  //quizHolder.innerText = 'Generating your quiz...';
   quizRoot.render(<QuizFetcher />);
 
   // Feature controls
