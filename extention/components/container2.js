@@ -130,7 +130,6 @@ export function createContainer2(parentElement) {
     const selectedOption = e.target.innerText;
 
     if (selectedOption) {
-      console.log('Selected Option:', selectedOption);
       // Close the dropdown menu automatically
       optionsList.style.display = 'none';
 
