@@ -161,7 +161,7 @@ function initializeLearningMode() {
                 currentTime === questionTime &&
                 !displayedTimestamps.has(questionTime)
               ) {
-                videoElement.pause();
+                
                 displayQuestionInQuizHolder(question);
                 displayedTimestamps.add(questionTime);
               }
