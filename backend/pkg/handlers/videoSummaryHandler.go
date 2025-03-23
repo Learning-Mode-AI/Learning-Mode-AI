@@ -28,6 +28,19 @@ func VideoSummaryHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Extract User-ID from request headers and check usage for summary feature
+	userID := r.Header.Get("User-ID")
+	if userID == "" {
+		http.Error(w, "Missing User-ID in request headers", http.StatusBadRequest)
+		return
+	}
+
+	err = services.CheckAndIncrementUsage(userID, "summary")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusTooManyRequests)
+		return
+	}
+
 	// Check if summary exists in Redis first
 	summary, err := services.GetVideoSummaryFromRedis(req.VideoID)
 	if err != nil {

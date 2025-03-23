@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"encoding/json"
 	"Learning-Mode-AI/pkg/services"
+	"encoding/json"
 	"net/http"
 )
 
@@ -13,6 +13,18 @@ func GenerateQuiz(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
 		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	userID := r.Header.Get("User-ID")
+	if userID == "" {
+		http.Error(w, "Missing User-ID in request headers", http.StatusBadRequest)
+		return
+	}
+
+	err = services.CheckAndIncrementUsage(userID, "quiz")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusTooManyRequests)
 		return
 	}
 

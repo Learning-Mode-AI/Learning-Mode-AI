@@ -37,6 +37,21 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	// Log timestamp for debugging
 	log.Printf("Received question at timestamp: %d seconds", questionReq.Timestamp)
 
+	// Inside AskGPTQuestion, after decoding the request
+	if questionReq.UserID == "" {
+		questionReq.UserID = r.Header.Get("User-ID")
+	}
+	if questionReq.UserID == "" {
+		http.Error(w, "Missing User-ID in request headers", http.StatusBadRequest)
+		return
+	}
+
+	err = services.CheckAndIncrementUsage(questionReq.UserID, "chat")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusTooManyRequests)
+		return
+	}
+
 	// Ask GPT the question
 	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, questionReq.UserID, questionReq.UserQuestion, questionReq.Timestamp)
 	if err != nil {
