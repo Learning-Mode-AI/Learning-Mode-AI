@@ -11,9 +11,13 @@ jobs:
 
     steps:
       - name: Trigger Deployment Workflow
-        uses: peter-evans/repository-dispatch@v3
+        uses: actions/github-script@v7
         with:
-          token: ${{ secrets.DEPLOYMENT_PAT }}
-          repository: learning-mode-ai/learning-mode-ai-deployment
-          event-type: deploy
-          ref: refs/heads/staging
+          github-token: ${{ secrets.DEPLOYMENT_PAT }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'learning-mode-ai',
+              repo: 'learning-mode-ai-deployment',
+              workflow_id: 'staging_deploy.yml',
+              ref: 'staging',
+            })
