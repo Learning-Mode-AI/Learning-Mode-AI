@@ -1,0 +1,18 @@
+name: Trigger Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  trigger-deployment:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger Deployment Workflow
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.DEPLOYMENT_PAT }}
+          repository: learning-mode-ai/learning-mode-ai-deployment
+          event-type: deploy
