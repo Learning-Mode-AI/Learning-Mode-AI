@@ -16,3 +16,4 @@ jobs:
           token: ${{ secrets.DEPLOYMENT_PAT }}
           repository: learning-mode-ai/learning-mode-ai-deployment
           event-type: deploy
+          ref: refs/heads/staging
