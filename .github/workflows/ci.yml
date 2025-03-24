@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Trigger Deployment Workflow
-        uses: actions/github-script@v7
+        uses: peter-evans/repository-dispatch@v3
         with:
           github-token: ${{ secrets.DEPLOYMENT_PAT }}
           repository: learning-mode-ai/learning-mode-ai-deployment
