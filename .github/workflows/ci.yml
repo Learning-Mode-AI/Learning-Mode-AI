@@ -13,6 +13,6 @@ jobs:
       - name: Trigger Deployment Workflow
         uses: peter-evans/repository-dispatch@v3
         with:
-          github-token: ${{ secrets.DEPLOYMENT_PAT }}
+          token: ${{ secrets.DEPLOYMENT_PAT }}
           repository: learning-mode-ai/learning-mode-ai-deployment
           event-type: deploy-staging
