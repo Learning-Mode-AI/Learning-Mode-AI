@@ -13,7 +13,7 @@ jobs:
       - name: Trigger Deployment Workflow
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.DEPLOYMENT_PAT }}
+          github-token: ${{ secrets.DEPLOYMENT_PAT_R }}
           script: |
             await github.rest.actions.createWorkflowDispatch({
               owner: 'learning-mode-ai',
