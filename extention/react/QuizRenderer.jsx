@@ -63,15 +63,20 @@ const QuizRenderer = ({ quiz, timestamps, videoElement }) => {
     setSelectedAnswer(option);
   };
 
-  // Move selected answer to the top, then color all answers correctly
+  const shuffleArray = (array) => {
+    return array
+      .map(value => ({ value, sort: Math.random() })) // Assign random sort values
+      .sort((a, b) => a.sort - b.sort) // Sort by the random values
+      .map(({ value }) => value); // Extract values
+  };
+  
   const sortedOptions = useMemo(() => {
-    if (!selectedAnswer || !currentQuestion) return currentQuestion?.options || [];
+    if (!currentQuestion) return [];
     
-    const selectedOption = currentQuestion.options.find(option => option.option === selectedAnswer);
-    const otherOptions = currentQuestion.options.filter(option => option.option !== selectedAnswer);
-
-    return selectedOption ? [selectedOption, ...otherOptions] : otherOptions;
-  }, [selectedAnswer, currentQuestion]);
+    // Shuffle options once per question change
+    return shuffleArray(currentQuestion.options);
+  }, [currentQuestion]);
+  
 
   return (
     <div className="quiz-container">
