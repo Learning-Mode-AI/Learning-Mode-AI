@@ -122,7 +122,7 @@ function initializeLearningMode() {
       console.error('User not authenticated.');
       return;
     }
-    fetch('http://localhost:8080/api/quiz', {
+    fetch('https://api.learningmodeai.com/api/quiz', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -220,7 +220,7 @@ function hideModal() {
 function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
   console.log(`Sending processVideo request for User: ${userId}, Email: ${userEmail}`);
 
-  fetch('http://localhost:8080/processVideo', {
+  fetch('https://api.learningmodeai.com/processVideo', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
@@ -278,7 +278,7 @@ export function askAIQuestion(videoUrl, question) {
         return;
       }
 
-      fetch('http://localhost:8080/api/question', {
+      fetch('https://api.learningmodeai.com/api/question', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -408,7 +408,7 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  fetch('http://localhost:8080/video-summary', {
+  fetch('https://api.learningmodeai.com/video-summary', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

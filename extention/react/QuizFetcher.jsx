@@ -22,7 +22,7 @@ export const QuizFetcher = () => {
 
     const fetchQuiz = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/quiz', {
+        const response = await fetch('https://api.learningmodeai.com/api/quiz', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ video_id: videoId }),

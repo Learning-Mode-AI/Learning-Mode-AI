@@ -188,7 +188,7 @@ export function createContainer2(parentElement) {
       summaryHolder
         .querySelector('.show-interest-button')
         .addEventListener('click', function () {
-          fetch('http://localhost:8080/api/show-interest', {
+          fetch('https://api.learningmodeai.com/api/show-interest', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ feature: selectedOption }),
