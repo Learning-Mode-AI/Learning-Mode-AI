@@ -44,12 +44,6 @@ func CheckUserAccess(userID string) (bool, error) {
 	// Step 5: Determine access based on question count
 	hasAccess := count < FREE_TIER_MONTHLY_LIMIT
 
-	if hasAccess {
-		log.Printf("User %s has free tier access with %d/%d questions used", userID, count, FREE_TIER_MONTHLY_LIMIT)
-	} else {
-		log.Printf("User %s has reached free tier limit of %d questions", userID, FREE_TIER_MONTHLY_LIMIT)
-	}
-
 	return hasAccess, nil
 }
 
