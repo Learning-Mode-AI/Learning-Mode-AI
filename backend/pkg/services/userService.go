@@ -1,8 +1,16 @@
 package services
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 )
+
+// User represents a user in the system
+type User struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
 
 // CheckAndCreateUser checks if the user exists in Redis. If not, creates them.
 func CheckAndCreateUser(userID, email string) error {
@@ -28,4 +36,25 @@ func CheckAndCreateUser(userID, email string) error {
 
 	log.Printf("Successfully stored new user in Redis: %s\n", userID)
 	return nil
+}
+
+func getUserFromRedis(userID string) (User, error) {
+	key := fmt.Sprintf("user:%s", userID)
+	val, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return User{}, fmt.Errorf("failed to retrieve user from Redis: %v", err)
+	}
+
+	var userData map[string]string
+	err = json.Unmarshal([]byte(val), &userData)
+	if err != nil {
+		return User{}, fmt.Errorf("failed to unmarshal user data: %v", err)
+	}
+
+	user := User{
+		ID:    userID,
+		Email: userData["email"],
+	}
+
+	return user, nil
 }

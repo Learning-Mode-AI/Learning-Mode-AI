@@ -77,7 +77,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 			}
 
 			// Store in Redis
-			err := services.StoreSubscriptioninfoInRedis(customerEmail, subscription)
+			err := services.StoreSubscriptionInfoInRedis(customerEmail, subscription)
 			if err != nil {
 				log.Printf("⚠️ Error storing subscription in Redis: %v", err)
 				w.WriteHeader(http.StatusInternalServerError)
