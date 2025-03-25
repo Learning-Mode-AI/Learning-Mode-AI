@@ -1,4 +1,25 @@
-import { askAIQuestion } from '../js/content.js';
+import { askAIQuestion, showModal, updateModalMessage } from '../js/content.js';
+
+function showUpgradeModal() {
+  console.log("showUpgradeModal called");
+  const modalContent = document.getElementById('chat-modal-content');
+  modalContent.innerHTML = '';
+  const modalTitle = document.createElement('h2');
+  modalTitle.id = 'modal-title';
+  modalTitle.innerText = 'Out Of Questions';
+  modalContent.append(modalTitle);
+  const modalCTA = document.createElement('p');
+  modalCTA.id = 'modal-cta';
+  modalCTA.innerText = 'Subscribe to get more questions and access to future exclusive features!';
+  modalContent.append(modalCTA);
+  const viewPlansButton = document.createElement('button');
+  viewPlansButton.id = 'view-plans-button';
+  viewPlansButton.innerText = 'View Plans';
+  viewPlansButton.onclick = () => {
+    window.open('https://learningmodeai.com/', '_blank');
+  };
+  modalContent.append(viewPlansButton);
+}
 
 export function createChatContainer(parentElement) {
   const chatContainer = document.createElement('div');
@@ -85,7 +106,6 @@ export function createChatContainer(parentElement) {
       inputField.value = '';
       const videoUrl = window.location.href;
       typingIndicator.style.display = 'block'; // Show typing indicator
-      console.log("Typing indicator shown");
 
       askAIQuestion(videoUrl, userQuestion)
         .then((response) => {
@@ -104,6 +124,11 @@ export function createChatContainer(parentElement) {
           typingIndicator.style.display = 'none';
           console.error('Error in askAIQuestion:', error);
           console.log("Typing indicator hidden due to error");
+
+          if (error.includes('quota')) {
+            showUpgradeModal();
+            showModal();
+          }
         });
     }
   };
