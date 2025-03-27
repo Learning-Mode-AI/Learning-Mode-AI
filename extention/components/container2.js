@@ -106,7 +106,7 @@ export function createContainer2(parentElement) {
     quizHolder.style.display = 'block';
     quizRoot = createRoot(quizHolder);
   }
-  quizRoot.render(<QuizFetcher />);
+  
 
   // Feature controls
   const featuresWithInterestButton = [
@@ -125,6 +125,13 @@ export function createContainer2(parentElement) {
       optionsList.style.display === 'none' ? 'block' : 'none';
   });
 
+  const welcomeView = document.createElement('div');
+  welcomeView.className = 'welcome-view';
+  welcomeView.innerHTML = `
+    <div class="welcome-message">Click the dropdown menu to start learning! ↑</div>
+  `;
+  contentWrapper.appendChild(welcomeView);
+
   // Show/hide content on option click
   optionsList.addEventListener('click', (e) => {
     const selectedOption = e.target.innerText;
@@ -134,6 +141,7 @@ export function createContainer2(parentElement) {
       optionsList.style.display = 'none';
 
       /// Reset visibility and scrollable state, and remove 'coming-soon' styling
+      welcomeView.style.display = 'none';
       summaryHolder.style.display = 'none';
       quizHolder.style.display = 'none';
       loadingIndicator.style.display = 'none';
