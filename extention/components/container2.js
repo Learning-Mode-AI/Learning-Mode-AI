@@ -55,6 +55,16 @@ export function createContainer2(parentElement) {
   const contentWrapper = document.createElement('div');
   contentWrapper.id = 'content-wrapper';
 
+  // Create and append welcomeView first
+  const welcomeView = document.createElement('div');
+  welcomeView.className = 'welcome-view';
+  welcomeView.innerHTML = `
+    <div class="welcome-message">Click Here!</div>
+    <img src="${chrome.runtime.getURL('images/arrow.png')}" class="curved-arrow" alt="arrow"/>
+  `;
+  contentWrapper.appendChild(welcomeView);
+
+  // Then create and append other content holders
   const summaryHolder = document.createElement('div');
   summaryHolder.id = 'summary-holder';
   summaryHolder.className = 'minimal-summary';
@@ -93,7 +103,6 @@ export function createContainer2(parentElement) {
 
   contentWrapper.appendChild(quizHolder);
   contentWrapper.appendChild(summaryHolder);
-
   contentWrapper.appendChild(loadingIndicator);
 
   featuresPanel.appendChild(contentWrapper);
@@ -124,13 +133,6 @@ export function createContainer2(parentElement) {
     optionsList.style.display =
       optionsList.style.display === 'none' ? 'block' : 'none';
   });
-
-  const welcomeView = document.createElement('div');
-  welcomeView.className = 'welcome-view';
-  welcomeView.innerHTML = `
-    <div class="welcome-message">Click the dropdown menu to start learning! ↑</div>
-  `;
-  contentWrapper.appendChild(welcomeView);
 
   // Show/hide content on option click
   optionsList.addEventListener('click', (e) => {
