@@ -54,9 +54,15 @@ func getUserFromRedis(userID string) (User, error) {
 		return User{}, fmt.Errorf("failed to unmarshal user data: %v", err)
 	}
 
+	createdAt, err := time.Parse(time.RFC3339, userData["timestamp"])
+	if err != nil {
+		return User{}, fmt.Errorf("failed to parse user creation timestamp: %v", err)
+	}
+
 	user := User{
-		ID:    userID,
-		Email: userData["email"],
+		ID:        userID,
+		Email:     userData["email"],
+		CreatedAt: createdAt,
 	}
 
 	return user, nil
