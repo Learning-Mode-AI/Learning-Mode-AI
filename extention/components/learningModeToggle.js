@@ -16,7 +16,7 @@ export function learningModeToggle(toggleLearningMode) {
   
   // adding icon to the circle
   const icon = document.createElement('img');
-  icon.src = chrome.runtime.getURL('images/learning-icon.png'); // Make sure to add this image to your extension
+  icon.src = chrome.runtime.getURL('images/LM-icon-black.png'); // Make sure to add this image to your extension
   icon.alt = 'Learning Mode';
   icon.className = 'toggle-icon';
   toggleCircle.appendChild(icon);
@@ -32,7 +32,7 @@ export function learningModeToggle(toggleLearningMode) {
 
   switchButton.addEventListener('click', () => {
     toggleLearningMode();
-    // Add glow effect when clicked
+    // adding glow effect when clicked
     switchContainer.classList.add('glow');
     setTimeout(() => {
       switchContainer.classList.remove('glow');
