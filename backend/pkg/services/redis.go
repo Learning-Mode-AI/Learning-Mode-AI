@@ -122,7 +122,7 @@ func StoreUserInRedis(userID, email string) error {
 	key := fmt.Sprintf("user:%s", userID)
 
 	// Store user as JSON (userID + email)
-	userData := map[string]string{"userID": userID, "email": email, "timestamp": time.Now().Format(time.RFC3339)}
+	userData := map[string]string{"userID": userID, "email": email, "created_at": time.Now().Format(time.RFC3339)}
 	data, err := json.Marshal(userData)
 	if err != nil {
 		return fmt.Errorf("failed to marshal user data: %v", err)

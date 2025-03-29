@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 )
 
 // User represents a user in the system
 type User struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+
 }
 
 // CheckAndCreateUser checks if the user exists in Redis. If not, creates them.
