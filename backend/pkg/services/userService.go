@@ -4,15 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"time"
 )
 
 // User represents a user in the system
 type User struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
-	CreatedAt time.Time `json:"created_at"`
-
 }
 
 // CheckAndCreateUser checks if the user exists in Redis. If not, creates them.
@@ -54,15 +51,9 @@ func getUserFromRedis(userID string) (User, error) {
 		return User{}, fmt.Errorf("failed to unmarshal user data: %v", err)
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, userData["timestamp"])
-	if err != nil {
-		return User{}, fmt.Errorf("failed to parse user creation timestamp: %v", err)
-	}
-
 	user := User{
-		ID:        userID,
-		Email:     userData["email"],
-		CreatedAt: createdAt,
+		ID:    userID,
+		Email: userData["email"],
 	}
 
 	return user, nil
