@@ -282,6 +282,9 @@
   position: relative;
   cursor: pointer;
   transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .learning-mode-switch-circle {
@@ -290,13 +293,92 @@
   background-color: #fff;
   border-radius: 50%;
   position: absolute;
-  top: 1px;
+  top: 50%;
   left: 1px;
+  transform: translateY(-50%);
   transition: left 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* When active, move the circle to the right */
+.learning-mode-switch-container.active .learning-mode-switch-circle {
+  left: calc(100% - 17px); /* 17px = circle width (16px) + 1px margin */
+}
+
+.toggle-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
 }
 
 .learning-mode-switch-container:hover {
   background-color: #bbb;
+}
+
+/* Initial Pulse Animation */
+@keyframes initialPulse {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+                inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+  25% {
+    box-shadow: 0 0 25px rgba(236, 176, 176, 0.9),
+                inset 0 0 25px rgba(236, 176, 176, 0.9);
+    transform: scale(1.05);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+                inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+  75% {
+    box-shadow: 0 0 25px rgba(236, 176, 176, 0.9),
+                inset 0 0 25px rgba(236, 176, 176, 0.9);
+    transform: scale(1.05);
+  }
+}
+
+.learning-mode-switch-container.initial-pulse {
+  animation: initialPulse 3s ease-in-out 3;
+  animation-delay: 0.5s;
+  border-radius: 9px;
+  transform-origin: center;
+}
+
+/* Existing Glow Animation */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+                inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(236, 176, 176, 0.9),
+                inset 0 0 25px rgba(236, 176, 176, 0.9);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+                inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+}
+
+.learning-mode-switch-container.glow {
+  animation: glow 1s ease-in-out;
+  border-radius: 9px;
+  transform-origin: center;
+}
+
+/* Add glow to the circle when container is glowing */
+.learning-mode-switch-container.glow .learning-mode-switch-circle,
+.learning-mode-switch-container.initial-pulse .learning-mode-switch-circle {
+  box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+              inset 0 0 10px rgba(236, 176, 176, 0.7);
 }
 
 .features-header {
@@ -586,4 +668,49 @@
 /* Remove Up/Down Arrows for Webkit */
 .scrollable::-webkit-scrollbar-button {
   display: none;
+}
+
+.welcome-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  background-color: transparent;
+  padding: 20px;
+  position: relative;
+}
+
+.welcome-content {
+  background-color: transparent;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-top: 20px;
+  padding-right: 60px;
+  margin-bottom: 50px;
+  margin-top: 5px;
+}
+
+.welcome-message {
+  background-color: transparent;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin-top: 40px;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
+  padding-top: 0;
+  margin-right: 115px;
+}
+
+.curved-arrow {
+  
+  width: 140px;
+  height: auto;
+  transform: rotate(3deg);
+  margin-top: -80px;
+  margin-right: -180px;
+
 }

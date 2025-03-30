@@ -47,7 +47,7 @@ func StoreVideoInfoInRedis(videoID string, videoInfo *VideoInfo) error {
 	}
 
 	// Store the video info with a TTL (optional)
-	err = rdb.Set(ctx, videoID, data, 24*time.Hour).Err()
+	err = rdb.Set(ctx, videoID, data, 168*time.Hour).Err()
 	if err != nil {
 		return fmt.Errorf("failed to store video info in Redis: %v", err)
 	}
@@ -75,7 +75,7 @@ func GetVideoInfoFromRedis(videoID string) (*VideoInfo, error) {
 }
 
 func StoreVideoSummaryInRedis(videoID string, summary string) error {
-	return rdb.Set(ctx, "summary:"+videoID, summary, 24*time.Hour).Err()
+	return rdb.Set(ctx, "summary:"+videoID, summary, 168*time.Hour).Err()
 }
 
 func GetVideoSummaryFromRedis(videoID string) (string, error) {
@@ -122,7 +122,7 @@ func StoreUserInRedis(userID, email string) error {
 	key := fmt.Sprintf("user:%s", userID)
 
 	// Store user as JSON (userID + email)
-	userData := map[string]string{"userID": userID, "email": email}
+	userData := map[string]string{"userID": userID, "email": email, "created_at": time.Now().Format(time.RFC3339)}
 	data, err := json.Marshal(userData)
 	if err != nil {
 		return fmt.Errorf("failed to marshal user data: %v", err)
@@ -154,7 +154,7 @@ func GetAssistantFromRedis(userID, videoID string) (string, error) {
 func StoreAssistantInRedis(userID, videoID, assistantID string) error {
 	redisKey := fmt.Sprintf("assistant:%s:%s", userID, videoID)
 
-	err := rdb.Set(ctx, redisKey, assistantID, 24*time.Hour).Err()
+	err := rdb.Set(ctx, redisKey, assistantID, 168*time.Hour).Err()
 	if err != nil {
 		return fmt.Errorf("failed to store assistant ID in Redis: %v", err)
 	}

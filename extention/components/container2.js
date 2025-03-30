@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { QuizFetcher } from '../react/QuizFetcher.jsx';
 import React from 'react';
 
-
+let quizRoot = null;
 export function createContainer2(parentElement) {
 
   const featuresPanel = document.createElement('div');
@@ -26,6 +26,7 @@ export function createContainer2(parentElement) {
   header.appendChild(headerTitle);
   header.appendChild(dropdownButton);
 
+ 
   // Options list
   const optionsList = document.createElement('ul');
   optionsList.className = 'features-options';
@@ -54,9 +55,20 @@ export function createContainer2(parentElement) {
   const contentWrapper = document.createElement('div');
   contentWrapper.id = 'content-wrapper';
 
+  // Create and append welcomeView first
+  const welcomeView = document.createElement('div');
+  welcomeView.className = 'welcome-view';
+  welcomeView.innerHTML = `
+    <div class="welcome-message">Click Here!</div>
+    <img src="${chrome.runtime.getURL('images/arrow.png')}" class="curved-arrow" alt="arrow"/>
+  `;
+  contentWrapper.appendChild(welcomeView);
+
+  // Then create and append other content holders
   const summaryHolder = document.createElement('div');
   summaryHolder.id = 'summary-holder';
   summaryHolder.className = 'minimal-summary';
+  summaryHolder.style.display = 'none'; 
 
   const loadingIndicator = document.createElement('div');
   loadingIndicator.id = 'loading-indicator';
@@ -65,7 +77,7 @@ export function createContainer2(parentElement) {
   const quizHolder = document.createElement('div');
   quizHolder.id = 'quiz-holder';
   quizHolder.className = 'feature-content';
-  quizHolder.style.display = 'none';
+  quizHolder.style.display = 'block';
 
   // Fetch the same background image used in the chatbot
   const quizBgURL = chrome.runtime.getURL('images/bg.png');
@@ -89,14 +101,21 @@ export function createContainer2(parentElement) {
   contentWrapper.style.backgroundRepeat = 'no-repeat';
 
 
-  contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(quizHolder);
+  contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(loadingIndicator);
 
   featuresPanel.appendChild(contentWrapper);
 
   // Append panel to parent element
   parentElement.appendChild(featuresPanel);
+
+  if (!quizRoot) {
+    quizHolder.innerHTML = '';
+    quizHolder.style.display = 'block';
+    quizRoot = createRoot(quizHolder);
+  }
+  
 
   // Feature controls
   const featuresWithInterestButton = [
@@ -124,6 +143,7 @@ export function createContainer2(parentElement) {
       optionsList.style.display = 'none';
 
       /// Reset visibility and scrollable state, and remove 'coming-soon' styling
+      welcomeView.style.display = 'none';
       summaryHolder.style.display = 'none';
       quizHolder.style.display = 'none';
       loadingIndicator.style.display = 'none';
@@ -156,14 +176,13 @@ export function createContainer2(parentElement) {
             }
           );
         } else if (selectedOption === 'Generate Quiz') {
-          // quizHolder.innerText = 'Generating your quiz...';
-          quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
-          const root = createRoot(quizHolder);
-          root.render(<QuizFetcher />);
+          quizRoot.render(<QuizFetcher key={Date.now()} />); // Re-render the QuizFetcher component
+          console.log('Quiz generated');
 
           return;
         }
+        
         summaryHolder.classList.add('scrollable');
         summaryHolder.style.overflowY = 'auto';
         return; // Prevent further actions for active features
@@ -204,4 +223,6 @@ export function createContainer2(parentElement) {
       loadingIndicator.style.display = 'none';
     }
   });
+
+
 }
