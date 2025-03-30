@@ -128,7 +128,7 @@ function initializeLearningMode() {
       featuresPanel.classList.remove('fullscreen');
     }
   }
-
+  
   getUserId((userId, userEmail) => {
     if (!userId) {
       console.error('User not authenticated.');
