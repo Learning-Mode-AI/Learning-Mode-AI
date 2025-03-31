@@ -76,29 +76,7 @@ export function createContainer2(parentElement) {
   const quizHolder = document.createElement('div');
   quizHolder.id = 'quiz-holder';
   quizHolder.className = 'feature-content';
-  quizHolder.style.display = 'block';
-
-  // Fetch the same background image used in the chatbot
-  const quizBgURL = chrome.runtime.getURL('images/bg.png');
-
-  // Apply background styles to the quiz container
-  quizHolder.style.backgroundImage = `url('${quizBgURL}')`;
-  quizHolder.style.backgroundSize = 'cover';
-  quizHolder.style.backgroundPosition = 'center';
-  quizHolder.style.backgroundRepeat = 'no-repeat';
-
-  // Apply the same background styles to the summary container
-  summaryHolder.style.backgroundImage = `url('${quizBgURL}')`;
-  summaryHolder.style.backgroundSize = 'cover';
-  summaryHolder.style.backgroundPosition = 'center';
-  summaryHolder.style.backgroundRepeat = 'no-repeat';
-
-  // Apply the same background styles to contentWrapper
-  contentWrapper.style.backgroundImage = `url('${quizBgURL}')`;
-  contentWrapper.style.backgroundSize = 'cover';
-  contentWrapper.style.backgroundPosition = 'center';
-  contentWrapper.style.backgroundRepeat = 'no-repeat';
-
+  quizHolder.style.display = 'none';
 
   contentWrapper.appendChild(quizHolder);
   contentWrapper.appendChild(summaryHolder);
