@@ -38,24 +38,57 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /*Semi-transparent overlay */
+  background-color: rgba(255, 255, 255, 0.5); /*Semi-transparent overlay */
   display: none; /* Hidden by default */
   justify-content: center;
   align-items: center;
   z-index: 10; /* Above chat container content */
 }
 
+#modal-title {
+  font-size: 32px;
+}
+
+#modal-cta {
+  width: 70%;
+  font-size: 14px;
+}
+
+#view-plans-button {
+  background: linear-gradient(165.803deg, #f65a74 0%, #c62031 100%);
+  color: white;
+  padding: 10px 20px;
+  width: 70%;
+  border: none;
+  font-weight: bold;
+  font-size: 14px;
+  border-radius: 7px;
+  -webkit-border-radius: 7px;
+  -moz-border-radius: 7px;
+  -ms-border-radius: 7px;
+  -o-border-radius: 7px;
+  cursor: pointer;
+}
+
 /* Modal Content */
 #chat-modal-content {
-  background-color: rgb(241, 238, 238);
+  background-color: #ffffff80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 80%;
+  justify-content: center;
+  gap: 30px;
   padding: 20px;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   text-align: center;
   font-family: 'Gabarito', sans-serif;
+  backdrop-filter: blur(5px); /* Background blur effect */
   font-size: 16px;
   font-weight: 400;
   color: #333;
+  width: 80%;
 }
 
 #features-panel {
@@ -97,7 +130,7 @@
 
 /* Minimal black and white theme for summary holder */
 .minimal-summary {
-  background: #ffffff; /* Clean white background */
+  background: white;
   color: #000000; /* Solid black text for high contrast */
   font-family: 'Arial', sans-serif; /* Professional, simple font */
   font-size: 16px; /* Slightly larger for readability */
@@ -249,6 +282,9 @@
   position: relative;
   cursor: pointer;
   transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .learning-mode-switch-circle {
@@ -257,13 +293,93 @@
   background-color: #fff;
   border-radius: 50%;
   position: absolute;
-  top: 1px;
+  top: 50%;
   left: 1px;
+  transform: translateY(-50%);
   transition: left 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* When active, move the circle to the right */
+.learning-mode-switch-container.active .learning-mode-switch-circle {
+  left: calc(100% - 17px); /* 17px = circle width (16px) + 1px margin */
+}
+
+.toggle-icon {
+  width: 12px;
+  height: 12px;
+  object-fit: contain;
 }
 
 .learning-mode-switch-container:hover {
   background-color: #bbb;
+}
+
+/* Initial Pulse Animation */
+@keyframes initialPulse {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+      inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+  25% {
+    box-shadow: 0 0 25px rgba(236, 176, 176, 0.9),
+      inset 0 0 25px rgba(236, 176, 176, 0.9);
+    transform: scale(1.05);
+  }
+  50% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+      inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+  75% {
+    box-shadow: 0 0 25px rgba(236, 176, 176, 0.9),
+      inset 0 0 25px rgba(236, 176, 176, 0.9);
+    transform: scale(1.05);
+  }
+}
+
+.learning-mode-switch-container.initial-pulse {
+  animation: initialPulse 3s ease-in-out 3;
+  animation-delay: 0.5s;
+  border-radius: 9px;
+  transform-origin: center;
+}
+
+/* Existing Glow Animation */
+@keyframes glow {
+  0% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+      inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(236, 176, 176, 0.9),
+      inset 0 0 25px rgba(236, 176, 176, 0.9);
+    transform: scale(1.05);
+  }
+  100% {
+    box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+      inset 0 0 10px rgba(236, 176, 176, 0.7);
+    transform: scale(1);
+  }
+}
+
+.learning-mode-switch-container.glow {
+  animation: glow 1s ease-in-out;
+  border-radius: 9px;
+  transform-origin: center;
+}
+
+/* Add glow to the circle when container is glowing */
+.learning-mode-switch-container.glow .learning-mode-switch-circle,
+.learning-mode-switch-container.initial-pulse .learning-mode-switch-circle {
+  box-shadow: 0 0 10px rgba(236, 176, 176, 0.7),
+    inset 0 0 10px rgba(236, 176, 176, 0.7);
 }
 
 .features-header {
@@ -324,7 +440,13 @@
   flex-direction: column;
   gap: 10px;
   padding: 10px;
+  min-height: 400px;
+  border-radius: 0 0 12px 12px;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
+  -webkit-border-radius: 0 0 12px 12px;
+  -moz-border-radius: 0 0 12px 12px;
+  -ms-border-radius: 0 0 12px 12px;
+  -o-border-radius: 0 0 12px 12px;
 }
 
 /* Typing Indicator Styling */
@@ -553,4 +675,30 @@
 /* Remove Up/Down Arrows for Webkit */
 .scrollable::-webkit-scrollbar-button {
   display: none;
+}
+
+.welcome-view {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  height: 100%;
+  background-color: transparent;
+  padding: 20px;
+  position: relative;
+}
+
+.welcome-message {
+  background-color: transparent;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin-top: 50px;
+  margin-right: 20px;
+  height: 100%;
+}
+
+.curved-arrow {
+  width: 140px;
+  height: auto;
+  transform: rotate(3deg);
 }
