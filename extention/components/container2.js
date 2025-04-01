@@ -4,9 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { QuizFetcher } from '../react/QuizFetcher.jsx';
 import React from 'react';
 
-
-export function createContainer2(parentElement) {
-
+export function createContainer2(parentElement, userId) {
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
 
@@ -88,7 +86,6 @@ export function createContainer2(parentElement) {
   contentWrapper.style.backgroundPosition = 'center';
   contentWrapper.style.backgroundRepeat = 'no-repeat';
 
-
   contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(quizHolder);
   contentWrapper.appendChild(loadingIndicator);
@@ -160,7 +157,7 @@ export function createContainer2(parentElement) {
           quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
           const root = createRoot(quizHolder);
-          root.render(<QuizFetcher />);
+          root.render(<QuizFetcher userId={userId} />);
 
           return;
         }
