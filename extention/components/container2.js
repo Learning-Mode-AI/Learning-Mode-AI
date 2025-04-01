@@ -156,8 +156,9 @@ export function createContainer2(parentElement, userId) {
           // quizHolder.innerText = 'Generating your quiz...';
           quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
-          const root = createRoot(quizHolder);
-          root.render(<QuizFetcher userId={userId} />);
+          const quizRoot = createRoot(quizHolder);
+          quizRoot.render(<QuizFetcher userId={userId} key={Date.now()} />);
+          console.log('Quiz generated');
 
           return;
         }
