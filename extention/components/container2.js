@@ -53,6 +53,14 @@ export function createContainer2(parentElement) {
   // Content holders
   const contentWrapper = document.createElement('div');
   contentWrapper.id = 'content-wrapper';
+  // Fetch the same background image used in the chatbot
+  const bgURL = chrome.runtime.getURL('images/bg.png');
+
+  // Apply background style
+  contentWrapper.style.backgroundImage = `url('${bgURL}')`;
+  contentWrapper.style.backgroundSize = 'cover';
+  contentWrapper.style.backgroundPosition = 'center';
+  contentWrapper.style.backgroundRepeat = 'no-repeat';
 
   // Create and append welcomeView first
   const welcomeView = document.createElement('div');
