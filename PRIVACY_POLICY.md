@@ -35,4 +35,4 @@ We aim implement industry-standard security measures to protect your data.
 We may update our Privacy Policy from time to time. Any changes will be posted in the extension or on our website.
 
 Contact Us
-If you have questions or concerns about this Privacy Policy, please contact us at [Your Contact Information].
+If you have questions or concerns about this Privacy Policy, please contact us at alejandro.rodriguez@learningmodeai.com.
