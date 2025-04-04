@@ -2,9 +2,9 @@ package services
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
 type Subscription struct {
@@ -17,13 +17,15 @@ func getUserSubscriptionFromRedis(email string) (*Subscription, error) {
 		// No subscription found, return nil (user is on free tier)
 		return nil, nil
 	} else if err != nil {
-		return nil, fmt.Errorf("failed to retrieve subscription from Redis: %v", err)
+		logrus.WithError(err).Error("Failed to retrieve subscription from Redis")
+		return nil, err
 	}
 
 	var subscription Subscription
 	err = json.Unmarshal([]byte(val), &subscription)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal subscription data: %v", err)
+		logrus.WithError(err).Error("Failed to unmarshal subscription data")
+		return nil, err
 	}
 
 	return &subscription, nil
@@ -32,12 +34,14 @@ func getUserSubscriptionFromRedis(email string) (*Subscription, error) {
 func StoreSubscriptionInfoInRedis(email string, subscription *Subscription) error {
 	data, err := json.Marshal(subscription)
 	if err != nil {
-		return fmt.Errorf("failed to marshal subscription: %v", err)
+		logrus.WithError(err).Error("Failed to marshal subscription")
+		return err
 	}
 
 	err = rdb.Set(ctx, "subscriptions:"+email, data, 0).Err()
 	if err != nil {
-		return fmt.Errorf("failed to store subscription in Redis: %v", err)
+		logrus.WithError(err).Error("Failed to store subscription in Redis")
+		return err
 	}
 
 	return nil
@@ -47,7 +51,8 @@ func StoreSubscriptionInfoInRedis(email string, subscription *Subscription) erro
 func DeleteSubscriptionFromRedis(email string) error {
 	err := rdb.Del(ctx, "subscriptions:"+email).Err()
 	if err != nil {
-		return fmt.Errorf("failed to delete subscription from Redis: %v", err)
+		logrus.WithError(err).Error("Failed to delete subscription from Redis")
+		return err
 	}
 	return nil
 }
