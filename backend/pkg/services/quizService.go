@@ -68,4 +68,3 @@ func GenerateQuiz(videoID string, userID string) (*QuizResponse, error) {
 
 	return &quizResponse, nil
 }
-
