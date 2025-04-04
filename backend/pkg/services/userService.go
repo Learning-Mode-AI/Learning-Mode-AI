@@ -3,7 +3,8 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	"github.com/sirupsen/logrus"
 )
 
 // User represents a user in the system
@@ -17,24 +18,31 @@ func CheckAndCreateUser(userID, email string) error {
 
 	userExists, err := CheckUserExistsInRedis(userID)
 	if err != nil {
-		log.Printf("Error checking user in Redis: %v\n", err)
+		logrus.WithError(err).Error("Error checking user in Redis")
 		return err
 	}
 
 	if userExists {
-		log.Printf("User already exists in Redis: %s\n", userID)
+		logrus.WithFields(logrus.Fields{
+			"user_id": userID,
+		}).Info("User already exists in Redis")
 		return nil
 	}
 
-	log.Printf("User not found in Redis. Creating user: %s, Email: %s\n", userID, email)
+	logrus.WithFields(logrus.Fields{
+		"user_id": userID,
+		"email":   email,
+	}).Info("User not found in Redis. Creating user")
 
 	err = StoreUserInRedis(userID, email)
 	if err != nil {
-		log.Printf("Error storing user in Redis: %v\n", err)
+		logrus.WithError(err).Error("Error storing user in Redis")
 		return err
 	}
 
-	log.Printf("Successfully stored new user in Redis: %s\n", userID)
+	logrus.WithFields(logrus.Fields{
+		"user_id": userID,
+	}).Info("Successfully stored new user in Redis")
 	return nil
 }
 
