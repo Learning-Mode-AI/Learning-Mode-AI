@@ -11,7 +11,6 @@ import (
 	"Learning-Mode-AI/pkg/config"
 
 	"github.com/go-redis/redis/v8"
-	"github.com/sirupsen/logrus"
 )
 
 var ctx = context.Background()
@@ -36,7 +35,7 @@ func InitRedis() {
 
 	err := rdb.Ping(ctx).Err()
 	if err != nil {
-		logrus.WithError(err).Panic("Failed to connect to Redis")
+		panic(err)
 	}
 }
 
@@ -44,15 +43,13 @@ func InitRedis() {
 func StoreVideoInfoInRedis(videoID string, videoInfo *VideoInfo) error {
 	data, err := json.Marshal(videoInfo)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to marshal video info")
-		return err
+		return fmt.Errorf("failed to marshal video info: %v", err)
 	}
 
 	// Store the video info with a TTL (optional)
 	err = rdb.Set(ctx, videoID, data, 168*time.Hour).Err()
 	if err != nil {
-		logrus.WithError(err).Error("Failed to store video info in Redis")
-		return err
+		return fmt.Errorf("failed to store video info in Redis: %v", err)
 	}
 
 	return nil
@@ -65,15 +62,13 @@ func GetVideoInfoFromRedis(videoID string) (*VideoInfo, error) {
 		// Cache miss, return nil
 		return nil, nil
 	} else if err != nil {
-		logrus.WithError(err).Error("Failed to retrieve video info from Redis")
-		return nil, err
+		return nil, fmt.Errorf("failed to retrieve video info from Redis: %v", err)
 	}
 
 	var videoInfo VideoInfo
 	err = json.Unmarshal([]byte(val), &videoInfo)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to unmarshal video info")
-		return nil, err
+		return nil, fmt.Errorf("failed to unmarshal video info: %v", err)
 	}
 
 	return &videoInfo, nil
@@ -96,8 +91,7 @@ func StoreInterestClick(feature string) error {
 	key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
 	err := rdb.Incr(ctx, key).Err()
 	if err != nil {
-		logrus.WithError(err).Errorf("Failed to increment interest count for feature %s", feature)
-		return err
+		return fmt.Errorf("failed to increment interest count for feature %s: %v", feature, err)
 	}
 	return nil
 }
@@ -107,8 +101,7 @@ func GetInterestCount(feature string) (int64, error) {
 	key := fmt.Sprintf("interest:feature:%s", sanitizedFeature)
 	count, err := rdb.Get(ctx, key).Int64()
 	if err != nil {
-		logrus.WithError(err).Errorf("Failed to get interest count for feature %s", feature)
-		return 0, err
+		return 0, fmt.Errorf("failed to get interest count for feature %s: %v", feature, err)
 	}
 	return count, nil
 }
@@ -119,8 +112,7 @@ func CheckUserExistsInRedis(userID string) (bool, error) {
 	if err == redis.Nil {
 		return false, nil // User does not exist
 	} else if err != nil {
-		logrus.WithError(err).Error("Failed to check user in Redis")
-		return false, err
+		return false, fmt.Errorf("failed to check user in Redis: %v", err)
 	}
 	return true, nil // User exists
 }
@@ -133,14 +125,12 @@ func StoreUserInRedis(userID, email string) error {
 	userData := map[string]string{"userID": userID, "email": email, "created_at": time.Now().Format(time.RFC3339)}
 	data, err := json.Marshal(userData)
 	if err != nil {
-		logrus.WithError(err).Error("Failed to marshal user data")
-		return err
+		return fmt.Errorf("failed to marshal user data: %v", err)
 	}
 
 	err = rdb.Set(ctx, key, data, 0).Err()
 	if err != nil {
-		logrus.WithError(err).Error("Failed to store user in Redis")
-		return err
+		return fmt.Errorf("failed to store user in Redis: %v", err)
 	}
 	return nil
 }
@@ -154,8 +144,7 @@ func GetAssistantFromRedis(userID, videoID string) (string, error) {
 		// No existing assistant found
 		return "", nil
 	} else if err != nil {
-		logrus.WithError(err).Error("Failed to check assistant ID in Redis")
-		return "", err
+		return "", fmt.Errorf("failed to check assistant ID in Redis: %v", err)
 	}
 
 	return assistantID, nil
@@ -167,8 +156,7 @@ func StoreAssistantInRedis(userID, videoID, assistantID string) error {
 
 	err := rdb.Set(ctx, redisKey, assistantID, 168*time.Hour).Err()
 	if err != nil {
-		logrus.WithError(err).Error("Failed to store assistant ID in Redis")
-		return err
+		return fmt.Errorf("failed to store assistant ID in Redis: %v", err)
 	}
 
 	return nil
