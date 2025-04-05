@@ -3,8 +3,9 @@ package handlers
 import (
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 type VideoSummaryRequest struct {
@@ -31,7 +32,7 @@ func VideoSummaryHandler(w http.ResponseWriter, r *http.Request) {
 	// Check if summary exists in Redis first
 	summary, err := services.GetVideoSummaryFromRedis(req.VideoID)
 	if err != nil {
-		log.Printf("Error retrieving summary from Redis: %v", err)
+		logrus.WithError(err).WithField("video_id", req.VideoID).Error("Error retrieving summary from Redis")
 	}
 
 	if summary != "" {
@@ -45,7 +46,7 @@ func VideoSummaryHandler(w http.ResponseWriter, r *http.Request) {
 	// Call AI service only if summary not found in cache
 	summary, err = services.GetVideoSummary(req.VideoID)
 	if err != nil {
-		log.Printf("Error generating video summary: %v", err)
+		logrus.WithError(err).WithField("video_id", req.VideoID).Error("Error generating video summary")
 		http.Error(w, "Failed to generate summary", http.StatusInternalServerError)
 		return
 	}

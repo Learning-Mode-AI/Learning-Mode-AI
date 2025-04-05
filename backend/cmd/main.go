@@ -4,14 +4,17 @@ import (
 	"Learning-Mode-AI/pkg/config"
 	"Learning-Mode-AI/pkg/router"
 	"Learning-Mode-AI/pkg/services"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/handlers"
+	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go"
 )
 
 func init() {
+	// Initialize logrus
+	logrus.SetFormatter(&logrus.JSONFormatter{})
+	
 	// Initialize configuration (loads environment variables)
 	config.InitConfig()
 
@@ -24,7 +27,7 @@ func init() {
 
 func main() {
 	if config.StripeWebhookSecret == "" {
-		log.Fatal("STRIPE_WEBHOOK_SECRET environment variable is not set")
+		logrus.Fatal("STRIPE_WEBHOOK_SECRET environment variable is not set")
 	}
 
 	r := router.NewRouter(config.StripeWebhookSecret) // Initialize your router
@@ -33,9 +36,8 @@ func main() {
 	originsOk := handlers.AllowedOrigins([]string{"https://www.youtube.com"})
 	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 
-	log.Println("Starting server on :8080...")
+	logrus.Info("Starting server on :8080...")
 	if err := http.ListenAndServe(":8080", handlers.CORS(originsOk, headersOk, methodsOk)(r)); err != nil {
-		log.Fatalf("Could not start server: %s\n", err.Error())
+		logrus.Fatalf("Could not start server: %s", err.Error())
 	}
-	
 }
