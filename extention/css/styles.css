@@ -2,7 +2,6 @@
 #custom-chat-container {
   width: 100%;
   height: 500px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -12,18 +11,6 @@
   font-family: 'Gabarito', sans-serif;
   font-size: 16px;
   font-weight: 400;
-}
-
-/* Semi-Transparent Background Image in Full-Screen */
-#custom-chat-container.fullscreen::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.6;
-  z-index: 1;
 }
 
 #custom-chat-container.fullscreen > * {
@@ -151,7 +138,6 @@
   bottom: 80px;
   right: 20px;
   z-index: 10000;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -168,7 +154,8 @@
   font-family: 'Gabarito', sans-serif;
   font-size: 16px;
   color: white;
-  padding: 10px;
+  padding: 0 10px;
+  height: 40px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
 }
@@ -390,7 +377,8 @@
   font-family: 'Gabarito', sans-serif;
   font-size: 16px;
   color: white;
-  padding: 10px;
+  padding: 0 10px;
+  height: 40px;
   border-radius: 10px 10px 0 0;
   font-weight: bold;
   position: relative; /* Allows positioning child elements */
@@ -406,7 +394,7 @@
   height: 26px;
   padding: 3px 6px;
   transition: 0.3s;
-  border: 1px solid #870000;
+  border: 1px solid #81040496;
   border-radius: 4px;
   fill: white;
   cursor: pointer;
