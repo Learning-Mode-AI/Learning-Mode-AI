@@ -4,7 +4,9 @@ import { createRoot } from 'react-dom/client';
 import { QuizFetcher } from '../react/QuizFetcher.jsx';
 import React from 'react';
 
-export function createContainer2(parentElement, userId) {
+
+export function createContainer2(parentElement) {
+
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
 
@@ -18,11 +20,12 @@ export function createContainer2(parentElement, userId) {
   // Dropdown button
   const dropdownButton = document.createElement('button');
   dropdownButton.className = 'dropdown-button';
-  dropdownButton.innerHTML = '▼';
+  dropdownButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z"/></svg>'; // Hamburger icon
   dropdownButton.title = 'Toggle Options';
 
   header.appendChild(headerTitle);
   header.appendChild(dropdownButton);
+
 
   // Options list
   const optionsList = document.createElement('ul');
@@ -51,10 +54,29 @@ export function createContainer2(parentElement, userId) {
   // Content holders
   const contentWrapper = document.createElement('div');
   contentWrapper.id = 'content-wrapper';
+  // Fetch the same background image used in the chatbot
+  const bgURL = chrome.runtime.getURL('images/bg.png');
 
+  // Apply background style
+  contentWrapper.style.backgroundImage = `url('${bgURL}')`;
+  contentWrapper.style.backgroundSize = 'cover';
+  contentWrapper.style.backgroundPosition = 'center';
+  contentWrapper.style.backgroundRepeat = 'no-repeat';
+
+  // Create and append welcomeView first
+  const welcomeView = document.createElement('div');
+  welcomeView.className = 'welcome-view';
+  welcomeView.innerHTML = `
+    <div class="welcome-message">Click Here!</div>
+    <img src="${chrome.runtime.getURL('images/arrow.png')}" class="curved-arrow" alt="arrow"/>
+  `;
+  contentWrapper.appendChild(welcomeView);
+
+  // Then create and append other content holders
   const summaryHolder = document.createElement('div');
   summaryHolder.id = 'summary-holder';
   summaryHolder.className = 'minimal-summary';
+  summaryHolder.style.display = 'none';
 
   const loadingIndicator = document.createElement('div');
   loadingIndicator.id = 'loading-indicator';
@@ -65,35 +87,16 @@ export function createContainer2(parentElement, userId) {
   quizHolder.className = 'feature-content';
   quizHolder.style.display = 'none';
 
-  // Fetch the same background image used in the chatbot
-  const quizBgURL = chrome.runtime.getURL('images/bg.png');
 
-  // Apply background styles to the quiz container
-  quizHolder.style.backgroundImage = `url('${quizBgURL}')`;
-  quizHolder.style.backgroundSize = 'cover';
-  quizHolder.style.backgroundPosition = 'center';
-  quizHolder.style.backgroundRepeat = 'no-repeat';
-
-  // Apply the same background styles to the summary container
-  summaryHolder.style.backgroundImage = `url('${quizBgURL}')`;
-  summaryHolder.style.backgroundSize = 'cover';
-  summaryHolder.style.backgroundPosition = 'center';
-  summaryHolder.style.backgroundRepeat = 'no-repeat';
-
-  // Apply the same background styles to contentWrapper
-  contentWrapper.style.backgroundImage = `url('${quizBgURL}')`;
-  contentWrapper.style.backgroundSize = 'cover';
-  contentWrapper.style.backgroundPosition = 'center';
-  contentWrapper.style.backgroundRepeat = 'no-repeat';
-
-  contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(quizHolder);
+  contentWrapper.appendChild(summaryHolder);
   contentWrapper.appendChild(loadingIndicator);
 
   featuresPanel.appendChild(contentWrapper);
 
   // Append panel to parent element
   parentElement.appendChild(featuresPanel);
+
 
   // Feature controls
   const featuresWithInterestButton = [
@@ -121,6 +124,7 @@ export function createContainer2(parentElement, userId) {
       optionsList.style.display = 'none';
 
       /// Reset visibility and scrollable state, and remove 'coming-soon' styling
+      welcomeView.style.display = 'none';
       summaryHolder.style.display = 'none';
       quizHolder.style.display = 'none';
       loadingIndicator.style.display = 'none';
@@ -153,15 +157,16 @@ export function createContainer2(parentElement, userId) {
             }
           );
         } else if (selectedOption === 'Generate Quiz') {
-          // quizHolder.innerText = 'Generating your quiz...';
-          quizHolder.innerHTML = '';
           quizHolder.style.display = 'block';
           const quizRoot = createRoot(quizHolder);
-          quizRoot.render(<QuizFetcher userId={userId} key={Date.now()} />);
+
+
+          quizRoot.render(<QuizFetcher key={Date.now()} />); // Re-render the QuizFetcher component
           console.log('Quiz generated');
 
           return;
         }
+
         summaryHolder.classList.add('scrollable');
         summaryHolder.style.overflowY = 'auto';
         return; // Prevent further actions for active features
@@ -202,4 +207,6 @@ export function createContainer2(parentElement, userId) {
       loadingIndicator.style.display = 'none';
     }
   });
+
+
 }

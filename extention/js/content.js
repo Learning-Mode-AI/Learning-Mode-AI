@@ -26,9 +26,7 @@ function toggleLearningMode() {
     toggleCircle.style.left = '19px';
     activateLearningMode();
 
-    setTimeout(() => {
-      showModal();
-    }, 500);
+    setTimeout(() => { showModal(); }, 500);
   } else {
     switchButton.setAttribute('aria-checked', 'false');
     switchButton.querySelector(
@@ -63,11 +61,18 @@ function activateLearningMode() {
     const videoId = extractVideoID(window.location.href);
 
     // Retrieve processed videos from localStorage
-    const processedVideos =
-      JSON.parse(localStorage.getItem('processedVideos')) || {};
+    const processedVideos = JSON.parse(localStorage.getItem('processedVideos')) || {};
 
     if (!processedVideos[videoId]) {
       sendVideoInfoToBackend(window.location.href, userId, userEmail);
+
+      // Mark video as processed in local storage
+      processedVideos[videoId] = true;
+      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
+    } else {
+      setTimeout(() => hideModal(), 700);
+      console.log(`Skipping processVideo: Video ${videoId} was already processed.`);
+    }
 
       // Mark video as processed in local storage
       processedVideos[videoId] = true;
@@ -84,6 +89,7 @@ function activateLearningMode() {
 }
 
 function initializeLearningMode(userId) {
+
   const sidebar = document.getElementById('related');
   const secondaryInner = document.getElementById('secondary-inner');
   let chatContainer = document.getElementById('custom-chat-container');
@@ -247,6 +253,7 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
         });
     }
   });
+
 }
 
 export function askAIQuestion(videoUrl, question) {
@@ -299,6 +306,7 @@ export function askAIQuestion(videoUrl, question) {
             reject('No AI response received');
           }
         });
+
     });
   });
 }
@@ -411,17 +419,15 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ video_id: videoId }),
+
+  }).then((response) => {
+    if (!response.ok) {
+      return response.text().then((text) => {
+        throw new Error(`Server responded with error: ${response.status} - ${text}`);
+      });
+    }
+    return response.json();
   })
-    .then((response) => {
-      if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(
-            `Server responded with error: ${response.status} - ${text}`
-          );
-        });
-      }
-      return response.json();
-    })
     .then((data) => {
       if (data.summary) {
         localStorage.setItem(`summary_${videoId}`, data.summary);
@@ -435,3 +441,4 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
       onError && onError();
     });
 }
+
