@@ -25,6 +25,7 @@ function toggleLearningMode() {
     ).style.backgroundColor = '#ECB0B0';
     toggleCircle.style.left = '19px';
     activateLearningMode();
+
     setTimeout(() => {
       showModal();
     }, 500);
@@ -64,6 +65,22 @@ function activateLearningMode() {
     const videoUrl = window.location.href;
     sendVideoInfoToBackend(videoUrl, userId, userEmail);
 
+    // Retrieve processed videos from localStorage
+    const processedVideos =
+      JSON.parse(localStorage.getItem('processedVideos')) || {};
+
+    if (!processedVideos[videoId]) {
+      sendVideoInfoToBackend(window.location.href, userId, userEmail);
+
+      // Mark video as processed in local storage
+      processedVideos[videoId] = true;
+      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
+    } else {
+      setTimeout(() => hideModal(), 700);
+      console.log(
+        `Skipping processVideo: Video ${videoId} was already processed.`
+      );
+    }
     initializeLearningMode(userId);
   });
 }
@@ -117,6 +134,7 @@ function initializeLearningMode(userId) {
       featuresPanel.classList.remove('fullscreen');
     }
   }
+
 
   getUserId((userId, userEmail) => {
     if (!userId) {
@@ -274,6 +292,7 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       console.error('❌ Fetch request failed:', error);
       updateModalMessage('⚠️ Server error. Please try again later.');
     });
+
 }
 
 export function askAIQuestion(videoUrl, question) {
@@ -323,6 +342,7 @@ export function askAIQuestion(videoUrl, question) {
         })
         .catch((error) => {
           console.error('Error:', error);
+
         });
     });
   });

@@ -2,7 +2,6 @@
 #custom-chat-container {
   width: 100%;
   height: 500px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   overflow: hidden;
   display: flex;
@@ -12,18 +11,6 @@
   font-family: 'Gabarito', sans-serif;
   font-size: 16px;
   font-weight: 400;
-}
-
-/* Semi-Transparent Background Image in Full-Screen */
-#custom-chat-container.fullscreen::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.6;
-  z-index: 1;
 }
 
 #custom-chat-container.fullscreen > * {
@@ -151,7 +138,6 @@
   bottom: 80px;
   right: 20px;
   z-index: 10000;
-  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -168,7 +154,8 @@
   font-family: 'Gabarito', sans-serif;
   font-size: 16px;
   color: white;
-  padding: 10px;
+  padding: 0 10px;
+  height: 40px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   position: relative;
 }
@@ -236,7 +223,7 @@
   height: 35px;
   border: none;
   border-radius: 50%;
-  background-color: #dd1313;
+  background-color: #d8293b;
   font-size: 20px;
   color: #fff;
   font-size: 16px;
@@ -386,11 +373,12 @@
   display: flex;
   justify-content: center; /* Center-align text */
   align-items: center;
-  background: #dd1313;
+  background-image: linear-gradient(70deg, #d8293b, #ba1a2a);
   font-family: 'Gabarito', sans-serif;
   font-size: 16px;
   color: white;
-  padding: 10px;
+  padding: 0 10px;
+  height: 40px;
   border-radius: 10px 10px 0 0;
   font-weight: bold;
   position: relative; /* Allows positioning child elements */
@@ -398,21 +386,38 @@
 
 .dropdown-button {
   position: absolute;
-  right: 10px; /* Moves button to the right of the header */
-  top: 50%; /* Centers vertically */
-  transform: translateY(-50%); /* Aligns vertically */
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
-  border: none;
-  color: white;
-  font-size: 16px;
+  width: 29px;
+  height: 26px;
+  padding: 3px 6px;
+  transition: 0.3s;
+  border: 1px solid #81040496;
+  border-radius: 4px;
+  fill: white;
   cursor: pointer;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  -ms-border-radius: 4px;
+  -o-border-radius: 4px;
+  -webkit-transition: 0.3s;
+  -moz-transition: 0.3s;
+  -ms-transition: 0.3s;
+  -o-transition: 0.3s;
+}
+
+.dropdown-button:hover {
+  background: #a60000;
 }
 
 .features-options {
   list-style: none;
   margin: 0;
   padding: 0;
-  background: #dd1313;
+  background: #ba1a2a;
+  overflow: hidden;
   border: 1px solid #ddd;
   border-top: none;
   border-radius: 0 0 10px 10px;
@@ -420,6 +425,10 @@
   position: absolute;
   right: 0;
   width: 150px;
+  -webkit-border-radius: 0 0 10px 10px;
+  -moz-border-radius: 0 0 10px 10px;
+  -ms-border-radius: 0 0 10px 10px;
+  -o-border-radius: 0 0 10px 10px;
 }
 
 .feature-option {

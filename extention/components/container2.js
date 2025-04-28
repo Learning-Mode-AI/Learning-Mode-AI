@@ -6,6 +6,7 @@ import React from 'react';
 
 export function createContainer2(parentElement, userId) {
 
+
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
 
@@ -19,7 +20,7 @@ export function createContainer2(parentElement, userId) {
   // Dropdown button
   const dropdownButton = document.createElement('button');
   dropdownButton.className = 'dropdown-button';
-  dropdownButton.innerHTML = '▼';
+  dropdownButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M0 96C0 78.3 14.3 64 32 64l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 128C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32l384 0c17.7 0 32 14.3 32 32s-14.3 32-32 32L32 288c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32L32 448c-17.7 0-32-14.3-32-32s14.3-32 32-32l384 0c17.7 0 32 14.3 32 32z"/></svg>'; // Hamburger icon
   dropdownButton.title = 'Toggle Options';
 
   header.appendChild(headerTitle);
@@ -53,6 +54,14 @@ export function createContainer2(parentElement, userId) {
   // Content holders
   const contentWrapper = document.createElement('div');
   contentWrapper.id = 'content-wrapper';
+  // Fetch the same background image used in the chatbot
+  const bgURL = chrome.runtime.getURL('images/bg.png');
+
+  // Apply background style
+  contentWrapper.style.backgroundImage = `url('${bgURL}')`;
+  contentWrapper.style.backgroundSize = 'cover';
+  contentWrapper.style.backgroundPosition = 'center';
+  contentWrapper.style.backgroundRepeat = 'no-repeat';
 
   // Create and append welcomeView first
   const welcomeView = document.createElement('div');
