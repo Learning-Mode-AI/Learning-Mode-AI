@@ -25,7 +25,6 @@ function toggleLearningMode() {
     ).style.backgroundColor = '#ECB0B0';
     toggleCircle.style.left = '19px';
     activateLearningMode();
-
     setTimeout(() => {
       showModal();
     }, 500);
@@ -52,7 +51,6 @@ async function getUserInfo() {
 }
 
 function activateLearningMode() {
-  // Fetch user ID from storage or trigger authentication
   getUserId((userId, userEmail) => {
     if (!userId || !userEmail) {
       console.error('User not authenticated.');
@@ -61,18 +59,14 @@ function activateLearningMode() {
 
     console.log('Learning Mode activated for User ID:', userId);
 
-    // Ensure the backend receives userId and email
     const videoUrl = window.location.href;
-    sendVideoInfoToBackend(videoUrl, userId, userEmail);
+    const videoId = extractVideoID(videoUrl);
 
-    // Retrieve processed videos from localStorage
     const processedVideos =
       JSON.parse(localStorage.getItem('processedVideos')) || {};
 
     if (!processedVideos[videoId]) {
-      sendVideoInfoToBackend(window.location.href, userId, userEmail);
-
-      // Mark video as processed in local storage
+      sendVideoInfoToBackend(videoUrl, userId, userEmail);
       processedVideos[videoId] = true;
       localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
     } else {
@@ -81,6 +75,7 @@ function activateLearningMode() {
         `Skipping processVideo: Video ${videoId} was already processed.`
       );
     }
+
     initializeLearningMode(userId);
   });
 }
@@ -94,8 +89,8 @@ function initializeLearningMode(userId) {
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
   const imgURL2 = chrome.runtime.getURL('images/bg2.png');
+  const videoUrl = window.location.href;
 
-  const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none';
 
@@ -110,7 +105,7 @@ function initializeLearningMode(userId) {
         chatContainer.classList.add('fullscreen');
       }
       if (!featuresPanel) {
-        createContainer2(document.body, userId); // Append container2 to body in full-screen
+        createContainer2(document.body, userId);
         featuresPanel = document.getElementById('features-panel');
       }
       featuresPanel.classList.add('fullscreen');
@@ -128,13 +123,12 @@ function initializeLearningMode(userId) {
         chatContainer.style.backgroundRepeat = 'no-repeat';
       }
       if (!featuresPanel) {
-        createContainer2(secondaryInner, userId); // Append container2 to the secondary-inner element
+        createContainer2(secondaryInner, userId);
         featuresPanel = document.getElementById('features-panel');
       }
       featuresPanel.classList.remove('fullscreen');
     }
   }
-
 
   getUserId((userId, userEmail) => {
     if (!userId) {
@@ -146,7 +140,7 @@ function initializeLearningMode(userId) {
       headers: {
         'Content-Type': 'application/json',
         'User-ID': userId,
-        'User-Email': userEmail, // Send user email in headers
+        'User-Email': userEmail,
       },
       body: JSON.stringify({
         video_id: extractVideoID(videoUrl),
@@ -154,7 +148,7 @@ function initializeLearningMode(userId) {
     })
       .then((response) => response.json())
       .then((data) => {
-        const quizData = data.questions; // Array of questions with timestamps
+        const quizData = data.questions;
         const videoElement = document.querySelector('video');
         const displayedTimestamps = new Set();
 
@@ -166,7 +160,6 @@ function initializeLearningMode(userId) {
               const questionTime = Math.floor(
                 parseTimestamp(question.timestamp)
               );
-
               if (
                 currentTime === questionTime &&
                 !displayedTimestamps.has(questionTime)
@@ -196,37 +189,37 @@ function deactivateLearningMode() {
   const featuresPanel = document.getElementById('features-panel');
 
   if (sidebar) {
-    sidebar.style.display = ''; // Show the sidebar
+    sidebar.style.display = '';
   }
   if (chatContainer) {
-    chatContainer.remove(); // Remove the chat container
+    chatContainer.remove();
   }
   if (featuresPanel) {
-    featuresPanel.remove(); // Remove the container2 features panel
+    featuresPanel.remove();
   }
 }
 
-function showModal() {
+export function showModal() {
   const modalOverlay = document.getElementById('chat-modal-overlay');
   if (modalOverlay) {
-    modalOverlay.style.display = 'flex'; // Show the modal
+    modalOverlay.style.display = 'flex';
     console.log('Modal shown');
   } else {
     console.error('Modal overlay not found');
   }
 }
 
-function updateModalMessage(message) {
+export function updateModalMessage(message) {
   const modalContent = document.getElementById('chat-modal-content');
   if (modalContent) {
-    modalContent.innerText = message; // Change only the text
+    modalContent.innerText = message;
   }
 }
 
-function hideModal() {
+export function hideModal() {
   const modalOverlay = document.getElementById('chat-modal-overlay');
   if (modalOverlay) {
-    modalOverlay.style.display = 'none'; // Hide the modal
+    modalOverlay.style.display = 'none';
     console.log('Modal hidden');
   } else {
     console.error('Modal overlay not found');
@@ -237,7 +230,6 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
   console.log(
     `Sending processVideo request for User: ${userId}, Email: ${userEmail}`
   );
-
   fetch('http://localhost:8080/processVideo', {
     method: 'POST',
     headers: {
@@ -249,10 +241,9 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
   })
     .then(async (response) => {
       console.log(`Received response: ${response.status}`);
-
       let responseText;
       try {
-        responseText = await response.text(); // Read response as text
+        responseText = await response.text();
       } catch (error) {
         console.error('❌ Failed to read response:', error);
         updateModalMessage('⚠️ Server error. Please try again later.');
@@ -272,7 +263,7 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
         console.log('✅ Video processed successfully!');
         hideModal();
         addAIBubble('Video Processed! You can now ask questions.');
-        // Add verification step before allowing quiz generation
+
         const videoId = extractVideoID(videoUrl);
         return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
           headers: {
@@ -292,7 +283,6 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       console.error('❌ Fetch request failed:', error);
       updateModalMessage('⚠️ Server error. Please try again later.');
     });
-
 }
 
 export function askAIQuestion(videoUrl, question) {
@@ -324,9 +314,7 @@ export function askAIQuestion(videoUrl, question) {
         }),
       })
         .then((response) => {
-          if (!response.ok) {
-            throw new Error('Failed to get AI response');
-          }
+          if (!response.ok) throw new Error('Failed to get AI response');
           return response.json();
         })
         .then((data) => {
@@ -342,7 +330,7 @@ export function askAIQuestion(videoUrl, question) {
         })
         .catch((error) => {
           console.error('Error:', error);
-
+          reject(error);
         });
     });
   });
@@ -353,24 +341,19 @@ function monitorVideoChange() {
 
   const observer = new MutationObserver(() => {
     const currentVideoId = extractVideoID(window.location.href);
-
-    // If the video ID has changed, toggle off Learning Mode
     if (currentVideoId && currentVideoId !== lastVideoId) {
-      console.log(
-        'Next video detected via MutationObserver, turning off Learning Mode...'
-      );
+      console.log('Next video detected, turning off Learning Mode...');
       lastVideoId = currentVideoId;
       const switchButton = document.querySelector('.learning-mode-switch');
       if (
         switchButton &&
         switchButton.getAttribute('aria-checked') === 'true'
       ) {
-        toggleLearningMode(); // Turn off Learning Mode
+        toggleLearningMode();
       }
     }
   });
 
-  // Observe changes in the URL bar and YouTube's dynamic content updates
   observer.observe(document.body, { childList: true, subtree: true });
 
   const videoElement = document.querySelector('video');
@@ -378,11 +361,8 @@ function monitorVideoChange() {
 
   videoElement.addEventListener('loadeddata', () => {
     const currentVideoId = extractVideoID(window.location.href);
-
     if (currentVideoId && currentVideoId !== lastVideoId) {
-      console.log(
-        'New video detected via loadeddata event, turning off Learning Mode...'
-      );
+      console.log('New video detected, turning off Learning Mode...');
       lastVideoId = currentVideoId;
       const switchButton = document.querySelector('.learning-mode-switch');
       if (
@@ -443,7 +423,6 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  // Check if the summary is already stored in local storage
   const storedSummary = localStorage.getItem(`summary_${videoId}`);
   if (storedSummary) {
     onSuccess && onSuccess(storedSummary);
