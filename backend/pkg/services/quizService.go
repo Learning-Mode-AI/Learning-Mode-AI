@@ -11,6 +11,7 @@ import (
 
 type QuizRequest struct {
 	VideoID string `json:"video_id"`
+	UserID string `json:"user_id"`
 }
 
 type Option struct {
@@ -31,8 +32,8 @@ type QuizResponse struct {
 }
 
 
-func GenerateQuiz(videoID string) (*QuizResponse, error) {
-	payload := QuizRequest{VideoID: videoID}
+func GenerateQuiz(videoID string, userID string) (*QuizResponse, error) {
+	payload := QuizRequest{VideoID: videoID, UserID: userID}
 	body, err := json.Marshal(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
