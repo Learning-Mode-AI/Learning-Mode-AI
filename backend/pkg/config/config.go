@@ -1,12 +1,11 @@
 package config
 
 import (
-	"fmt"
-	"log"
 	"os"
 	"strconv"
 
 	"github.com/joho/godotenv"
+	"github.com/sirupsen/logrus"
 )
 
 // Global variables for services and secrets
@@ -27,7 +26,7 @@ func InitConfig() {
 	// Load .env file
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		logrus.Fatal("Error loading .env file")
 	}
 
 	ProductIdPro = os.Getenv("PRODUCT_ID_PRO")
@@ -49,7 +48,7 @@ func InitConfig() {
 		QuizServiceURL = "http://localhost:8084"
 		RedisHost = "localhost:6379"
 		TLSEnabled = false
-		fmt.Println("Running in local mode")
+		logrus.Info("Running in local mode")
 	} else {
 		YoutubeInfoServiceURL = "http://youtube-info-service:8000"
 		VideoProcessingServiceURL = "http://video-processing-service:8081"
@@ -61,6 +60,6 @@ func InitConfig() {
 		} else {
 			RedisHost = "redis:6379"
 		}
-		fmt.Println("Running in Docker mode")
+		logrus.Info("Running in Docker mode")
 	}
 }

@@ -25,7 +25,6 @@ function toggleLearningMode() {
     ).style.backgroundColor = '#ECB0B0';
     toggleCircle.style.left = '19px';
     activateLearningMode();
-
     setTimeout(() => {
       showModal();
     }, 500);
@@ -60,16 +59,14 @@ function activateLearningMode() {
 
     console.log('Learning Mode activated for User ID:', userId);
 
-    const videoId = extractVideoID(window.location.href);
+    const videoUrl = window.location.href;
+    const videoId = extractVideoID(videoUrl);
 
-    // Retrieve processed videos from localStorage
     const processedVideos =
       JSON.parse(localStorage.getItem('processedVideos')) || {};
 
     if (!processedVideos[videoId]) {
-      sendVideoInfoToBackend(window.location.href, userId, userEmail);
-
-      // Mark video as processed in local storage
+      sendVideoInfoToBackend(videoUrl, userId, userEmail);
       processedVideos[videoId] = true;
       localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
     } else {
@@ -78,6 +75,7 @@ function activateLearningMode() {
         `Skipping processVideo: Video ${videoId} was already processed.`
       );
     }
+
     initializeLearningMode(userId);
   });
 }
@@ -91,8 +89,8 @@ function initializeLearningMode(userId) {
 
   const imgURL = chrome.runtime.getURL('images/bg.png');
   const imgURL2 = chrome.runtime.getURL('images/bg2.png');
+  const videoUrl = window.location.href;
 
-  const videoUrl = window.location.href; // Grab the video URL
   if (sidebar && secondaryInner) {
     sidebar.style.display = 'none';
 
@@ -107,7 +105,7 @@ function initializeLearningMode(userId) {
         chatContainer.classList.add('fullscreen');
       }
       if (!featuresPanel) {
-        createContainer2(document.body, userId); // Append container2 to body in full-screen
+        createContainer2(document.body, userId);
         featuresPanel = document.getElementById('features-panel');
       }
       featuresPanel.classList.add('fullscreen');
@@ -125,12 +123,57 @@ function initializeLearningMode(userId) {
         chatContainer.style.backgroundRepeat = 'no-repeat';
       }
       if (!featuresPanel) {
-        createContainer2(secondaryInner, userId); // Append container2 to the secondary-inner element
+        createContainer2(secondaryInner, userId);
         featuresPanel = document.getElementById('features-panel');
       }
       featuresPanel.classList.remove('fullscreen');
     }
   }
+
+  getUserId((userId, userEmail) => {
+    if (!userId) {
+      console.error('User not authenticated.');
+      return;
+    }
+    fetch('http://localhost:8080/api/quiz', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'User-ID': userId,
+        'User-Email': userEmail,
+      },
+      body: JSON.stringify({
+        video_id: extractVideoID(videoUrl),
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const quizData = data.questions;
+        const videoElement = document.querySelector('video');
+        const displayedTimestamps = new Set();
+
+        if (videoElement) {
+          setInterval(() => {
+            const currentTime = Math.floor(videoElement.currentTime);
+
+            quizData.forEach((question) => {
+              const questionTime = Math.floor(
+                parseTimestamp(question.timestamp)
+              );
+              if (
+                currentTime === questionTime &&
+                !displayedTimestamps.has(questionTime)
+              ) {
+                videoElement.pause();
+                displayQuestionInQuizHolder(question);
+                displayedTimestamps.add(questionTime);
+              }
+            });
+          }, 500);
+        }
+      })
+      .catch((error) => console.error('Error fetching quiz data:', error));
+  });
 }
 
 function parseTimestamp(timestamp) {
@@ -146,20 +189,20 @@ function deactivateLearningMode() {
   const featuresPanel = document.getElementById('features-panel');
 
   if (sidebar) {
-    sidebar.style.display = ''; // Show the sidebar
+    sidebar.style.display = '';
   }
   if (chatContainer) {
-    chatContainer.remove(); // Remove the chat container
+    chatContainer.remove();
   }
   if (featuresPanel) {
-    featuresPanel.remove(); // Remove the container2 features panel
+    featuresPanel.remove();
   }
 }
 
 export function showModal() {
   const modalOverlay = document.getElementById('chat-modal-overlay');
   if (modalOverlay) {
-    modalOverlay.style.display = 'flex'; // Show the modal
+    modalOverlay.style.display = 'flex';
     console.log('Modal shown');
   } else {
     console.error('Modal overlay not found');
@@ -169,14 +212,14 @@ export function showModal() {
 export function updateModalMessage(message) {
   const modalContent = document.getElementById('chat-modal-content');
   if (modalContent) {
-    modalContent.innerText = message; // Change only the text
+    modalContent.innerText = message;
   }
 }
 
 export function hideModal() {
   const modalOverlay = document.getElementById('chat-modal-overlay');
   if (modalOverlay) {
-    modalOverlay.style.display = 'none'; // Hide the modal
+    modalOverlay.style.display = 'none';
     console.log('Modal hidden');
   } else {
     console.error('Modal overlay not found');
@@ -187,65 +230,59 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
   console.log(
     `Sending processVideo request for User: ${userId}, Email: ${userEmail}`
   );
-
   fetch('http://localhost:8080/processVideo', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'User-ID': userId,
-
       'User-Email': userEmail,
     },
     body: JSON.stringify({ videoUrl: videoUrl }),
-  }).then(async (response) => {
-    console.log(`Received response: ${response.status}`);
+  })
+    .then(async (response) => {
+      console.log(`Received response: ${response.status}`);
+      let responseText;
+      try {
+        responseText = await response.text();
+      } catch (error) {
+        console.error('❌ Failed to read response:', error);
+        updateModalMessage('⚠️ Server error. Please try again later.');
+        return;
+      }
 
-    let responseText;
-    try {
-      responseText = await response.text(); // Read response as text
-    } catch (error) {
-      console.error('❌ Failed to read response:', error);
-      updateModalMessage('⚠️ Server error. Please try again later.');
-      return;
-    }
+      if (
+        response.status === 400 &&
+        responseText.includes('This video is too long')
+      ) {
+        console.error('🚨 Video exceeds token limit.');
+        updateModalMessage('⚠️ This video is too long. Try a shorter one.');
+        return;
+      }
 
-    if (
-      response.status === 400 &&
-      responseText.includes('This video is too long')
-    ) {
-      console.error('🚨 Video exceeds token limit.');
-      updateModalMessage('⚠️ This video is too long. Try a shorter one.');
-      return;
-    }
+      if (response.status === 200) {
+        console.log('✅ Video processed successfully!');
+        hideModal();
+        addAIBubble('Video Processed! You can now ask questions.');
 
-    if (response.status === 200) {
-      console.log('✅ Video processed successfully!');
-      hideModal();
-      addAIBubble('Video Processed! You can now ask questions.');
-
-      const videoId = extractVideoID(videoUrl);
-      return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
-        headers: {
-          'User-ID': userId,
-          'User-Email': userEmail,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            return response.text().then((text) => {
-              throw new Error(
-                `❌ Unknown issue detected – Unexpected Response: ${text}`
-              );
-            });
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          console.error('❌ Fetch request failed:', error);
-          updateModalMessage('⚠️ Server error. Please try again later.');
+        const videoId = extractVideoID(videoUrl);
+        return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
+          headers: {
+            'User-ID': userId,
+            'User-Email': userEmail,
+          },
         });
-    }
-  });
+      }
+
+      console.error(
+        '❌ Unknown issue detected - Unexpected Response:',
+        responseText
+      );
+      updateModalMessage('❌ An unexpected error occurred. Please try again.');
+    })
+    .catch((error) => {
+      console.error('❌ Fetch request failed:', error);
+      updateModalMessage('⚠️ Server error. Please try again later.');
+    });
 }
 
 export function askAIQuestion(videoUrl, question) {
@@ -277,14 +314,7 @@ export function askAIQuestion(videoUrl, question) {
         }),
       })
         .then((response) => {
-          if (response.status === 403) {
-            reject('User than out of free quota');
-            throw new Error('User than out of free quota');
-          }
-          if (!response.ok) {
-            reject('Failed to get AI response');
-            throw new Error('User than out of free quota');
-          }
+          if (!response.ok) throw new Error('Failed to get AI response');
           return response.json();
         })
         .then((data) => {
@@ -297,6 +327,10 @@ export function askAIQuestion(videoUrl, question) {
             console.error('No AI response found in the response data.');
             reject('No AI response received');
           }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+          reject(error);
         });
     });
   });
@@ -307,24 +341,19 @@ function monitorVideoChange() {
 
   const observer = new MutationObserver(() => {
     const currentVideoId = extractVideoID(window.location.href);
-
-    // If the video ID has changed, toggle off Learning Mode
     if (currentVideoId && currentVideoId !== lastVideoId) {
-      console.log(
-        'Next video detected via MutationObserver, turning off Learning Mode...'
-      );
+      console.log('Next video detected, turning off Learning Mode...');
       lastVideoId = currentVideoId;
       const switchButton = document.querySelector('.learning-mode-switch');
       if (
         switchButton &&
         switchButton.getAttribute('aria-checked') === 'true'
       ) {
-        toggleLearningMode(); // Turn off Learning Mode
+        toggleLearningMode();
       }
     }
   });
 
-  // Observe changes in the URL bar and YouTube's dynamic content updates
   observer.observe(document.body, { childList: true, subtree: true });
 
   const videoElement = document.querySelector('video');
@@ -332,11 +361,8 @@ function monitorVideoChange() {
 
   videoElement.addEventListener('loadeddata', () => {
     const currentVideoId = extractVideoID(window.location.href);
-
     if (currentVideoId && currentVideoId !== lastVideoId) {
-      console.log(
-        'New video detected via loadeddata event, turning off Learning Mode...'
-      );
+      console.log('New video detected, turning off Learning Mode...');
       lastVideoId = currentVideoId;
       const switchButton = document.querySelector('.learning-mode-switch');
       if (
@@ -397,7 +423,6 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  // Check if the summary is already stored in local storage
   const storedSummary = localStorage.getItem(`summary_${videoId}`);
   if (storedSummary) {
     onSuccess && onSuccess(storedSummary);

@@ -4,8 +4,8 @@ import { createRoot } from 'react-dom/client';
 import { QuizFetcher } from '../react/QuizFetcher.jsx';
 import React from 'react';
 
+export function createContainer2(parentElement, userId) {
 
-export function createContainer2(parentElement) {
 
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
@@ -159,9 +159,8 @@ export function createContainer2(parentElement) {
         } else if (selectedOption === 'Generate Quiz') {
           quizHolder.style.display = 'block';
           const quizRoot = createRoot(quizHolder);
+          quizRoot.render(<QuizFetcher userId={userId} key={Date.now()} />); // Re-render the QuizFetcher component
 
-
-          quizRoot.render(<QuizFetcher key={Date.now()} />); // Re-render the QuizFetcher component
           console.log('Quiz generated');
 
           return;

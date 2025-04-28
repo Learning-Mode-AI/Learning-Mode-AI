@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 type QuizRequest struct {
@@ -36,27 +38,32 @@ func GenerateQuiz(videoID string, userID string) (*QuizResponse, error) {
 	payload := QuizRequest{VideoID: videoID, UserID: userID}
 	body, err := json.Marshal(payload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal request: %w", err)
+		logrus.WithError(err).Error("Failed to marshal request")
+		return nil, err
 	}
 
 	resp, err := http.Post(fmt.Sprintf("%s/quiz/generate-quiz", config.QuizServiceURL), "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		return nil, fmt.Errorf("failed to call quiz service: %w", err)
+		logrus.WithError(err).Error("Failed to call quiz service")
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		logrus.WithField("status_code", resp.StatusCode).Error("Quiz service returned error")
 		return nil, fmt.Errorf("quiz service returned status code %d", resp.StatusCode)
 	}
 
 	respBody, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %w", err)
+		logrus.WithError(err).Error("Failed to read response body")
+		return nil, err
 	}
 
 	var quizResponse QuizResponse
 	if err := json.Unmarshal(respBody, &quizResponse); err != nil {
-		return nil, fmt.Errorf("failed to parse quiz response: %w", err)
+		logrus.WithError(err).Error("Failed to parse quiz response")
+		return nil, err
 	}
 
 	return &quizResponse, nil

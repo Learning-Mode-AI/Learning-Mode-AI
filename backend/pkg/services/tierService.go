@@ -2,10 +2,10 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/go-redis/redis/v8"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -17,27 +17,27 @@ func CheckUserAccess(userID string) (bool, error) {
 	// Step 1: Get user email from Redis
 	email, err := getUserEmail(userID)
 	if err != nil {
-		log.Printf("Error getting user email: %v", err)
+		logrus.WithError(err).Error("Error getting user email")
 		return false, fmt.Errorf("failed to get user email: %v", err)
 	}
 
 	// Step 2: Get user subscription from Redis
 	subscription, err := getUserSubscriptionFromRedis(email)
 	if err != nil {
-		log.Printf("Error getting user subscription: %v", err)
+		logrus.WithError(err).Error("Error getting user subscription")
 		return false, fmt.Errorf("failed to get user subscription: %v", err)
 	}
 
 	// Step 3: Check if user has Pro tier
 	if subscription != nil && subscription.Tier == "Pro" {
-		log.Printf("User %s has Pro tier access", userID)
+		logrus.WithField("user_id", userID).Info("User has Pro tier access")
 		return true, nil
 	}
 
 	// Step 4: Check how many questions the user has asked this month
 	count, err := getMonthlyQuestionCount(userID)
 	if err != nil {
-		log.Printf("Error checking question count: %v", err)
+		logrus.WithError(err).Error("Error checking question count")
 		return false, fmt.Errorf("failed to check monthly question count: %v", err)
 	}
 
