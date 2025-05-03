@@ -21,7 +21,31 @@ function showUpgradeModal() {
   modalContent.append(viewPlansButton);
 }
 
+
+let restoringHistory = false;
+
+function saveChatHistory(message, sender) {
+  if (restoringHistory) return; // prevent duplication while restoring
+
+  const videoId = new URLSearchParams(new URL(window.location.href).search).get('v');
+  const key = `chatHistory-${videoId}`;
+
+  chrome.storage.local.get([key], (result) => {
+    const history = result[key] || [];
+    history.push({ message, sender });
+
+    chrome.storage.local.set({ [key]: history }, () => {
+      console.log(`Chat saved for ${videoId}`, history);
+    });
+  });
+}
+
 export function createChatContainer(parentElement) {
+
+  // Prevent duplicate container if already exists
+  if (document.getElementById('custom-chat-container')) return;
+
+
   const chatContainer = document.createElement('div');
   chatContainer.id = 'custom-chat-container';
 
@@ -158,7 +182,7 @@ export function createChatContainer(parentElement) {
     if (chatContainer) {
       if (isFullscreen) {
         document.body.appendChild(chatContainer);
-        chatContainer.style.backgroundImage = `url('${imgURL2}')`;
+        chatContainer.style.backgroundImage = url('${imgURL2}');
         chatContainer.classList.add('fullscreen');
         chatContainer.style.position = 'fixed';
         document.body.appendChild(featuresPanel);
@@ -167,7 +191,7 @@ export function createChatContainer(parentElement) {
       } else {
         if (secondaryInner) {
           secondaryInner.appendChild(chatContainer);
-          chatContainer.style.backgroundImage = `url('${imgURL}')`;
+          chatContainer.style.backgroundImage = url('${imgURL}');
           chatContainer.classList.remove('fullscreen');
           chatContainer.style.position = 'relative';
           secondaryInner.appendChild(featuresPanel);
@@ -177,6 +201,35 @@ export function createChatContainer(parentElement) {
       }
     }
   });
+
+// Restore chat history without duplication
+setTimeout(() => {
+  const videoId = new URLSearchParams(new URL(window.location.href).search).get('v');
+  const key = `chatHistory-${videoId}`;
+  const chatArea = document.getElementById('chat-area');
+
+  if (!chatArea || chatArea.dataset.restored === "true") return;
+
+  restoringHistory = true;
+
+  chrome.storage.local.get([key], (result) => {
+    const history = result[key] || [];
+    chatArea.innerHTML = ''; // Clear before adding bubbles
+    history.forEach(entry => {
+      if (entry.sender === 'user') {
+        addUserBubble(entry.message);
+      } else {
+        addAIBubble(entry.message);
+      }
+    });
+
+    restoringHistory = false;
+    chatArea.dataset.restored = "true";
+  });
+}, 0);
+
+
+
 }
 
 export function addUserBubble(content) {
@@ -186,6 +239,9 @@ export function addUserBubble(content) {
   userBubble.innerText = content;
   chatArea.appendChild(userBubble);
   chatArea.scrollTop = chatArea.scrollHeight;
+
+  saveChatHistory(content, 'user'); // Save to sessionStorage
+
 }
 
 export function addAIBubble(content) {
@@ -195,4 +251,6 @@ export function addAIBubble(content) {
   aiBubble.innerText = content;
   chatArea.appendChild(aiBubble);
   chatArea.scrollTop = chatArea.scrollHeight;
+  
+  saveChatHistory(content, 'ai'); // Save to sessionStorage
 }
