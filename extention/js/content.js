@@ -5,6 +5,7 @@ import {
   addAIBubble,
 } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
+import { getBaseUrl } from './env.js'; 
 
 function addButtonToPlayerControls(playerControls) {
   const toggleButton = learningModeToggle(toggleLearningMode);
@@ -188,7 +189,7 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     `Sending processVideo request for User: ${userId}, Email: ${userEmail}`
   );
 
-  fetch('http://localhost:8080/processVideo', {
+  fetch(`${getBaseUrl()}/processVideo`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -224,7 +225,7 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       addAIBubble('Video Processed! You can now ask questions.');
 
       const videoId = extractVideoID(videoUrl);
-      return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
+      return fetch(`${getBaseUrl()}/verify-transcript/${videoId}`, {
         headers: {
           'User-ID': userId,
           'User-Email': userEmail,
@@ -262,7 +263,7 @@ export function askAIQuestion(videoUrl, question) {
         return;
       }
 
-      fetch('http://localhost:8080/api/question', {
+      fetch(`${getBaseUrl()}/api/question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -404,7 +405,7 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  fetch('http://localhost:8080/video-summary', {
+  fetch(`${getBaseUrl()}/video-summary`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
