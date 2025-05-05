@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import QuizRenderer from './QuizRenderer.jsx';
+import { getBaseUrl } from '../js/env.js'; 
 
 export const QuizFetcher = ({ userId }) => {
   const [quiz, setQuiz] = useState(null);
@@ -22,7 +23,7 @@ export const QuizFetcher = ({ userId }) => {
 
     const fetchQuiz = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/quiz', {
+        const response = await fetch(`${getBaseUrl()}/api/quiz`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'User-ID': userId },
           body: JSON.stringify({ video_id: videoId, user_id: userId }),
