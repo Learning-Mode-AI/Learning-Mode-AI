@@ -202,7 +202,9 @@ export function createChatContainer(parentElement) {
     }
   });
 
-// Restore chat history without duplication
+// Using setTimeout with 0ms delay to Stop execution until the DOM has fully rendered when refreshing the page.
+// This ensures that chat bubbles are only appended after the container is in place,
+// which prevents duplicate messages from being added when the page is refreshed.
 setTimeout(() => {
   const videoId = new URLSearchParams(new URL(window.location.href).search).get('v');
   const key = `chatHistory-${videoId}`;
