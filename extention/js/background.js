@@ -56,7 +56,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 });
 
-// // Redirect user to launch video after installation
-// chrome.runtime.onInstalled.addListener(() => {
-//   chrome.tabs.create({ url: 'https://youtu.be/jOS6NzoXUYU' });
-// });
+// Redirect user to launch video after installation
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.tabs.create({ url: 'https://youtu.be/jOS6NzoXUYU' });
+});
