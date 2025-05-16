@@ -16,7 +16,7 @@ We use:
 ## ✅ Setup Summary
 
 ### 1. **Slack Setup**
-- Created a Slack channel: `#alerts`
+- Created a Slack channel: `#system-alerts`
 - Created a **Slack App** with Incoming Webhook enabled
 - Generated a webhook URL and stored it as an environment variable in Lambda (`SLACK_WEBHOOK_URL`)
 
