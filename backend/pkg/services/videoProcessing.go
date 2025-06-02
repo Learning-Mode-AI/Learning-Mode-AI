@@ -5,9 +5,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // CallVideoProcessingService sends a request to the video processing service
@@ -49,6 +50,10 @@ func CallVideoProcessingService(videoID, videoURL string, timestamps []string) e
 		return fmt.Errorf("unexpected status code from video processing service: %v", resp.StatusCode)
 	}
 
-	log.Println("Successfully triggered video processing for snapshots")
+	logrus.WithFields(logrus.Fields{
+		"video_id":   videoID,
+		"video_url":  videoURL,
+		"timestamps": timestamps,
+	}).Info("Successfully triggered video processing for snapshots")
 	return nil
 }

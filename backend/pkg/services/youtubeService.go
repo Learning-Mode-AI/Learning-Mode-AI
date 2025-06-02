@@ -7,6 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // VideoInfo struct to represent video metadata and transcript
@@ -27,30 +29,35 @@ func FetchVideoInfo(videoID string) (*VideoInfo, error) {
 	client := &http.Client{Timeout: 1000 * time.Second}
 	req, err := http.NewRequest("GET", pythonServiceURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %v", err)
+		logrus.WithError(err).Error("Failed to create request")
+		return nil, err
 	}
 
 	// Execute the request
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed to fetch video info from Python service: %v", err)
+		logrus.WithError(err).Error("Failed to fetch video info from Python service")
+		return nil, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
+		logrus.WithField("status", resp.Status).Error("Unexpected status code from Python service")
 		return nil, fmt.Errorf("unexpected status code from Python service: %v", resp.Status)
 	}
 
 	// Read and parse the response from Python service
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read response body: %v", err)
+		logrus.WithError(err).Error("Failed to read response body")
+		return nil, err
 	}
 
 	var videoInfo VideoInfo
 	err = json.Unmarshal(body, &videoInfo)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal video info: %v", err)
+		logrus.WithError(err).Error("Failed to unmarshal video info")
+		return nil, err
 	}
 
 	return &videoInfo, nil

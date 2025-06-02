@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 // AIRequest struct to send to AI service
@@ -26,14 +27,21 @@ func InitGPTSession(userID, videoID, title, channel string, transcript []string)
 	// 1️⃣ **Check Redis for an existing assistant**
 	existingID, err := GetAssistantFromRedis(userID, videoID)
 	if err == nil && existingID != "" {
-		log.Printf("✅ Reusing existing assistant ID: %s for User: %s, Video: %s", existingID, userID, videoID)
+		logrus.WithFields(logrus.Fields{
+			"assistant_id": existingID,
+			"user_id":     userID,
+			"video_id":    videoID,
+		}).Info("Reusing existing assistant ID")
 		return existingID, nil
 	} else if err != nil {
-		log.Printf("⚠️ Error checking Redis for assistant ID: %v", err)
+		logrus.WithError(err).Error("Error checking Redis for assistant ID")
 	}
 
 	// 2️⃣ **No assistant found – create a new one**
-	log.Printf("❌ No existing assistant found. Creating a new one for User: %s, Video: %s", userID, videoID)
+	logrus.WithFields(logrus.Fields{
+		"user_id":  userID,
+		"video_id": videoID,
+	}).Info("No existing assistant found. Creating a new one")
 
 	// Convert transcript array to a string
 	transcriptStr := strings.Join(transcript, " ")
@@ -96,17 +104,29 @@ func InitGPTSession(userID, videoID, title, channel string, transcript []string)
 	// 3️⃣ **Store the new assistant ID in Redis for future reuse**
 	err = StoreAssistantInRedis(userID, videoID, assistantID)
 	if err != nil {
-		log.Printf("⚠️ Failed to store assistant ID in Redis: %v", err)
+		logrus.WithError(err).Error("Failed to store assistant ID in Redis")
+	} else {
+		logrus.Infof("✅ Successfully created and stored assistant ID: %s for User: %s, Video: %s", assistantID, userID, videoID)
 	}
+	
 
-	log.Printf("✅ Successfully created and stored assistant ID: %s for User: %s, Video: %s", assistantID, userID, videoID)
+	logrus.WithFields(logrus.Fields{
+		"assistant_id": assistantID,
+		"user_id":     userID,
+		"video_id":    videoID,
+	}).Info("Successfully created and stored assistant ID")
 	return assistantID, nil
 }
 
 // AskGPTQuestion sends a question to the AI service using the assistant_id and returns the response.
 func AskGPTQuestion(videoID, userID, userQuestion string, timestamp int) (string, error) {
 	// Log the incoming parameters for debugging
-	log.Printf("Preparing to ask GPT a question. VideoID: %s, UserID: %s, Question: %s, Timestamp: %d", videoID, userID, userQuestion, timestamp)
+	logrus.WithFields(logrus.Fields{
+		"video_id":  videoID,
+		"user_id":   userID,
+		"question":  userQuestion,
+		"timestamp": timestamp,
+	}).Debug("Preparing to ask GPT a question")
 
 	// Create the request payload
 	reqPayload := map[string]interface{}{
@@ -123,7 +143,7 @@ func AskGPTQuestion(videoID, userID, userQuestion string, timestamp int) (string
 	}
 
 	// Log the JSON payload for debugging
-	log.Printf("Request payload: %s", string(reqBody))
+	logrus.WithField("payload", string(reqBody)).Debug("Request payload")
 
 	// Make HTTP POST request to the AI service to ask a question
 	aiServiceURL := fmt.Sprintf("%s/ai/ask-question", config.AiServiceURL)
@@ -141,7 +161,7 @@ func AskGPTQuestion(videoID, userID, userQuestion string, timestamp int) (string
 	}
 
 	// Log the raw response for debugging
-	log.Printf("Raw AI Response: %s", string(body))
+	logrus.WithField("response", string(body)).Debug("Raw AI Response")
 
 	// Parse the JSON response to get the assistant's answer
 	var aiResponse map[string]string

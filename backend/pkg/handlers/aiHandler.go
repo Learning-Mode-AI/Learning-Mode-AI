@@ -3,8 +3,9 @@ package handlers
 import (
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
-	"log"
 	"net/http"
+
+	"github.com/sirupsen/logrus"
 )
 
 // InitializeGPTRequest struct for the video info request
@@ -35,17 +36,17 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log timestamp for debugging
-	log.Printf("Received question at timestamp: %d seconds", questionReq.Timestamp)
+	logrus.WithField("timestamp", questionReq.Timestamp).Debug("Received question")
 
 	hasAccess, err := services.CheckUserAccess(questionReq.UserID)
 	if err != nil {
-		log.Printf("Failed to check user access: %v", err)
+		logrus.WithError(err).Error("Failed to check user access")
 		http.Error(w, "Failed to check user access", http.StatusInternalServerError)
 		return
 	}
 
 	if !hasAccess {
-		log.Printf("User %s has ran out of monthly questions", questionReq.UserID)
+		logrus.WithField("user_id", questionReq.UserID).Warn("User has ran out of monthly questions")
 		http.Error(w, "Monthly question limit reached", http.StatusForbidden)
 		return
 	}
@@ -55,7 +56,7 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	// Ask GPT the question
 	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, questionReq.UserID, questionReq.UserQuestion, questionReq.Timestamp)
 	if err != nil {
-		log.Printf("Failed to get AI response: %v", err)
+		logrus.WithError(err).Error("Failed to get AI response")
 		http.Error(w, "Failed to get AI response", http.StatusInternalServerError)
 		return
 	}

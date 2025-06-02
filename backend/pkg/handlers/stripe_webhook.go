@@ -5,9 +5,9 @@ import (
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
 	"io/ioutil"
-	"log"
 	"net/http"
 
+	"github.com/sirupsen/logrus"
 	"github.com/stripe/stripe-go/customer"
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/webhook"
@@ -25,7 +25,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 		req.Body = http.MaxBytesReader(w, req.Body, MaxBodyBytes)
 		payload, err := ioutil.ReadAll(req.Body)
 		if err != nil {
-			log.Printf("Error reading request body: %v\n", err)
+			logrus.WithError(err).Error("Error reading request body")
 			w.WriteHeader(http.StatusServiceUnavailable)
 			return
 		}
@@ -33,7 +33,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 		// Get the Stripe-Signature header
 		signatureHeader := req.Header.Get("Stripe-Signature")
 		if signatureHeader == "" {
-			log.Println("Missing Stripe-Signature header")
+			logrus.Error("Missing Stripe-Signature header")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -41,25 +41,26 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 		// Verify the webhook signature
 		event, err := webhook.ConstructEvent(payload, signatureHeader, endpointSecret)
 		if err != nil {
-			log.Printf("⚠️ Webhook signature verification failed: %v\n", err)
+			logrus.WithError(err).Error("Webhook signature verification failed")
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-		log.Printf("Successfully constructed event: %s", event.Type)
+		logrus.WithField("event_type", event.Type).Info("Successfully constructed event")
+
 		// Handle the webhook events
 		switch event.Type {
 
 		case "invoice.payment_succeeded":
 			var invoice stripe.Invoice
 			if err := json.Unmarshal(event.Data.Raw, &invoice); err != nil {
-				log.Printf("Error parsing payment success: %v\n", err)
+				logrus.WithError(err).Error("Error parsing payment success")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
 			customerEmail := invoice.CustomerEmail
 			if customerEmail == "" {
-				log.Println("⚠️ No customer email found in invoice event")
+				logrus.Error("No customer email found in invoice event")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -67,7 +68,7 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 			productID := invoice.Lines.Data[0].Plan.Product.ID // Get product ID
 			tier, exists := productTierMap[productID]
 			if !exists {
-				log.Printf("⚠️ No matching tier found for product ID: %s", productID)
+				logrus.WithField("product_id", productID).Warn("No matching tier found for product ID")
 				tier = "Unknown" // Default fallback
 			}
 
@@ -79,31 +80,34 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 			// Store in Redis
 			err := services.StoreSubscriptionInfoInRedis(customerEmail, subscription)
 			if err != nil {
-				log.Printf("⚠️ Error storing subscription in Redis: %v", err)
+				logrus.WithError(err).Error("Error storing subscription in Redis")
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
-			log.Printf("Stored subscription for %s - Tier: %s", customerEmail, tier)
+			logrus.WithFields(logrus.Fields{
+				"email": customerEmail,
+				"tier":  tier,
+			}).Info("Stored subscription")
 
 		case "customer.subscription.deleted":
 			var subscription stripe.Subscription
 			if err := json.Unmarshal(event.Data.Raw, &subscription); err != nil {
-				log.Printf("Error parsing subscription deletion: %v\n", err)
+				logrus.WithError(err).Error("Error parsing subscription deletion")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 			//Fetch customer details if email is missing
 			customerDetails, err := customer.Get(subscription.Customer.ID, nil)
 			if err != nil {
-				log.Printf("Error fetching customer details: %v\n", err)
+				logrus.WithError(err).Error("Error fetching customer details")
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
 
 			customerEmail := customerDetails.Email
 			if customerEmail == "" {
-				log.Println("⚠️ No customer email found")
+				logrus.Error("No customer email found")
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
@@ -111,14 +115,14 @@ func StripeWebhookHandler(endpointSecret string) http.HandlerFunc {
 			//Remove subscription from Redis
 			err = services.DeleteSubscriptionFromRedis(customerEmail)
 			if err != nil {
-				log.Printf("⚠️ Error deleting subscription from Redis: %v", err)
+				logrus.WithError(err).Error("Error deleting subscription from Redis")
 				w.WriteHeader(http.StatusInternalServerError)
 				return
 			}
-			log.Printf("Subscription deleted for %s - Access revoked", customerEmail)
+			logrus.WithField("email", customerEmail).Info("Subscription deleted - Access revoked")
 
 		default:
-			log.Printf("Unhandled event type: %s", event.Type)
+			logrus.WithField("event_type", event.Type).Info("Unhandled event type")
 		}
 
 		// Acknowledge receipt of the event

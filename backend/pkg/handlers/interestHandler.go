@@ -3,10 +3,10 @@ package handlers
 import (
 	"Learning-Mode-AI/pkg/services"
 	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
 )
 
 type ShowInterestRequest struct {
@@ -17,12 +17,12 @@ type ShowInterestRequest struct {
 func ShowInterestHandler(w http.ResponseWriter, r *http.Request) {
     var req ShowInterestRequest
     if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-        log.Println("Invalid request received")
+        logrus.Error("Invalid request received")
         http.Error(w, "Invalid request payload", http.StatusBadRequest)
         return
     }
 
-    log.Printf("Received show interest request for feature: %s", req.Feature)
+    logrus.WithField("feature", req.Feature).Info("Received show interest request")
 
     if req.Feature == "" {
         http.Error(w, "Feature name is required", http.StatusBadRequest)
@@ -30,7 +30,7 @@ func ShowInterestHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     if err := services.StoreInterestClick(req.Feature); err != nil {
-        log.Printf("Failed to store click for feature: %s", req.Feature)
+        logrus.WithError(err).WithField("feature", req.Feature).Error("Failed to store click for feature")
         http.Error(w, "Failed to record interest", http.StatusInternalServerError)
         return
     }
