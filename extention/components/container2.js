@@ -3,6 +3,7 @@ import { marked } from 'marked'; // Ensure this import exists at the top
 import { createRoot } from 'react-dom/client';
 import { QuizFetcher } from '../react/QuizFetcher.jsx';
 import React from 'react';
+import { getBaseUrl } from '../js/env.js'; 
 
 
 export function createContainer2(parentElement) {
@@ -191,7 +192,7 @@ export function createContainer2(parentElement) {
       summaryHolder
         .querySelector('.show-interest-button')
         .addEventListener('click', function () {
-          fetch('http://localhost:8080/api/show-interest', {
+          fetch(`${getBaseUrl()}/api/show-interest`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ feature: selectedOption }),
