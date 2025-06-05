@@ -59,21 +59,9 @@ function activateLearningMode() {
     }
 
     console.log('Learning Mode activated for User ID:', userId);
-
     const videoId = extractVideoID(window.location.href);
 
-    // Retrieve processed videos from localStorage
-    const processedVideos =
-      JSON.parse(localStorage.getItem('processedVideos')) || {};
-
-    if (!processedVideos[videoId]) {
-      sendVideoInfoToBackend(window.location.href, userId, userEmail);
-    } else {
-      setTimeout(() => hideModal(), 700);
-      console.log(
-        `Skipping processVideo: Video ${videoId} was already processed.`
-      );
-    }
+    sendVideoInfoToBackend(window.location.href, userId, userEmail);
     initializeLearningMode(userId);
   });
 }
@@ -180,6 +168,20 @@ export function hideModal() {
 }
 
 function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
+  const videoId = extractVideoID(videoUrl);
+
+  // Retrieve processed videos from localStorage  const processedVideos =
+  const processedVideos =
+    JSON.parse(localStorage.getItem('processedVideos')) || {};
+  //Check if video was already processed + cached
+  if (processedVideos[videoId]) {
+    setTimeout(() => hideModal(), 700);
+    console.log(
+      `Skipping processVideo: Video ${videoId} was already processed.`
+    );
+    return;
+  }
+
   console.log(
     `Sending processVideo request for User: ${userId}, Email: ${userEmail}`
   );
@@ -219,13 +221,10 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       hideModal();
       addAIBubble('Video Processed! You can now ask questions.');
 
-      const videoId = extractVideoID(videoUrl);
-      const processedVideos = JSON.parse(localStorage.getItem('processedVideos')) || {};
-
       // Mark video as processed in local storage
       processedVideos[videoId] = true;
       localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
-      console.log('✅ Video marked as processed in local storage')
+      console.log('✅ Video marked as processed in local storage');
       return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
         headers: {
           'User-ID': userId,
