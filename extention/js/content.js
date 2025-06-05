@@ -68,10 +68,6 @@ function activateLearningMode() {
 
     if (!processedVideos[videoId]) {
       sendVideoInfoToBackend(window.location.href, userId, userEmail);
-
-      // Mark video as processed in local storage
-      processedVideos[videoId] = true;
-      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
     } else {
       setTimeout(() => hideModal(), 700);
       console.log(
@@ -224,6 +220,12 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       addAIBubble('Video Processed! You can now ask questions.');
 
       const videoId = extractVideoID(videoUrl);
+      const processedVideos = JSON.parse(localStorage.getItem('processedVideos')) || {};
+
+      // Mark video as processed in local storage
+      processedVideos[videoId] = true;
+      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
+      console.log('✅ Video marked as processed in local storage')
       return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
         headers: {
           'User-ID': userId,
