@@ -208,6 +208,15 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     }
 
     if (
+      response.status === 500 &&
+      responseText.includes('Failed to fetch video info')
+    ) {
+      console.error('🚨 Server error:', responseText);
+      updateModalMessage('⚠️ Server error. Please try again later.');
+      return;
+    }
+
+    if (
       response.status === 400 &&
       responseText.includes('This video is too long')
     ) {
