@@ -225,26 +225,6 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       processedVideos[videoId] = true;
       localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
       console.log('✅ Video marked as processed in local storage');
-      return fetch(`http://localhost:8080/verify-transcript/${videoId}`, {
-        headers: {
-          'User-ID': userId,
-          'User-Email': userEmail,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            return response.text().then((text) => {
-              throw new Error(
-                `❌ Unknown issue detected – Unexpected Response: ${text}`
-              );
-            });
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          console.error('❌ Fetch request failed:', error);
-          updateModalMessage('⚠️ Server error. Please try again later.');
-        });
     }
   });
 }
