@@ -254,6 +254,13 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
           updateModalMessage('⚠️ Server error. Please try again later.');
         });
     }
+
+    // Handle any other error status codes that weren't caught above
+    console.error(`🚨 Unexpected response status: ${response.status} - ${responseText}`);
+    updateModalMessage('⚠️ Server error. Please try again later.');
+  }).catch((error) => {
+    console.error('❌ Network or fetch error:', error);
+    updateModalMessage('⚠️ Network error. Please check your connection and try again.');
   });
 }
 
