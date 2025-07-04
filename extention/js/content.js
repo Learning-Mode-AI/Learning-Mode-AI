@@ -208,6 +208,15 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     }
 
     if (
+      response.status === 500 &&
+      responseText.includes('Failed to fetch video info')
+    ) {
+      console.error('🚨 Server error:', responseText);
+      updateModalMessage('⚠️ Server error. Please try again later.');
+      return;
+    }
+
+    if (
       response.status === 400 &&
       responseText.includes('This video is too long')
     ) {
@@ -226,6 +235,13 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
       console.log('✅ Video marked as processed in local storage');
     }
+
+    // Handle any other error status codes that weren't caught above
+    console.error(`🚨 Unexpected response status: ${response.status} - ${responseText}`);
+    updateModalMessage('⚠️ Server error. Please try again later.');
+  }).catch((error) => {
+    console.error('❌ Network or fetch error:', error);
+    updateModalMessage('⚠️ Network error. Please check your connection and try again.');
   });
 }
 
