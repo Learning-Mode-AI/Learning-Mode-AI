@@ -55,3 +55,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true; // Indicate async response
   }
 });
+
+// Redirect user to launch video after installation
+chrome.runtime.onInstalled.addListener(() => {
+  chrome.tabs.create({ url: 'https://youtu.be/jOS6NzoXUYU' });
+});
