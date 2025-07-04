@@ -5,7 +5,7 @@ import {
   addAIBubble,
 } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
-import { getBaseUrl } from './env.js'; 
+import { getBaseUrl } from './env.js';
 
 function addButtonToPlayerControls(playerControls) {
   const toggleButton = learningModeToggle(toggleLearningMode);
@@ -60,25 +60,9 @@ function activateLearningMode() {
     }
 
     console.log('Learning Mode activated for User ID:', userId);
-
     const videoId = extractVideoID(window.location.href);
 
-    // Retrieve processed videos from localStorage
-    const processedVideos =
-      JSON.parse(localStorage.getItem('processedVideos')) || {};
-
-    if (!processedVideos[videoId]) {
-      sendVideoInfoToBackend(window.location.href, userId, userEmail);
-
-      // Mark video as processed in local storage
-      processedVideos[videoId] = true;
-      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
-    } else {
-      setTimeout(() => hideModal(), 700);
-      console.log(
-        `Skipping processVideo: Video ${videoId} was already processed.`
-      );
-    }
+    sendVideoInfoToBackend(window.location.href, userId, userEmail);
     initializeLearningMode(userId);
   });
 }
@@ -185,6 +169,20 @@ export function hideModal() {
 }
 
 function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
+  const videoId = extractVideoID(videoUrl);
+
+  // Retrieve processed videos from localStorage  const processedVideos =
+  const processedVideos =
+    JSON.parse(localStorage.getItem('processedVideos')) || {};
+  //Check if video was already processed + cached
+  if (processedVideos[videoId]) {
+    setTimeout(() => hideModal(), 700);
+    console.log(
+      `Skipping processVideo: Video ${videoId} was already processed.`
+    );
+    return;
+  }
+
   console.log(
     `Sending processVideo request for User: ${userId}, Email: ${userEmail}`
   );
@@ -211,6 +209,15 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     }
 
     if (
+      response.status === 500 &&
+      responseText.includes('Failed to fetch video info')
+    ) {
+      console.error('🚨 Server error:', responseText);
+      updateModalMessage('⚠️ Server error. Please try again later.');
+      return;
+    }
+
+    if (
       response.status === 400 &&
       responseText.includes('This video is too long')
     ) {
@@ -224,28 +231,18 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       hideModal();
       addAIBubble('Video Processed! You can now ask questions.');
 
-      const videoId = extractVideoID(videoUrl);
-      return fetch(`${getBaseUrl()}/verify-transcript/${videoId}`, {
-        headers: {
-          'User-ID': userId,
-          'User-Email': userEmail,
-        },
-      })
-        .then((response) => {
-          if (!response.ok) {
-            return response.text().then((text) => {
-              throw new Error(
-                `❌ Unknown issue detected – Unexpected Response: ${text}`
-              );
-            });
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          console.error('❌ Fetch request failed:', error);
-          updateModalMessage('⚠️ Server error. Please try again later.');
-        });
+      // Mark video as processed in local storage
+      processedVideos[videoId] = true;
+      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
+      console.log('✅ Video marked as processed in local storage');
     }
+
+    // Handle any other error status codes that weren't caught above
+    console.error(`🚨 Unexpected response status: ${response.status} - ${responseText}`);
+    updateModalMessage('⚠️ Server error. Please try again later.');
+  }).catch((error) => {
+    console.error('❌ Network or fetch error:', error);
+    updateModalMessage('⚠️ Network error. Please check your connection and try again.');
   });
 }
 
