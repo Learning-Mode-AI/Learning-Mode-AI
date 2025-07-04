@@ -5,7 +5,7 @@ import {
   addAIBubble,
 } from '../components/chatContainer.js';
 import { createContainer2 } from '../components/container2.js';
-import { getBaseUrl } from './env.js';
+import { BASE_URL } from './env.js';
 
 function addButtonToPlayerControls(playerControls) {
   const toggleButton = learningModeToggle(toggleLearningMode);
@@ -187,7 +187,7 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
     `Sending processVideo request for User: ${userId}, Email: ${userEmail}`
   );
 
-  fetch(`${getBaseUrl()}/processVideo`, {
+  fetch(`${BASE_URL}/processVideo`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -260,7 +260,7 @@ export function askAIQuestion(videoUrl, question) {
         return;
       }
 
-      fetch(`${getBaseUrl()}/api/question`, {
+      fetch(`${BASE_URL}/api/question`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -402,7 +402,7 @@ export function generateVideoSummary(videoUrl, onSuccess, onError) {
     return;
   }
 
-  fetch(`${getBaseUrl()}/video-summary`, {
+  fetch(`${BASE_URL}/video-summary`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
