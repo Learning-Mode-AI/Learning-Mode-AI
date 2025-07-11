@@ -225,7 +225,14 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       processedVideos[videoId] = true;
       localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
       console.log('✅ Video marked as processed in local storage');
+    } else {
+      // Handle other response status codes
+      console.error(`❌ Unexpected response status: ${response.status}`);
+      updateModalMessage('⚠️ Failed to process video. Please try again later.');
     }
+  }).catch((error) => {
+    console.error('❌ Network error in sendVideoInfoToBackend:', error);
+    updateModalMessage('⚠️ Network error. Please check your connection and try again.');
   });
 }
 
@@ -240,6 +247,7 @@ export function askAIQuestion(videoUrl, question) {
     getUserId((userId, userEmail) => {
       if (!userId) {
         console.error('User not authenticated. Unable to ask AI question.');
+        reject('User not authenticated');
         return;
       }
 
@@ -263,8 +271,8 @@ export function askAIQuestion(videoUrl, question) {
             throw new Error('User than out of free quota');
           }
           if (!response.ok) {
-            reject('Failed to get AI response');
-            throw new Error('User than out of free quota');
+            reject(`Server error: ${response.status}`);
+            throw new Error(`Server error: ${response.status}`);
           }
           return response.json();
         })
@@ -277,6 +285,16 @@ export function askAIQuestion(videoUrl, question) {
           } else {
             console.error('No AI response found in the response data.');
             reject('No AI response received');
+          }
+        })
+        .catch((error) => {
+          console.error('Error in askAIQuestion fetch:', error);
+          if (error.message.includes('quota')) {
+            reject('User than out of free quota');
+          } else if (error.message.includes('Failed to fetch')) {
+            reject('Network error');
+          } else {
+            reject('Server error');
           }
         });
     });

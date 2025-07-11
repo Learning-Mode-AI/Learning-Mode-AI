@@ -125,9 +125,21 @@ export function createChatContainer(parentElement) {
           console.error('Error in askAIQuestion:', error);
           console.log("Typing indicator hidden due to error");
 
+          // Handle specific error types
           if (error.includes('quota')) {
             showUpgradeModal();
             showModal();
+          } else if (error.includes('Network error')) {
+            addAIBubble('⚠️ Network error occurred. Please check your connection and try again.');
+          } else if (error.includes('Server error')) {
+            addAIBubble('⚠️ Server error occurred. Please try again later.');
+          } else if (error.includes('User not authenticated')) {
+            addAIBubble('⚠️ Authentication error. Please refresh the page and try again.');
+          } else if (error.includes('No AI response received')) {
+            addAIBubble('⚠️ No response received from AI. Please try again.');
+          } else {
+            // Generic error message for any other errors
+            addAIBubble('⚠️ Something went wrong. Please try again later.');
           }
         });
     }
