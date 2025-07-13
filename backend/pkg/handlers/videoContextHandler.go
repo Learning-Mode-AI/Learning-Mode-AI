@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/tiktoken-go/tokenizer"
 )
 
 type VideoRequest struct {
@@ -57,14 +59,14 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Define the max allowed transcript length
-	const maxTranscriptTokens = 256000 // OpenAI limit
+	maxTokens := 90000
 
-	if len(strings.Join(videoInfo.Transcript, " ")) > maxTranscriptTokens {
-		log.Println("⚠️ Transcript too long, rejecting request.")
-		http.Error(w, `{"error": "This video is too long. Try a shorter one."}`, http.StatusBadRequest)
-		return
+	transcriptTokens := getTranscriptTokens(videoInfo.Transcript)
+
+	if transcriptTokens>maxTokens{
+		videoInfo.Transcript = TruncateTranscript(videoInfo.Transcript, maxTokens)
 	}
+	//Check if transcript exceeds max tokens then reduce if needed
 
 	// Store video info in Redis (without snapshots for now)
 	err = services.StoreVideoInfoInRedis(videoID, videoInfo)
@@ -121,4 +123,40 @@ func ExtractTimestampsFromTranscript(transcript []string) []string {
 		}
 	}
 	return timestamps
+}
+// Calculate the amount of tokens in a transcript
+func getTranscriptTokens(transcript []string) int{
+	transcriptString := strings.Join(transcript, " ")
+	enc, err := tokenizer.Get(tokenizer.Cl100kBase)
+	if err != nil {
+		log.Printf("Failed to get tokenizer (Cl100kBase): %v", err)
+	}
+	tokenIds, _, _ := enc.Encode(transcriptString)
+	log.Printf("Transcript contains %d tokens", len(tokenIds))
+	return len(tokenIds)
+}
+// Truncate transcript if it's too long
+func TruncateTranscript(transcript []string, maxTokens int) []string {
+	enc, err := tokenizer.Get(tokenizer.Cl100kBase)
+	if err != nil {
+		log.Printf("Failed to get tokenizer (Cl100kBase): %v", err)
+	}
+	totalTokens:=0
+	var resultTranscript []string
+	for _, entry := range transcript {
+		tokenIds, _, err := enc.Encode(entry)
+		if err != nil {
+			log.Printf("Error encoding entry: %v", err)
+			continue 
+		}
+		
+		if totalTokens + len(tokenIds) > maxTokens {
+			log.Printf("Truncating at %d tokens (max: %d)", totalTokens, maxTokens)
+			break
+		}
+		
+		resultTranscript = append(resultTranscript, entry)
+		totalTokens += len(tokenIds)
+}
+return resultTranscript
 }
