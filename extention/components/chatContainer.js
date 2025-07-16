@@ -328,7 +328,7 @@ export function createChatContainer(parentElement) {
     }
   };
 
-  // Event lis.tener for send button
+  // Event listener for send button
   sendButton.addEventListener('click', () => {
     sendQuestion(inputField.value);
   });
