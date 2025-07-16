@@ -23,6 +23,15 @@ type GPTQuestionRequest struct {
 	UserID       string `json:"userId"`
 }
 
+// GPTQuestionRequest struct with image data
+type GPTQuestionRequestWithImage struct {
+	VideoID      string `json:"video_id"`
+	UserQuestion string `json:"user_question"`
+	Timestamp    int    `json:"timestamp"`
+	UserID       string `json:"userId"`
+	ImageData    string `json:"image_data"` // Base64 encoded image data
+}
+
 // AskGPTQuestion handles user questions for the GPT session
 func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	var questionReq GPTQuestionRequest
@@ -59,6 +68,46 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get AI response", http.StatusInternalServerError)
 		return
 	}
+
+	// Respond with the AI's answer
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"response": aiResponse})
+}
+
+// AskGPTQuestionWithImage handles user questions with image data for the GPT session
+func AskGPTQuestionWithImage(w http.ResponseWriter, r *http.Request) {
+	var questionReq GPTQuestionRequestWithImage
+
+	// Decode request body
+	err := json.NewDecoder(r.Body).Decode(&questionReq)
+	if err != nil {
+		http.Error(w, "Invalid request payload", http.StatusBadRequest)
+		return
+	}
+
+	hasAccess, err := services.CheckSnapshotAccess(questionReq.UserID)
+	if err != nil {
+		log.Printf("Failed to check user access: %v", err)
+		http.Error(w, "Failed to check user access", http.StatusInternalServerError)
+		return
+	}
+
+	if !hasAccess {
+		log.Printf("User %s has ran out of monthly questions", questionReq.UserID)
+		http.Error(w, "Monthly question limit reached", http.StatusForbidden)
+		return
+	}
+
+	services.IncrementUserSnapshotCount(questionReq.UserID)
+
+	// Ask GPT the question with image data
+	aiResponse, err := services.AskGPTQuestionWithImageContext(questionReq.VideoID, questionReq.UserID, questionReq.UserQuestion, questionReq.Timestamp, questionReq.ImageData)
+	if err != nil {
+		log.Printf("Failed to get AI response: %v", err)
+		http.Error(w, "Failed to get AI response", http.StatusInternalServerError)
+		return
+	}
+	println("AI response received:", aiResponse)
 
 	// Respond with the AI's answer
 	w.Header().Set("Content-Type", "application/json")

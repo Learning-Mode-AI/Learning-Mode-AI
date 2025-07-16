@@ -160,6 +160,60 @@ func AskGPTQuestion(videoID, userID, userQuestion string, timestamp int) (string
 	return answer, nil
 }
 
+func AskGPTQuestionWithImageContext(videoID, userID, userQuestion string, timestamp int, imageData string) (string, error) {
+	// Create the request payload
+	reqPayload := map[string]interface{}{
+		"video_id":   videoID,
+		"userId":     userID,
+		"question":   userQuestion,
+		"timestamp":  timestamp,
+		"image_data": imageData,
+	}
+
+	// Convert payload to JSON
+	reqBody, err := json.Marshal(reqPayload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal AIRequest: %v", err)
+	}
+
+	// Log the JSON payload for debugging
+	log.Printf("Request payload with image: %s", string(reqBody))
+
+	// Make HTTP POST request to the AI service to ask a question with image context
+	aiServiceURL := fmt.Sprintf("%s/ai/ask-question-with-image", config.AiServiceURL)
+	client := &http.Client{Timeout: 30 * time.Second}
+	resp, err := client.Post(aiServiceURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("failed to send question with image to GPT: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the raw response body for logging and debugging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Log the raw response for debugging
+	log.Printf("Raw AI Response with image: %s", string(body))
+
+	// Parse the JSON response to get the assistant's answer
+	var aiResponse map[string]string
+	err = json.Unmarshal(body, &aiResponse)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse AI response with image: %v", err)
+	}
+
+	// Check if the response contains the 'answer' field
+	answer, ok := aiResponse["answer"]
+	if !ok {
+		return "", fmt.Errorf("AI response did not contain 'answer' field: %v", aiResponse)
+	}
+
+	// Return the assistant's answer
+	return answer, nil
+}
+
 // AIServiceURL is the configuration for the base URL of the AI service
 func getAIServiceURL() string {
 	return config.AiServiceURL
