@@ -17,6 +17,9 @@ func NewRouter(stripeSecret string) *mux.Router {
 	r.HandleFunc("/api/quiz", handlers.GenerateQuiz).Methods("POST")
 	r.HandleFunc("/video-summary", handlers.VideoSummaryHandler).Methods("POST")
 
+	r.HandleFunc("/api/question-with-image", handlers.AskGPTQuestionWithImage).Methods("POST")
+	println("ask question with image route added")
+
 	// Routes that DO NOT require user validation
 	r.HandleFunc("/api/show-interest", handlers.ShowInterestHandler).Methods("POST")
 	r.HandleFunc("/api/interest-count/{feature}", handlers.GetInterestCountHandler).Methods("GET")

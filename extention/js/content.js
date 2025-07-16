@@ -196,54 +196,63 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       'User-Email': userEmail,
     },
     body: JSON.stringify({ videoUrl: videoUrl }),
-  }).then(async (response) => {
-    console.log(`Received response: ${response.status}`);
+  })
+    .then(async (response) => {
+      console.log(`Received response: ${response.status}`);
 
-    let responseText;
-    try {
-      responseText = await response.text(); // Read response as text
-    } catch (error) {
-      console.error('❌ Failed to read response:', error);
+      let responseText;
+      try {
+        responseText = await response.text(); // Read response as text
+      } catch (error) {
+        console.error('❌ Failed to read response:', error);
+        updateModalMessage('⚠️ Server error. Please try again later.');
+        return;
+      }
+
+      if (
+        response.status === 500 &&
+        responseText.includes('Failed to fetch video info')
+      ) {
+        console.error('🚨 Server error:', responseText);
+        updateModalMessage('⚠️ Server error. Please try again later.');
+        return;
+      }
+
+      if (
+        response.status === 400 &&
+        responseText.includes('This video is too long')
+      ) {
+        console.error('🚨 Video exceeds token limit.');
+        updateModalMessage('⚠️ This video is too long. Try a shorter one.');
+        return;
+      }
+
+      if (response.status === 200) {
+        console.log('✅ Video processed successfully!');
+        hideModal();
+        addAIBubble('Video Processed! You can now ask questions.');
+
+        // Mark video as processed in local storage
+        processedVideos[videoId] = true;
+        localStorage.setItem(
+          'processedVideos',
+          JSON.stringify(processedVideos)
+        );
+        console.log('✅ Video marked as processed in local storage');
+      }
+
+      // Handle any other error status codes that weren't caught above
+      console.error(
+        `🚨 Unexpected response status: ${response.status} - ${responseText}`
+      );
       updateModalMessage('⚠️ Server error. Please try again later.');
-      return;
-    }
-
-    if (
-      response.status === 500 &&
-      responseText.includes('Failed to fetch video info')
-    ) {
-      console.error('🚨 Server error:', responseText);
-      updateModalMessage('⚠️ Server error. Please try again later.');
-      return;
-    }
-
-    if (
-      response.status === 400 &&
-      responseText.includes('This video is too long')
-    ) {
-      console.error('🚨 Video exceeds token limit.');
-      updateModalMessage('⚠️ This video is too long. Try a shorter one.');
-      return;
-    }
-
-    if (response.status === 200) {
-      console.log('✅ Video processed successfully!');
-      hideModal();
-      addAIBubble('Video Processed! You can now ask questions.');
-
-      // Mark video as processed in local storage
-      processedVideos[videoId] = true;
-      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
-      console.log('✅ Video marked as processed in local storage');
-    }
-
-    // Handle any other error status codes that weren't caught above
-    console.error(`🚨 Unexpected response status: ${response.status} - ${responseText}`);
-    updateModalMessage('⚠️ Server error. Please try again later.');
-  }).catch((error) => {
-    console.error('❌ Network or fetch error:', error);
-    updateModalMessage('⚠️ Network error. Please check your connection and try again.');
-  });
+    })
+    .catch((error) => {
+      console.error('❌ Network or fetch error:', error);
+      updateModalMessage(
+        '⚠️ Network error. Please check your connection and try again.'
+      );
+    });
 }
 
 export function askAIQuestion(videoUrl, question) {
@@ -297,6 +306,84 @@ export function askAIQuestion(videoUrl, question) {
           }
         });
     });
+  });
+}
+
+export function askAIQuestionWithImage(videoUrl, question, imageContext) {
+  return new Promise((resolve, reject) => {
+    const videoId = extractVideoID(videoUrl);
+    const videoElement = document.querySelector('video');
+    const currentTimestamp = videoElement
+      ? Math.floor(videoElement.currentTime)
+      : 0;
+
+    // Ensure imageContext is base64 encoded
+    let base64ImageData = imageContext;
+    // If imageContext is not base64, convert it (assume it's a Blob or File)
+    if (imageContext instanceof Blob) {
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        base64ImageData = reader.result;
+        sendQuestion();
+      };
+      reader.onerror = function () {
+        console.error('Failed to convert image to base64');
+        reject('Failed to convert image to base64');
+      };
+      reader.readAsDataURL(imageContext);
+    } else {
+      sendQuestion();
+    }
+
+    function sendQuestion() {
+      getUserId((userId, userEmail) => {
+        if (!userId) {
+          console.error('User not authenticated. Unable to ask AI question.');
+          return;
+        }
+        fetch(`${BASE_URL}/api/question-with-image`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-ID': userId,
+            'User-Email': userEmail,
+          },
+          body: JSON.stringify({
+            video_id: videoId,
+            user_question: question,
+            timestamp: currentTimestamp,
+            image_data: base64ImageData, // base64 image
+            userId: userId,
+          }),
+        })
+          .then((response) => {
+            if (response.status === 403) {
+              reject('User ran out of free quota');
+              throw new Error('User ran out of free quota');
+            }
+            if (!response.ok) {
+              reject('Failed to get AI response');
+              throw new Error('Failed to get AI response');
+            }
+            return response.json();
+          })
+          .then((data) => {
+            const aiResponse = data.response;
+            if (aiResponse) {
+              addAIBubble(aiResponse);
+              console.log('AI Response:', aiResponse);
+              resolve(aiResponse);
+            } else {
+              console.error('No AI response found in the response data.');
+              reject('No AI response received');
+            }
+          })
+          .catch((error) => {
+            console.error('Error during AI question processing:', error);
+            reject('Error during AI question processing');
+          });
+      });
+    }
   });
 }
 
