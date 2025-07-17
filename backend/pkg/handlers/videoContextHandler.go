@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"strconv"
+	"github.com/tiktoken-go/tokenizer"
 )
 
 type VideoRequest struct {
@@ -57,14 +59,15 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Define the max allowed transcript length
-	const maxTranscriptTokens = 256000 // OpenAI limit
+	const maxTokens = 95000;
 
-	if len(strings.Join(videoInfo.Transcript, " ")) > maxTranscriptTokens {
-		log.Println("⚠️ Transcript too long, rejecting request.")
-		http.Error(w, `{"error": "This video is too long. Try a shorter one."}`, http.StatusBadRequest)
-		return
+	transcriptTokens := getTranscriptTokens(videoInfo.Transcript)
+	log.Printf("Transcript contains %d tokens", transcriptTokens)
+	log.Printf("Transcript contains %d characters", len(strings.Join(videoInfo.Transcript, " ")));
+	if transcriptTokens>maxTokens{
+		videoInfo.Transcript = TruncateTranscript(videoInfo.Transcript, maxTokens)
 	}
+	//Check if transcript exceeds max tokens then reduce if needed
 
 	// Store video info in Redis (without snapshots for now)
 	err = services.StoreVideoInfoInRedis(videoID, videoInfo)
@@ -84,7 +87,7 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 
 	// Extract timestamps from the transcript
 	timestamps := ExtractTimestampsFromTranscript(videoInfo.Transcript)
-	log.Println("Extracted Timestamps:", timestamps)
+	//log.Println("Extracted Timestamps:", timestamps)
 
 	// Trigger snapshot processing (non-blocking)
 	go func() {
@@ -121,4 +124,50 @@ func ExtractTimestampsFromTranscript(transcript []string) []string {
 		}
 	}
 	return timestamps
+}
+// Calculate the amount of tokens in a transcript
+func getTranscriptTokens(transcript []string) int{
+	transcriptString := strings.Join(transcript, " ")
+	enc, err := tokenizer.Get(tokenizer.Cl100kBase)
+	if err != nil {
+		log.Printf("Failed to get tokenizer (Cl100kBase): %v", err)
+	}
+	tokenIds, _, _ := enc.Encode(transcriptString)
+	return len(tokenIds)
+}
+// Truncate transcript if it's too long
+func TruncateTranscript(transcript []string, maxTokens int) []string {
+	enc, err := tokenizer.Get(tokenizer.Cl100kBase)
+	if err != nil {
+		log.Printf("Failed to get tokenizer (Cl100kBase): %v", err)
+	}
+	totalTokens:=0
+	var resultTranscript []string
+	// Encode each transcript element one by one(123:hello, my name is) into tokens and see if adding it to total tokens would exceed maxTokens
+	for _,entry := range transcript {
+		tokenIds, _, err := enc.Encode(entry)
+		if err != nil {
+			log.Printf("Error encoding entry: %v", err)
+			continue 
+		}		
+		if totalTokens + len(tokenIds) > maxTokens {
+			break
+		}
+		resultTranscript = append(resultTranscript, entry)
+		totalTokens += len(tokenIds)
+	}
+	// Extract timestamp from final element of slice
+	timestampStr := strings.SplitN(resultTranscript[len(resultTranscript)-1], ":", 2)[0]
+	// Convert timestamp string to float
+	timestampSeconds, err := strconv.ParseFloat(timestampStr, 64)
+	if err != nil {
+		log.Printf("Error converting timestamp: %v", err)
+	} else {
+		//Convert seconds to hours + min for more clear idea of when transcript ends
+		totalSeconds := int(timestampSeconds)
+		hours := totalSeconds / 3600
+		minutes := (totalSeconds % 3600) / 60
+		log.Printf("Truncation complete at %d tokens (max: %d). Final timestamp: %.2f sec (%02d:%02d)", totalTokens, maxTokens, timestampSeconds, hours, minutes)
+	}
+	return resultTranscript
 }
