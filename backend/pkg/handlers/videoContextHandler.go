@@ -7,7 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
-
+	"strconv"
 	"github.com/tiktoken-go/tokenizer"
 )
 
@@ -59,10 +59,11 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	maxTokens := 90000
+	const maxTokens = 95000;
 
 	transcriptTokens := getTranscriptTokens(videoInfo.Transcript)
-
+	log.Printf("Transcript contains %d tokens", transcriptTokens)
+	log.Printf("Transcript contains %d characters", len(strings.Join(videoInfo.Transcript, " ")));
 	if transcriptTokens>maxTokens{
 		videoInfo.Transcript = TruncateTranscript(videoInfo.Transcript, maxTokens)
 	}
@@ -86,7 +87,7 @@ func ProcessVideo(w http.ResponseWriter, r *http.Request) {
 
 	// Extract timestamps from the transcript
 	timestamps := ExtractTimestampsFromTranscript(videoInfo.Transcript)
-	log.Println("Extracted Timestamps:", timestamps)
+	//log.Println("Extracted Timestamps:", timestamps)
 
 	// Trigger snapshot processing (non-blocking)
 	go func() {
@@ -132,7 +133,6 @@ func getTranscriptTokens(transcript []string) int{
 		log.Printf("Failed to get tokenizer (Cl100kBase): %v", err)
 	}
 	tokenIds, _, _ := enc.Encode(transcriptString)
-	log.Printf("Transcript contains %d tokens", len(tokenIds))
 	return len(tokenIds)
 }
 // Truncate transcript if it's too long
@@ -143,7 +143,7 @@ func TruncateTranscript(transcript []string, maxTokens int) []string {
 	}
 	totalTokens:=0
 	var resultTranscript []string
-	for _, entry := range transcript {
+	for _,entry := range transcript {
 		tokenIds, _, err := enc.Encode(entry)
 		if err != nil {
 			log.Printf("Error encoding entry: %v", err)
@@ -151,12 +151,24 @@ func TruncateTranscript(transcript []string, maxTokens int) []string {
 		}
 		
 		if totalTokens + len(tokenIds) > maxTokens {
-			log.Printf("Truncating at %d tokens (max: %d)", totalTokens, maxTokens)
 			break
 		}
 		
 		resultTranscript = append(resultTranscript, entry)
 		totalTokens += len(tokenIds)
-}
-return resultTranscript
+	}
+	// Extract timestamp from final element of slice
+	timestampStr := strings.SplitN(resultTranscript[len(resultTranscript)-1], ":", 2)[0]
+	// Convert timestamp string to float
+	timestampSeconds, err := strconv.ParseFloat(timestampStr, 64)
+	if err != nil {
+		log.Printf("Error converting timestamp: %v", err)
+	} else {
+		//Convert seconds to hours + min for more clear idea of when transcript ends
+		totalSeconds := int(timestampSeconds)
+		hours := totalSeconds / 3600
+		minutes := (totalSeconds % 3600) / 60
+		log.Printf("Truncation complete at %d tokens (max: %d). Final timestamp: %.2f sec (%02d:%02d)", totalTokens, maxTokens, timestampSeconds, hours, minutes)
+	}
+	return resultTranscript
 }
