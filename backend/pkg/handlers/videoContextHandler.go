@@ -143,17 +143,16 @@ func TruncateTranscript(transcript []string, maxTokens int) []string {
 	}
 	totalTokens:=0
 	var resultTranscript []string
+	// Encode each transcript element one by one(123:hello, my name is) into tokens and see if adding it to total tokens would exceed maxTokens
 	for _,entry := range transcript {
 		tokenIds, _, err := enc.Encode(entry)
 		if err != nil {
 			log.Printf("Error encoding entry: %v", err)
 			continue 
-		}
-		
+		}		
 		if totalTokens + len(tokenIds) > maxTokens {
 			break
 		}
-		
 		resultTranscript = append(resultTranscript, entry)
 		totalTokens += len(tokenIds)
 	}
