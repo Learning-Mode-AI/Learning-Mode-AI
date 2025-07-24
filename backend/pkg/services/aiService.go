@@ -160,6 +160,66 @@ func AskGPTQuestion(videoID, userID, userQuestion string, timestamp int) (string
 	return answer, nil
 }
 
+// AskGPTWithFile sends a question with optional file context to the AI service
+func AskGPTWithFile(videoID, userID, userQuestion string, timestamp int, openAIFileID, fileName string) (string, error) {
+	// Log the incoming parameters for debugging
+	log.Printf("Preparing to ask GPT a question with file. VideoID: %s, UserID: %s, Question: %s, Timestamp: %d, OpenAI FileID: %s, FileName: %s", 
+		videoID, userID, userQuestion, timestamp, openAIFileID, fileName)
+
+	// Create the request payload
+	reqPayload := map[string]interface{}{
+		"video_id":         videoID,
+		"userId":           userID,
+		"question":         userQuestion,
+		"timestamp":        timestamp,
+		"openai_file_id":   openAIFileID,    // Send OpenAI file ID
+		"file_name":        fileName,
+	}
+
+	// Convert payload to JSON
+	reqBody, err := json.Marshal(reqPayload)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	// Log the JSON payload for debugging
+	log.Printf("Request payload with OpenAI file ID: %s", openAIFileID)
+
+	// Make HTTP POST request to the AI service
+	aiServiceURL := fmt.Sprintf("%s/ai/ask-question-with-file", config.AiServiceURL)
+	client := &http.Client{Timeout: 60 * time.Second} // Longer timeout for file processing
+	resp, err := client.Post(aiServiceURL, "application/json", bytes.NewBuffer(reqBody))
+	if err != nil {
+		return "", fmt.Errorf("failed to send question with file to GPT: %v", err)
+	}
+	defer resp.Body.Close()
+
+	// Read the raw response body for logging and debugging
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("failed to read response body: %v", err)
+	}
+
+	// Log the raw response for debugging
+	log.Printf("Raw AI Response: %s", string(body))
+
+	// Parse the JSON response to get the assistant's answer
+	var aiResponse map[string]string
+	err = json.Unmarshal(body, &aiResponse)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse AI response: %v", err)
+	}
+
+	// Check if the response contains the 'answer' field
+	answer, ok := aiResponse["answer"]
+	if !ok {
+		return "", fmt.Errorf("AI response did not contain 'answer' field: %v", aiResponse)
+	}
+
+	// Return the assistant's answer
+	return answer, nil
+}
+
 // AIServiceURL is the configuration for the base URL of the AI service
 func getAIServiceURL() string {
 	return config.AiServiceURL

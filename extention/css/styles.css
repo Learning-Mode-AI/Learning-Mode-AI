@@ -205,7 +205,7 @@
 /* Input Field */
 #chat-input {
   flex: 1;
-  padding: 12px 50px 12px 12px;
+  padding: 12px 100px 12px 12px;
   border-radius: 25px;
   border: 1px solid #dbdbdb;
   font-size: 14px;
@@ -237,6 +237,52 @@
 
 .send-button:hover {
   background-color: #b30f0f;
+}
+
+/* File Upload Button */
+.file-upload-btn {
+  position: absolute;
+  right: 60px;
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 50%;
+  background-color: #d8293b;
+  font-size: 20px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.file-upload-btn:hover {
+  background-color: #b30f0f;
+}
+
+.file-upload-btn.file-attached {
+  background-color: #28a745;
+}
+
+.file-upload-btn.file-attached:hover {
+  background-color: #218838;
+}
+
+.file-bubble {
+  background-color: #e3f2fd;
+  color: #1976d2;
+  padding: 8px 12px;
+  margin: 5px 0;
+  border-radius: 18px;
+  font-size: 12px;
+  display: inline-block;
+  max-width: 200px;
+  text-align: right;
+  margin-left: auto;
+  word-break: break-all;
 }
 
 /* Bubbles */
@@ -710,4 +756,69 @@
   width: 140px;
   height: auto;
   transform: rotate(3deg);
+}
+
+/* Error Message Styles */
+.error-message {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 8px 0;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+  animation: slideInError 0.3s ease-out;
+}
+
+.error-message::before {
+  content: '⚠️';
+  margin-right: 8px;
+  font-size: 16px;
+}
+
+.error-message.file-error {
+  background: linear-gradient(135deg, #ff9500, #ff7b00);
+  box-shadow: 0 2px 8px rgba(255, 149, 0, 0.3);
+}
+
+.error-message.file-error::before {
+  content: '📄';
+}
+
+.error-message.network-error {
+  background: linear-gradient(135deg, #dc3545, #c82333);
+  box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
+}
+
+.error-message.network-error::before {
+  content: '🌐';
+}
+
+@keyframes slideInError {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error-message.fade-out {
+  animation: fadeOutError 0.3s ease-out forwards;
+}
+
+@keyframes fadeOutError {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
 }

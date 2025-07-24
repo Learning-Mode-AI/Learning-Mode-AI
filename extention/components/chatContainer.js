@@ -1,7 +1,13 @@
-import { askAIQuestion, showModal, updateModalMessage } from '../js/content.js';
+import {
+  askAIQuestion,
+  askAIQuestionWithFile,
+  showModal,
+  updateModalMessage,
+  showFileErrorMessage,
+} from '../js/content.js';
 
 function showUpgradeModal() {
-  console.log("showUpgradeModal called");
+  console.log('showUpgradeModal called');
   const modalContent = document.getElementById('chat-modal-content');
   modalContent.innerHTML = '';
   const modalTitle = document.createElement('h2');
@@ -10,7 +16,8 @@ function showUpgradeModal() {
   modalContent.append(modalTitle);
   const modalCTA = document.createElement('p');
   modalCTA.id = 'modal-cta';
-  modalCTA.innerText = 'Subscribe to get more questions and access to future exclusive features!';
+  modalCTA.innerText =
+    'Subscribe to get more questions and access to future exclusive features!';
   modalContent.append(modalCTA);
   const viewPlansButton = document.createElement('button');
   viewPlansButton.id = 'view-plans-button';
@@ -21,13 +28,14 @@ function showUpgradeModal() {
   modalContent.append(viewPlansButton);
 }
 
-
 let restoringHistory = false;
 
 function saveChatHistory(message, sender) {
   if (restoringHistory) return; // prevent duplication while restoring
 
-  const videoId = new URLSearchParams(new URL(window.location.href).search).get('v');
+  const videoId = new URLSearchParams(new URL(window.location.href).search).get(
+    'v'
+  );
   const key = `chatHistory-${videoId}`;
 
   chrome.storage.local.get([key], (result) => {
@@ -41,10 +49,8 @@ function saveChatHistory(message, sender) {
 }
 
 export function createChatContainer(parentElement) {
-
   // Prevent duplicate container if already exists
   if (document.getElementById('custom-chat-container')) return;
-
 
   const chatContainer = document.createElement('div');
   chatContainer.id = 'custom-chat-container';
@@ -95,9 +101,85 @@ export function createChatContainer(parentElement) {
   sendButton.className = 'send-button';
   sendButton.innerHTML = '➤';
 
-  // Append input field and send button to input area
+  // File Upload Button
+  const fileUploadButton = document.createElement('button');
+  fileUploadButton.className = 'file-upload-btn';
+  fileUploadButton.innerHTML = '+';
+  fileUploadButton.title = 'Attach file for context';
+
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.style.display = 'none';
+  fileInput.accept = '.txt,.pdf,.doc,.docx,.md';
+
+  let attachedFile = null;
+
+  // Update file upload button status on creation
+  setTimeout(() => updateFileUploadButtonStatus(), 100);
+
+  fileUploadButton.addEventListener('click', () => {
+    // Check if button is disabled due to no remaining uploads
+    if (fileUploadButton.style.cursor === 'not-allowed') {
+      showFileErrorMessage(
+        'You have reached your monthly file upload limit. Upgrade for more uploads!',
+        'Upload limit reached'
+      );
+      return;
+    }
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file size (500KB limit)
+      const maxSizeKB = 500;
+      const fileSizeKB = file.size / 1024;
+
+      if (fileSizeKB > maxSizeKB) {
+        showFileErrorMessage(
+          `File is too large (${Math.round(
+            fileSizeKB
+          )}KB). Please choose a file smaller than ${maxSizeKB}KB.`,
+          file.name
+        );
+        fileInput.value = ''; // Clear the input
+        return;
+      }
+
+      // Validate file type
+      const allowedExtensions = ['.txt', '.pdf', '.doc', '.docx', '.md'];
+      const fileName = file.name.toLowerCase();
+      const isValidType = allowedExtensions.some((ext) =>
+        fileName.endsWith(ext)
+      );
+
+      if (!isValidType) {
+        showFileErrorMessage(
+          'Unsupported file type. Please use PDF, TXT, MD, DOC, or DOCX files.',
+          file.name
+        );
+        fileInput.value = ''; // Clear the input
+        return;
+      }
+
+      // File is valid, attach it
+      attachedFile = file;
+      fileUploadButton.innerHTML = '+';
+      fileUploadButton.classList.add('file-attached');
+      fileUploadButton.title = `Attached: ${attachedFile.name}`;
+    } else {
+      fileUploadButton.innerHTML = '+';
+      fileUploadButton.classList.remove('file-attached');
+      fileUploadButton.title = 'Attach file for context';
+    }
+  });
+
+  // Append input field, file upload button, and send button to input area
   inputArea.appendChild(inputField);
+  inputArea.appendChild(fileUploadButton);
   inputArea.appendChild(sendButton);
+  inputArea.appendChild(fileInput);
 
   // Create typing indicator element
   const typingIndicator = document.createElement('div');
@@ -127,27 +209,55 @@ export function createChatContainer(parentElement) {
     const userQuestion = inputField.value;
     if (userQuestion) {
       addUserBubble(userQuestion);
+      if (attachedFile) {
+        addFileBubble(attachedFile.name);
+      }
       inputField.value = '';
       const videoUrl = window.location.href;
       typingIndicator.style.display = 'block'; // Show typing indicator
 
-      askAIQuestion(videoUrl, userQuestion)
+      // Choose the appropriate function based on whether a file is attached
+      const questionFunction = attachedFile
+        ? askAIQuestionWithFile
+        : askAIQuestion;
+      const questionArgs = attachedFile
+        ? [videoUrl, userQuestion, attachedFile]
+        : [videoUrl, userQuestion];
+
+      questionFunction(...questionArgs)
         .then((response) => {
-          console.log("AI Response received:", response);
+          console.log('AI Response received:', response);
 
           typingIndicator.style.display = 'none';
-          console.log("Typing indicator hidden");
+          console.log('Typing indicator hidden');
+
+          // Reset file attachment state
+          if (attachedFile) {
+            attachedFile = null;
+            fileUploadButton.innerHTML = '+';
+            fileUploadButton.classList.remove('file-attached');
+            fileUploadButton.title = 'Attach file for context';
+            fileInput.value = '';
+          }
 
           if (response) {
           } else {
             console.error('Received undefined AI response');
           }
-
         })
         .catch((error) => {
           typingIndicator.style.display = 'none';
           console.error('Error in askAIQuestion:', error);
-          console.log("Typing indicator hidden due to error");
+          console.log('Typing indicator hidden due to error');
+
+          // Reset file attachment state on error
+          if (attachedFile) {
+            attachedFile = null;
+            fileUploadButton.innerHTML = '+';
+            fileUploadButton.classList.remove('file-attached');
+            fileUploadButton.title = 'Attach file for context';
+            fileInput.value = '';
+          }
 
           if (error.includes('quota')) {
             showUpgradeModal();
@@ -202,36 +312,35 @@ export function createChatContainer(parentElement) {
     }
   });
 
-// Using setTimeout with 0ms delay to Stop execution until the DOM has fully rendered when refreshing the page.
-// This ensures that chat bubbles are only appended after the container is in place,
-// which prevents duplicate messages from being added when the page is refreshed.
-setTimeout(() => {
-  const videoId = new URLSearchParams(new URL(window.location.href).search).get('v');
-  const key = `chatHistory-${videoId}`;
-  const chatArea = document.getElementById('chat-area');
+  // Using setTimeout with 0ms delay to Stop execution until the DOM has fully rendered when refreshing the page.
+  // This ensures that chat bubbles are only appended after the container is in place,
+  // which prevents duplicate messages from being added when the page is refreshed.
+  setTimeout(() => {
+    const videoId = new URLSearchParams(
+      new URL(window.location.href).search
+    ).get('v');
+    const key = `chatHistory-${videoId}`;
+    const chatArea = document.getElementById('chat-area');
 
-  if (!chatArea || chatArea.dataset.restored === "true") return;
+    if (!chatArea || chatArea.dataset.restored === 'true') return;
 
-  restoringHistory = true;
+    restoringHistory = true;
 
-  chrome.storage.local.get([key], (result) => {
-    const history = result[key] || [];
-    chatArea.innerHTML = ''; // Clear before adding bubbles
-    history.forEach(entry => {
-      if (entry.sender === 'user') {
-        addUserBubble(entry.message);
-      } else {
-        addAIBubble(entry.message);
-      }
+    chrome.storage.local.get([key], (result) => {
+      const history = result[key] || [];
+      chatArea.innerHTML = ''; // Clear before adding bubbles
+      history.forEach((entry) => {
+        if (entry.sender === 'user') {
+          addUserBubble(entry.message);
+        } else {
+          addAIBubble(entry.message);
+        }
+      });
+
+      restoringHistory = false;
+      chatArea.dataset.restored = 'true';
     });
-
-    restoringHistory = false;
-    chatArea.dataset.restored = "true";
-  });
-}, 0);
-
-
-
+  }, 0);
 }
 
 export function addUserBubble(content) {
@@ -243,7 +352,6 @@ export function addUserBubble(content) {
   chatArea.scrollTop = chatArea.scrollHeight;
 
   saveChatHistory(content, 'user'); // Save to sessionStorage
-
 }
 
 export function addAIBubble(content) {
@@ -253,6 +361,15 @@ export function addAIBubble(content) {
   aiBubble.innerText = content;
   chatArea.appendChild(aiBubble);
   chatArea.scrollTop = chatArea.scrollHeight;
-  
+
   saveChatHistory(content, 'ai'); // Save to sessionStorage
+}
+
+export function addFileBubble(fileName) {
+  const chatArea = document.getElementById('chat-area');
+  const fileBubble = document.createElement('div');
+  fileBubble.className = 'file-bubble user-bubble';
+  fileBubble.innerHTML = `📄 ${fileName}`;
+  chatArea.appendChild(fileBubble);
+  chatArea.scrollTop = chatArea.scrollHeight;
 }
