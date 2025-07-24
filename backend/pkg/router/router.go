@@ -14,6 +14,7 @@ func NewRouter(stripeSecret string) *mux.Router {
 	// Define routes with user validation middleware
 	r.HandleFunc("/processVideo", handlers.ProcessVideo).Methods("POST")
 	r.HandleFunc("/api/question", handlers.AskGPTQuestion).Methods("POST")
+	r.HandleFunc("/api/question-with-file", handlers.AskGPTQuestionWithFile).Methods("POST")
 	r.HandleFunc("/api/quiz", handlers.GenerateQuiz).Methods("POST")
 	r.HandleFunc("/video-summary", handlers.VideoSummaryHandler).Methods("POST")
 

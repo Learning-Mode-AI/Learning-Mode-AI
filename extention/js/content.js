@@ -168,6 +168,46 @@ export function hideModal() {
   }
 }
 
+// Function to show error messages with visual feedback
+export function showErrorMessage(message, type = 'general', duration = 5000) {
+  const chatArea = document.getElementById('chat-area');
+  if (!chatArea) {
+    console.error('Chat area not found - cannot display error message');
+    return;
+  }
+
+  // Create error message element
+  const errorDiv = document.createElement('div');
+  errorDiv.className = `error-message ${type}-error`;
+  errorDiv.textContent = message;
+
+  // Add to chat area
+  chatArea.appendChild(errorDiv);
+
+  // Scroll to show the error message
+  chatArea.scrollTop = chatArea.scrollHeight;
+
+  // Auto-remove after specified duration
+  setTimeout(() => {
+    if (errorDiv.parentNode) {
+      errorDiv.classList.add('fade-out');
+      setTimeout(() => {
+        if (errorDiv.parentNode) {
+          errorDiv.remove();
+        }
+      }, 300); // Wait for fade-out animation
+    }
+  }, duration);
+}
+
+// Function to show file-specific error messages
+export function showFileErrorMessage(message, fileName = null) {
+  const fullMessage = fileName
+    ? `File "${fileName}": ${message}`
+    : `File upload error: ${message}`;
+  showErrorMessage(fullMessage, 'file', 6000); // Longer duration for file errors
+}
+
 function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
   const videoId = extractVideoID(videoUrl);
 
@@ -196,54 +236,63 @@ function sendVideoInfoToBackend(videoUrl, userId, userEmail) {
       'User-Email': userEmail,
     },
     body: JSON.stringify({ videoUrl: videoUrl }),
-  }).then(async (response) => {
-    console.log(`Received response: ${response.status}`);
+  })
+    .then(async (response) => {
+      console.log(`Received response: ${response.status}`);
 
-    let responseText;
-    try {
-      responseText = await response.text(); // Read response as text
-    } catch (error) {
-      console.error('❌ Failed to read response:', error);
+      let responseText;
+      try {
+        responseText = await response.text(); // Read response as text
+      } catch (error) {
+        console.error('❌ Failed to read response:', error);
+        updateModalMessage('⚠️ Server error. Please try again later.');
+        return;
+      }
+
+      if (
+        response.status === 500 &&
+        responseText.includes('Failed to fetch video info')
+      ) {
+        console.error('🚨 Server error:', responseText);
+        updateModalMessage('⚠️ Server error. Please try again later.');
+        return;
+      }
+
+      if (
+        response.status === 400 &&
+        responseText.includes('This video is too long')
+      ) {
+        console.error('🚨 Video exceeds token limit.');
+        updateModalMessage('⚠️ This video is too long. Try a shorter one.');
+        return;
+      }
+
+      if (response.status === 200) {
+        console.log('✅ Video processed successfully!');
+        hideModal();
+        addAIBubble('Video Processed! You can now ask questions.');
+
+        // Mark video as processed in local storage
+        processedVideos[videoId] = true;
+        localStorage.setItem(
+          'processedVideos',
+          JSON.stringify(processedVideos)
+        );
+        console.log('✅ Video marked as processed in local storage');
+      }
+
+      // Handle any other error status codes that weren't caught above
+      console.error(
+        `🚨 Unexpected response status: ${response.status} - ${responseText}`
+      );
       updateModalMessage('⚠️ Server error. Please try again later.');
-      return;
-    }
-
-    if (
-      response.status === 500 &&
-      responseText.includes('Failed to fetch video info')
-    ) {
-      console.error('🚨 Server error:', responseText);
-      updateModalMessage('⚠️ Server error. Please try again later.');
-      return;
-    }
-
-    if (
-      response.status === 400 &&
-      responseText.includes('This video is too long')
-    ) {
-      console.error('🚨 Video exceeds token limit.');
-      updateModalMessage('⚠️ This video is too long. Try a shorter one.');
-      return;
-    }
-
-    if (response.status === 200) {
-      console.log('✅ Video processed successfully!');
-      hideModal();
-      addAIBubble('Video Processed! You can now ask questions.');
-
-      // Mark video as processed in local storage
-      processedVideos[videoId] = true;
-      localStorage.setItem('processedVideos', JSON.stringify(processedVideos));
-      console.log('✅ Video marked as processed in local storage');
-    }
-
-    // Handle any other error status codes that weren't caught above
-    console.error(`🚨 Unexpected response status: ${response.status} - ${responseText}`);
-    updateModalMessage('⚠️ Server error. Please try again later.');
-  }).catch((error) => {
-    console.error('❌ Network or fetch error:', error);
-    updateModalMessage('⚠️ Network error. Please check your connection and try again.');
-  });
+    })
+    .catch((error) => {
+      console.error('❌ Network or fetch error:', error);
+      updateModalMessage(
+        '⚠️ Network error. Please check your connection and try again.'
+      );
+    });
 }
 
 export function askAIQuestion(videoUrl, question) {
@@ -276,12 +325,20 @@ export function askAIQuestion(videoUrl, question) {
       })
         .then((response) => {
           if (response.status === 403) {
+            showErrorMessage(
+              'You have reached your monthly question limit. Please upgrade to continue.',
+              'network'
+            );
             reject('User than out of free quota');
             throw new Error('User than out of free quota');
           }
           if (!response.ok) {
+            showErrorMessage(
+              'Failed to get AI response. Please try again.',
+              'network'
+            );
             reject('Failed to get AI response');
-            throw new Error('User than out of free quota');
+            throw new Error('Failed to get AI response');
           }
           return response.json();
         })
@@ -293,8 +350,151 @@ export function askAIQuestion(videoUrl, question) {
             resolve(aiResponse);
           } else {
             console.error('No AI response found in the response data.');
+            showErrorMessage(
+              'No response received from AI. Please try again.',
+              'general'
+            );
             reject('No AI response received');
           }
+        })
+        .catch((error) => {
+          console.error('Error in askAIQuestion:', error);
+          // Only show error message if we haven't already shown one
+          if (
+            !error.message.includes('quota') &&
+            !error.message.includes('response')
+          ) {
+            showErrorMessage(
+              'Network error occurred. Please check your connection and try again.',
+              'network'
+            );
+          }
+          reject(error);
+        });
+    });
+  });
+}
+
+export function askAIQuestionWithFile(videoUrl, question, file = null) {
+  return new Promise((resolve, reject) => {
+    const videoId = extractVideoID(videoUrl);
+    const videoElement = document.querySelector('video');
+    const currentTimestamp = videoElement
+      ? Math.floor(videoElement.currentTime)
+      : 0;
+
+    getUserId((userId, userEmail) => {
+      if (!userId) {
+        console.error('User not authenticated. Unable to ask AI question.');
+        reject('User not authenticated');
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('video_id', videoId);
+      formData.append('user_question', question);
+      formData.append('timestamp', currentTimestamp);
+      formData.append('userId', userId);
+
+      if (file) {
+        formData.append('context_file', file);
+      }
+
+      fetch(`${BASE_URL}/api/question-with-file`, {
+        method: 'POST',
+        headers: {
+          'User-ID': userId,
+          'User-Email': userEmail,
+        },
+        body: formData,
+      })
+        .then(async (response) => {
+          if (response.status === 403) {
+            const errorText = await response.text();
+            if (errorText.includes('file upload limit')) {
+              showFileErrorMessage(
+                'You have reached your monthly file upload limit. Upgrade for more uploads!',
+                file?.name
+              );
+              reject('File upload limit reached');
+            } else {
+              showErrorMessage(
+                'You have reached your monthly question limit. Please upgrade to continue.',
+                'network'
+              );
+              reject('User than out of free quota');
+            }
+            throw new Error('User has reached limit');
+          }
+          if (response.status === 413) {
+            showFileErrorMessage(
+              'File is too large. Please choose a file smaller than 500KB.',
+              file?.name
+            );
+            reject('File too large');
+            throw new Error('File too large');
+          }
+          if (response.status === 415) {
+            showFileErrorMessage(
+              'Unsupported file type. Please use PDF, TXT, MD, DOC, or DOCX files.',
+              file?.name
+            );
+            reject('Unsupported file type');
+            throw new Error('Unsupported file type');
+          }
+          if (!response.ok) {
+            if (file) {
+              showFileErrorMessage(
+                'Failed to process file. Please try again or contact support.',
+                file?.name
+              );
+            } else {
+              showErrorMessage(
+                'Failed to get AI response. Please try again.',
+                'network'
+              );
+            }
+            reject('Failed to get AI response');
+            throw new Error('Failed to get AI response');
+          }
+          return response.json();
+        })
+        .then((data) => {
+          const aiResponse = data.response;
+          if (aiResponse) {
+            addAIBubble(aiResponse);
+            console.log('AI Response:', aiResponse);
+            resolve(aiResponse);
+          } else {
+            console.error('No AI response found in the response data.');
+            showErrorMessage(
+              'No response received from AI. Please try again.',
+              'general'
+            );
+            reject('No AI response received');
+          }
+        })
+        .catch((error) => {
+          console.error('Error in askAIQuestionWithFile:', error);
+          // Only show error message if we haven't already shown one
+          if (
+            !error.message.includes('quota') &&
+            !error.message.includes('File') &&
+            !error.message.includes('response')
+          ) {
+            if (file) {
+              showFileErrorMessage(
+                'Network error occurred while processing file. Please check your connection and try again.',
+                file?.name
+              );
+            } else {
+              showErrorMessage(
+                'Network error occurred. Please check your connection and try again.',
+                'network'
+              );
+            }
+          }
+          reject(error);
         });
     });
   });
