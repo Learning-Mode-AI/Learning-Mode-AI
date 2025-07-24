@@ -205,7 +205,7 @@
 /* Input Field */
 #chat-input {
   flex: 1;
-  padding: 12px 50px 12px 12px;
+  padding: 12px 90px 12px 12px;
   border-radius: 25px;
   border: 1px solid #dbdbdb;
   font-size: 14px;
@@ -237,6 +237,51 @@
 
 .send-button:hover {
   background-color: #b30f0f;
+}
+
+/* Camera (Capture) Button */
+.camera-wrapper {
+  position: absolute;
+  right: 57px; /* 18px (send) + 35px (send width) + 5px gap */
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.camera-button {
+  width: 35px;
+  height: 35px;
+  border: none;
+  border-radius: 50%;
+  background-color: #d8293b;
+  font-size: 20px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+  padding: 0;
+  outline: none;
+}
+
+.camera-button svg {
+  width: 20px;
+  height: 20px;
+  fill: #fff;
+  stroke: #fff;
+  display: block;
+  margin: auto;
+  transition: transform 0.2s;
+}
+
+.camera-button:hover {
+  background-color: #b30f0f;
+}
+
+.camera-button:hover svg {
+  transform: scale(1.03);
 }
 
 /* Bubbles */
