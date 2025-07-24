@@ -55,8 +55,7 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	// Log timestamp for debugging
 	log.Printf("Received question at timestamp: %d seconds", questionReq.Timestamp)
 
-	// TESTING: Comment out user access check to allow unlimited questions
-	/*
+	
 	hasAccess, err := services.CheckUserAccess(questionReq.UserID)
 	if err != nil {
 		log.Printf("Failed to check user access: %v", err)
@@ -71,7 +70,7 @@ func AskGPTQuestion(w http.ResponseWriter, r *http.Request) {
 	}
 
 	services.IncrementUserQuestionCount(questionReq.UserID)
-	*/
+	
 
 	// Ask GPT the question
 	aiResponse, err := services.AskGPTQuestion(questionReq.VideoID, questionReq.UserID, questionReq.UserQuestion, questionReq.Timestamp)
@@ -163,9 +162,7 @@ func AskGPTQuestionWithFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Received question with file at timestamp: %d seconds", timestampInt)
-
-	// TESTING: Comment out user access check to allow unlimited questions
-	/*
+	
 	// Check user access
 	hasAccess, err := services.CheckUserAccess(userID)
 	if err != nil {
@@ -181,7 +178,6 @@ func AskGPTQuestionWithFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	services.IncrementUserQuestionCount(userID)
-	*/
 
 	// Create request for AI service
 	questionReq := GPTQuestionWithFileRequest{
