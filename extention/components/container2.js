@@ -6,7 +6,7 @@ import React from 'react';
 import { BASE_URL } from '../js/env.js';
 
 
-export function createContainer2(parentElement) {
+export function createContainer2(parentElement, userId) {
 
   const featuresPanel = document.createElement('div');
   featuresPanel.id = 'features-panel';
@@ -162,7 +162,7 @@ export function createContainer2(parentElement) {
           const quizRoot = createRoot(quizHolder);
 
 
-          quizRoot.render(<QuizFetcher key={Date.now()} />); // Re-render the QuizFetcher component
+          quizRoot.render(<QuizFetcher key={Date.now()} userId = {userId}/>); // Re-render the QuizFetcher component
           console.log('Quiz generated');
 
           return;
